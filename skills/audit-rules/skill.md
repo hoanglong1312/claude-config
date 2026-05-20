@@ -63,8 +63,6 @@ Từ `git status --short` → nhận dạng:
 
 Từ `git log` → biết project đang ở giai đoạn nào (mới init, đang dev, hay ổn định).
 
-Không cần filter theo path — mục tiêu là thấy toàn cảnh trước khi đi sâu.
-
 ---
 
 ### Bước 2 — Đọc global standard + detect stack
@@ -91,7 +89,7 @@ Detect add-on cần thêm:
 
 ### Bước 3 — So sánh project với template
 
-#### 3a. Kiểm tra CLAUDE.md
+#### 3a. Kiểm tra CLAUDE.md — nội dung + thứ tự @include
 
 Kiểm tra `CLAUDE.md` trong project có `@~/.claude/templates/code-project.md` không:
 
@@ -99,76 +97,99 @@ Kiểm tra `CLAUDE.md` trong project có `@~/.claude/templates/code-project.md` 
 grep "@~/.claude/templates/code-project.md" CLAUDE.md
 ```
 
-- **Có** → CLAUDE.md dùng @include, tự nhận template mới → không cần sync thủ công
 - **File không tồn tại** → flag là thiếu, dừng bước này
+- **Có** → CLAUDE.md dùng @include, tự nhận template mới → kiểm tra thứ tự (xem bên dưới)
 - **Không có** → CLAUDE.md là bản copy thủ công → tiến hành so sánh với template
 
-Nếu CLAUDE.md là copy thủ công:
+**Kiểm tra thứ tự @include (nếu dùng @include):**
+
+Thứ tự đúng bắt buộc:
+```
+@~/.claude/templates/code-project.md   ← phải đứng ĐẦU TIÊN
+@rules/[tool].md                        ← add-ons sau
+@context/architecture.md               ← context sau cùng
+```
+
+Nếu sai thứ tự → `rules/` load trước template → rules ghi đè template thay vì extend → flag:
+```
+  ✗ CLAUDE.md: thứ tự @include sai — code-project.md phải đứng trước rules/
+```
+
+**Nếu CLAUDE.md là copy thủ công:**
 
 ```bash
-# Ngày CLAUDE.md được commit lần cuối trong project
-git log --oneline -1 -- CLAUDE.md
-
-# Lấy hash commit của template tại thời điểm đó (để biết version project đang dùng)
 PROJECT_DATE=$(git log --format="%ai" -1 -- CLAUDE.md | cut -c1-10)
 TEMPLATE_HASH=$(git -C ~/.claude log --oneline --before="$PROJECT_DATE 23:59" -1 -- templates/code-project.md | cut -d' ' -f1)
-
-# Xem template đã thay đổi gì kể từ đó
 git -C ~/.claude diff $TEMPLATE_HASH..HEAD -- templates/code-project.md
 ```
 
-Nếu diff **rỗng** → template chưa thay đổi kể từ lần project commit CLAUDE.md → không cần làm gì.
+Nếu diff **rỗng** → không cần làm gì.
 
-Nếu diff **có nội dung** → hiện cho user thấy đúng những section thay đổi, rồi hỏi:
-
+Nếu diff **có nội dung** → hiện section thay đổi, hỏi:
 ```
 Template code-project.md đã cập nhật [N] section kể từ lần cuối sync:
-  + [tóm tắt section thay đổi từ diff]
+  + [tóm tắt section thay đổi]
 
-Project CLAUDE.md hiện có phần override riêng. Muốn merge thay đổi không?
+Project CLAUDE.md có phần override riêng. Muốn merge không?
   1. Merge (giữ override của project, cập nhật phần template thay đổi)
   2. Bỏ qua lần này
   3. Chuyển sang @include (xóa copy, để template tự propagate)
 ```
 
-Chờ user chọn trước khi làm bất cứ điều gì.
+Chờ user chọn. Nếu chọn **3**: xác nhận lại "Phần override sẽ mất. Xác nhận?" trước khi xóa.
 
-Nếu user chọn **1 (Merge)**:
-- Áp dụng đúng những section thay đổi từ diff vào CLAUDE.md project
-- Giữ nguyên phần project-specific (không xóa override)
-- Không commit — báo user tự commit sau khi review
+Kiểm tra thêm: các add-on detect được → có `@rules/[tool].md` tương ứng chưa?
 
-Nếu user chọn **3 (@include)**:
-- Xác nhận lại: "Phần override hiện tại sẽ mất. Xác nhận?"
-- Nếu đồng ý → thay toàn bộ nội dung bằng `@~/.claude/templates/code-project.md` + các @include còn lại
+---
 
-Kiểm tra thêm:
-- Có `@context/architecture.md` không?
-- Các add-on detect được → có `@rules/[tool].md` tương ứng không?
+#### 3b. Kiểm tra AGENTS.md — workflow + conflict + Project Context
 
-#### 3b. Kiểm tra AGENTS.md
+Nếu `AGENTS.md` chưa tồn tại → flag thiếu, dừng bước này.
 
-Nếu `AGENTS.md` chưa tồn tại → flag thiếu, kết thúc bước này.
-
-Nếu tồn tại → kiểm tra version marker:
+**Bước 3b-i: Kiểm tra workflow có outdated không**
 
 ```bash
-grep "template:" AGENTS.md | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}'
+MARKER_DATE=$(grep "template:" AGENTS.md | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
+TEMPLATE_HASH=$(git -C ~/.claude log --oneline --before="$MARKER_DATE 23:59" -1 -- templates/AGENTS.md | cut -d' ' -f1)
+git -C ~/.claude diff $TEMPLATE_HASH..HEAD -- templates/AGENTS.md
 ```
 
-**Nếu có marker** → extract date, so sánh với template bằng git diff:
+Nếu không có marker → đề xuất merge toàn bộ Workflow section, giữ Project Context.
 
-```bash
-# Lấy commit hash tại thời điểm marker date
-git -C ~/.claude log --oneline --before="[YYYY-MM-DD] 23:59" -1 -- templates/AGENTS.md
+**Bước 3b-ii: Với mỗi section thay đổi trong diff — kiểm tra conflict**
 
-# Xem chỉ những phần đã thay đổi kể từ đó
-git -C ~/.claude diff [commit-hash]..HEAD -- templates/AGENTS.md
+Với mỗi section template thay đổi, so sánh với nội dung section đó trong project AGENTS.md:
+- **Giống nhau** (project chưa sửa) → merge tự động, không hỏi
+- **Khác nhau** (project đã override) → **dừng, hỏi user**:
+
+```
+Section "[tên section]" trong AGENTS.md đã được project sửa:
+
+  Template mới:    [nội dung từ template]
+  Project hiện tại: [nội dung project đang có]
+
+Chọn:
+  1. Lấy version template mới
+  2. Giữ version của project
+  3. Tự merge thủ công (skill dừng lại, user sửa file)
 ```
 
-Từ diff output → chỉ báo **đúng những section thay đổi**, không list lại toàn bộ file.
+Chờ user chọn từng conflict trước khi tiếp tục.
 
-**Nếu không có marker** → "AGENTS.md không có version marker" → đề xuất merge toàn bộ Workflow section từ template, giữ nguyên Project Context.
+**Bước 3b-iii: Kiểm tra Project Context có stale không**
+
+Đọc section Project Context trong AGENTS.md (tên, stack, mục tiêu).  
+So sánh stack liệt kê với deps thực tế từ `package.json`:
+
+- Có lib mới trong deps nhưng không có trong stack → flag:
+  ```
+    ⚠ AGENTS.md Project Context: stack outdated (thiếu [lib mới])
+  ```
+- Tên project khác `package.json name` → flag tương tự
+
+Nếu phát hiện → hỏi user xác nhận stack mới trước khi update.
+
+---
 
 #### 3c. Kiểm tra rules/*.md có restate global workflow không
 
@@ -176,71 +197,73 @@ Từ diff output → chỉ báo **đúng những section thay đổi**, không l
 ls rules/ 2>/dev/null
 ```
 
-Với mỗi file trong `rules/`, đọc nội dung và kiểm tra: có chứa workflow, quy trình Claude/Codex, TDD rules, token discipline, hay bất kỳ nội dung nào đã có trong `~/.claude/templates/code-project.md` không?
+Với mỗi file trong `rules/`, kiểm tra có chứa nội dung đã có trong `~/.claude/templates/code-project.md` không.
 
 Dấu hiệu restate:
 - Mô tả lại cách gọi Codex
 - Liệt kê lại các bước feature flow / bug fix flow
-- Viết lại token discipline
-- Copy commit rules, TDD rules từ template
+- Viết lại token discipline, TDD rules, commit rules
 
-Nếu phát hiện → **đánh dấu để xóa ngay trong Bước 5** (không cần confirm riêng — restate là sai chắc chắn):
+Nếu phát hiện → **đánh dấu xóa ngay trong Bước 5** (restate là sai chắc chắn, không cần confirm riêng):
 ```
-  ⚠ rules/workflow.md: chứa [tên section] trùng với template → sẽ xóa khi fix
+  ⚠ rules/workflow.md: sẽ xóa "[tên section]" (restate template)
+                        giữ lại: [những gì project-specific]
 ```
 
-Ghi rõ: section nào sẽ bị xóa, section nào giữ lại — để user biết trước khi đồng ý ở Bước 4.
+Khi cleanup: xóa phần restate, giữ project-specific. File rỗng sau khi xóa → xóa luôn file.
 
-Khi cleanup (Bước 5): xóa đúng phần restate, giữ lại những gì thực sự project-specific (DB schema, lệnh test cụ thể, quirk tool, pattern codebase). Nếu sau khi xóa file rỗng → xóa luôn file.
+---
 
-#### 3d. Kiểm tra các file còn lại
+#### 3d. Kiểm tra context/architecture.md
 
 ```bash
-# Check sự tồn tại
 ls context/architecture.md 2>/dev/null
 ```
+
+Không có → flag thiếu.
 
 ---
 
 ### Bước 4 — Báo cáo
 
-Tách thành **2 nhóm rõ ràng**:
+Tách thành **2 nhóm rõ ràng**, liệt kê đủ để user biết sẽ mất/giữ gì:
 
 ```
 [PROJECT — có thể fix ngay]
-  ✗ CLAUDE.md: dùng copy thủ công thay @include (template mới hơn [N] ngày)
-  ✗ AGENTS.md: chưa có
-  ✗ AGENTS.md: outdated (thiếu section X, Y từ [date])
-  ✗ rules/supabase.md: chưa có (nhưng dùng Supabase)
-  ✗ context/architecture.md: chưa có
-  ⚠ rules/workflow.md: sẽ xóa section "Superpowers Skills", "Cách gọi Codex" (restate template)
-                        giữ lại: [những gì project-specific]
+  ✗ CLAUDE.md: thiếu
+  ✗ CLAUDE.md: thứ tự @include sai (rules/ đứng trước code-project)
+  ✗ CLAUDE.md: copy thủ công, template mới hơn [N] ngày
+  ✗ AGENTS.md: thiếu
+  ✗ AGENTS.md: outdated (section X, Y từ [date]) — [N] conflict cần xác nhận
+  ✗ AGENTS.md: Project Context stale (thiếu [lib])
+  ✗ rules/supabase.md: thiếu (dùng Supabase)
+  ⚠ rules/workflow.md: sẽ xóa "[section]", giữ "[section]"
+  ✗ context/architecture.md: thiếu
 
 [GLOBAL CONFIG — cần fix thủ công trong session ~/.claude]
-  ⚠ (liệt kê nếu phát hiện, nhưng không sửa)
+  ⚠ (liệt kê nếu phát hiện, không sửa)
 ```
 
-Nếu git log ở Bước 1 cho thấy file đã được sửa gần đây → nhắc context đó khi báo cáo:
-```
-  ℹ CLAUDE.md được sửa lần cuối: [date] (git log)
-```
-
-Chỉ hỏi "Tạo hết không?" cho nhóm PROJECT.
+Hỏi "Xử lý hết không?" — sau khi user đồng ý mới bắt đầu Bước 5.  
+Conflict trong AGENTS.md sẽ được hỏi từng cái trong lúc merge (Bước 5).
 
 ---
 
-### Bước 5 — Tạo (sau khi user đồng ý)
+### Bước 5 — Tạo / Merge (sau khi user đồng ý)
 
-Tạo/sửa chỉ trong project directory:
-- Copy files từ `~/.claude/templates/` vào project
-- Thêm `@import` vào `CLAUDE.md` project theo thứ tự: code-project → add-ons → context
-- Khi tạo `AGENTS.md`: tự điền Project Context từ deps (tên từ `package.json name`, stack từ deps). Không để placeholder blank.
-- Khi merge `AGENTS.md` outdated: chỉ cập nhật phần Workflow + Quy Tắc Chung, giữ nguyên Project Context.
-- Ưu tiên chuyển CLAUDE.md từ copy thủ công sang `@~/.claude/templates/code-project.md` nếu user đồng ý.
+Thứ tự xử lý:
+1. Tạo file thiếu (`AGENTS.md`, `rules/`, `context/`) từ template
+2. Fix thứ tự @include trong `CLAUDE.md` nếu sai
+3. Merge `AGENTS.md` — hỏi từng conflict theo Bước 3b-ii
+4. Update Project Context `AGENTS.md` nếu stale
+5. Cleanup `rules/*.md` — xóa restate, giữ project-specific
+6. Merge `CLAUDE.md` copy thủ công nếu user chọn option 1
+
+Không commit — báo user tự review rồi commit.
 
 ---
 
 ### Bước 6 — Xác nhận xong
 
-Báo ngắn gọn: file nào đã tạo/sửa trong project.  
-Nếu có global config issues → nhắc user: "Mở session `~/.claude` để xử lý."
+Báo ngắn gọn: file nào đã tạo/sửa.  
+Nếu có global config issues → nhắc: "Mở session `~/.claude` để xử lý."

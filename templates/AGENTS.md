@@ -51,8 +51,8 @@
 6. Review output thực thi qua `git diff` + commit message
 
 ### Codex — nhận spec từ Claude
-1. Dùng `writing-plans` → đọc codebase + spec → tạo technical checklist
-2. Sau khi Claude approve → dùng `executing-plans` → implement + TDD
+1. Dùng `writing-plans` + đường dẫn spec (`docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`) → đọc codebase + spec → tạo technical checklist
+2. Sau khi Claude approve → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task độc lập → implement + TDD + commit
 3. Nếu gặp mơ hồ (ambiguity) → ghi `ASSUMPTION:` (giả định) vào commit message
 4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
@@ -66,6 +66,16 @@
 2. Xác nhận (validate) `ASSUMPTION:` (giả định) nếu có
 3. Kiểm tra: đúng scope, test pass, không regression, nhất quán với spec
 4. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
+5. **Definition of Done** trước khi bàn giao:
+   - [ ] Tất cả tests pass, không regression
+   - [ ] `ASSUMPTION:` (giả định) đã được xác nhận (validate)
+   - [ ] git diff đã được Claude approve
+   - [ ] User acceptance test pass
+
+### Resume sau khi session bị gián đoạn
+1. Đọc `git log` → biết đang ở task nào
+2. Đọc file plan trong `docs/superpowers/specs/` → biết còn task nào chưa làm
+3. Gọi Codex tiếp từ task còn dở
 
 ### Fallback — Codex không giải quyết được sau 3 lần thử lại (retry)
 1. Claude đọc `git diff` + log `QA-FAIL:` (kiểm thử thất bại)

@@ -4,31 +4,39 @@
 
 | Phase | Công cụ | Việc làm |
 |-------|---------|----------|
-| Planning | Superpowers (Claude plugin) | brainstorming → spec → writing-plans |
-| Execution + QA | Codex MCP | Viết/sửa code, chạy test, commit |
-| Orchestration + Review | Claude main | Quyết định kiến trúc, review output, điều phối |
+| Spec | Superpowers (Claude plugin) | brainstorming → spec → lưu `docs/superpowers/specs/` |
+| Planning chi tiết + Execution | Codex MCP | writing-plans, executing-plans, TDD, commit |
+| Orchestration + Review | Claude main | kiến trúc, review plan, review git diff |
 
 - `subagent-driven-development` của Claude main KHÔNG dùng → Codex thay thế hoàn toàn
-- Codex có Superpowers cài sẵn → tự follow TDD, brainstorming workflow, không cần Claude embed
+- Codex có Superpowers cài sẵn → tự follow TDD, dispatching-parallel-agents, không cần Claude embed
 - Workflow chi tiết của Codex xem trong `AGENTS.md`
 
 ## Quy Trình Execution
 
 ### Feature mới
-1. Superpowers `brainstorming` → spec
-2. Gọi Codex: `writing-plans` (Codex đọc codebase + spec → technical checklist)
+1. Superpowers `brainstorming` → spec → lưu `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`
+2. Gọi Codex: `writing-plans` + đường dẫn spec → Codex đọc codebase + spec → technical checklist
 3. Claude review plan → approve hoặc feedback cụ thể
-4. Nếu có vấn đề → Codex revise plan, tối đa **2 lần**
-5. Sau 2 lần vẫn chưa ổn → Claude sửa thẳng file plan `.md`
-6. Gọi Codex: `executing-plans` → implement + TDD + commit
-7. Claude review qua `git diff` + commit message
-8. Nếu có vấn đề: gọi Codex lại với feedback cụ thể
-9. Pass → bàn giao user test
+4. Nếu có vấn đề → Codex revise plan, tối đa **2 lần** → vẫn chưa ổn → Claude sửa thẳng file `.md`
+5. Gọi Codex: `executing-plans` → Codex tự parallelize task độc lập, implement + TDD + commit
+6. Claude review qua `git diff` + commit message
+7. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
+8. **Definition of Done** trước khi bàn giao:
+   - [ ] Tất cả tests pass, không regression
+   - [ ] `ASSUMPTION:` (giả định) đã được xác nhận (validate)
+   - [ ] git diff đã được Claude approve
+   - [ ] User acceptance test pass
 
 ### Bug fix / small change
 1. Claude main phân tích nguyên nhân (`git log`, `git diff`)
 2. Gọi Codex fix trực tiếp
 3. Review `git diff` sau khi Codex xong
+
+### Resume sau khi session bị gián đoạn
+1. Đọc `git log` → biết đang ở task nào
+2. Đọc file plan trong `docs/superpowers/specs/` → biết còn task nào chưa làm
+3. Gọi Codex tiếp từ task còn dở
 
 ## Cách Gọi Codex
 
@@ -38,29 +46,17 @@ sandbox: "workspace-write"
 approval-policy: "never"
 ```
 
-**Heuristic chia task — trước khi gọi Codex:**
-
-> 1 task = 1 commit có thể review độc lập
-
-- Quá lớn (span nhiều file không liên quan) → chia nhỏ hơn
-- Quá nhỏ (chỉ đổi 1 biến) → gộp với task liền kề
-- Mục tiêu: mỗi `git diff` Claude đọc được trong 1 lần, không cần context từ task khác
-
-**Template prompt chuẩn — dùng mỗi lần gọi:**
-
+**Template prompt — writing-plans:**
 ```
-Goal: [1-2 câu — làm gì, tại sao]
+Spec: docs/superpowers/specs/[file].md
+Goal: tạo technical checklist từ spec trên + codebase hiện tại
+```
 
-Files cần đọc: [list]
-Files cần sửa: [list]
-
-Constraints:
-- Không break: [X]
-- Phải tương thích: [Y]
-
-Nếu gặp mơ hồ (ambiguity): ghi `ASSUMPTION:` (giả định) vào commit message
-
-Git commit: [format message]
+**Template prompt — executing-plans:**
+```
+Plan: docs/superpowers/specs/[file].md
+Goal: execute theo plan, parallelize task độc lập
+Nếu gặp mơ hồ: ghi ASSUMPTION: (giả định) vào commit message
 ```
 
 Codex tự đọc file để lấy context — không paste code vào prompt.
@@ -76,20 +72,22 @@ Codex tự đọc file để lấy context — không paste code vào prompt.
 **CHỈ làm:**
 - Đọc `git log` / `git diff`
 - Viết/sửa file .md (plan, spec, rules)
-- Gọi Codex: goal + file paths + constraints
+- Gọi Codex với goal + spec path + constraints
 - Quyết định kiến trúc trước khi giao Codex
+
+**Khi review plan Codex — checklist:**
+- Plan có cover đủ spec không?
+- Task có quá lớn không? (1 task = 1 commit reviewable)
+- Có dependency nào bị bỏ sót không?
 
 **Khi review output Codex — checklist adversarial:**
 - Đọc `git diff` + commit message (bắt buộc)
-- Kiểm tra: có `ASSUMPTION:` (giả định) nào cần xác nhận (validate) không?
-- Kiểm tra: thay đổi có nằm đúng scope task không?
-- Kiểm tra: test pass, không có regression
-- Kiểm tra: logic thay đổi có nhất quán với spec không?
-- Được đọc snippet nhỏ nếu diff tham chiếu code ngoài phạm vi thay đổi
+- Kiểm tra: có `ASSUMPTION:` (giả định) nào cần xác nhận không?
+- Kiểm tra: thay đổi đúng scope task, không thêm feature ngoài
+- Kiểm tra: test pass, không regression
+- Kiểm tra: logic nhất quán với spec
 
 ## Đồng Bộ CLAUDE.md ↔ AGENTS.md
-
-Mọi thay đổi ảnh hưởng đến cả Claude lẫn Codex phải cập nhật **cả 2 file cùng lúc**:
 
 | Thay đổi | Cập nhật |
 |----------|----------|

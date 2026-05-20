@@ -249,8 +249,21 @@ Dù không có gap → vẫn liệt kê những gì đã check: `✓ đã check:
 
 Hỏi "Xử lý hết không?" → sau khi user OK, chỉ chạy bước phù hợp loại:
 
-**Code:** Fix @include → Merge AGENTS.md → Cleanup rules/ → Xóa trùng lặp CLAUDE.md
-**Business:** Tạo folder thiếu → Fix @include → Xóa trùng lặp CLAUDE.md
-**Personal/research/finance:** Fix @include → Xóa trùng lặp CLAUDE.md
+**Code:** Fix @include → Merge AGENTS.md → Cleanup rules/ → Xóa trùng lặp CLAUDE.md → Content cleanup
+**Business:** Tạo folder thiếu → Fix @include → Xóa trùng lặp CLAUDE.md → Content cleanup
+**Personal/research/finance:** Fix @include → Xóa trùng lặp CLAUDE.md → Content cleanup
+
+**Content cleanup — chạy cuối cùng, sau tất cả fix:**
+
+Đọc lại CLAUDE.md và AGENTS.md sau khi đã fix. Tìm và liệt kê:
+
+| Loại | Ví dụ | Hành động |
+|---|---|---|
+| Placeholder chưa điền | `[tên project]`, `[link]`, `[mô tả]` | Flag — nhắc user điền |
+| Section trùng với @include | Viết lại TDD rules đã có trong template | Đề xuất xóa |
+| Override cũ không còn cần | Section dùng tool đã bỏ | Đề xuất xóa |
+| Section rỗng | Heading không có nội dung | Đề xuất xóa |
+
+Liệt kê tất cả, hỏi từng cái hoặc "Xóa hết không?" trước khi động vào file.
 
 Báo: "Xong. Tự review + commit."

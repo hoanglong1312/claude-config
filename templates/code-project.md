@@ -55,20 +55,20 @@ Constraints:
 - Không break: [X]
 - Phải tương thích: [Y]
 
-Nếu gặp ambiguity: ghi ASSUMPTION: ... vào commit message
+Nếu gặp mơ hồ (ambiguity): ghi ASSUMPTION: ... vào commit message
 
 Git commit: [format message]
 ```
 
 Codex tự đọc file để lấy context — không paste code vào prompt.
 
-## Xử Lý Ambiguity — Khi Codex Không Chắc
+## Xử Lý Mơ Hồ (Ambiguity) — Khi Codex Không Chắc
 
-Codex không thể interrupt hỏi lại Claude giữa chừng. Thay vào đó:
+Codex không thể ngắt (interrupt) để hỏi lại Claude giữa chừng. Thay vào đó:
 
-- Codex ghi assumption vào commit message: `ASSUMPTION: dùng X thay vì Y vì...`
-- Claude đọc commit message khi review → validate assumption
-- Nếu assumption sai → gọi Codex lại với correction cụ thể
+- Codex ghi giả định (assumption) vào commit message: `ASSUMPTION: dùng X thay vì Y vì...`
+- Claude đọc commit message khi review → kiểm tra giả định
+- Nếu giả định sai → gọi Codex lại với chỉnh sửa (correction) cụ thể
 
 ## Token Discipline — Claude Main Session
 
@@ -86,7 +86,7 @@ Codex không thể interrupt hỏi lại Claude giữa chừng. Thay vào đó:
 
 **Khi review output Codex — checklist adversarial:**
 - Đọc `git diff` + commit message (bắt buộc)
-- Kiểm tra: có `ASSUMPTION:` nào cần validate không?
+- Kiểm tra: có `ASSUMPTION:` nào cần xác nhận (validate) không?
 - Kiểm tra: thay đổi có nằm đúng scope task không? (không thêm feature ngoài)
 - Kiểm tra: test pass, không có regression
 - Kiểm tra: logic thay đổi có nhất quán với spec không?
@@ -100,13 +100,13 @@ Codex không thể interrupt hỏi lại Claude giữa chừng. Thay vào đó:
 1. **Static audit**: Codex tự rà soát — import đúng, prop match, logic nhất quán
 2. **E2E test**: Codex chạy lệnh test suite của project
 
-**Nếu fail — tối đa 3 lần retry:**
+**Nếu fail — tối đa 3 lần thử lại (retry):**
 1. Codex tự fix → chạy lại test (lần 1)
 2. Vẫn fail → phân tích khác → fix lại (lần 2)
 3. Vẫn fail → thử hướng khác (lần 3)
-4. Sau 3 lần vẫn fail → dừng, ghi `QA-FAIL: [lý do + những gì đã thử]` → escalate Claude
+4. Sau 3 lần vẫn fail → dừng, ghi `QA-FAIL: [lý do + những gì đã thử]` → báo lên (escalate) Claude
 
-Không retry vô hạn. Claude đọc `QA-FAIL` → viết analysis `.md` → gọi Codex lại.
+Không thử lại vô hạn. Claude đọc `QA-FAIL` → viết phân tích (analysis) vào `.md` → gọi Codex lại.
 
 Chỉ khi pass cả 2 → commit + báo Claude review.
 

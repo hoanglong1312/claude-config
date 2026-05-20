@@ -61,10 +61,4 @@ Format nhắc ngắn gọn, không dài dòng:
 
 # Khởi Tạo Project Mới
 
-Nếu vào project KHÔNG có CLAUDE.md:
-
-1. Hỏi: "Project này thuộc loại nào?"
-   - **research** → tạo CLAUDE.md từ `~/.claude/templates/research.md`, xong
-   - **finance** → tạo CLAUDE.md từ `~/.claude/templates/finance.md`, xong
-   - **personal** → tạo CLAUDE.md từ `~/.claude/templates/personal.md`, xong
-   - **code-project** → đọc `~/.claude/SETUP.md` và làm theo hướng dẫn trong đó
+Nếu vào project KHÔNG có CLAUDE.md → đọc `~/.claude/SETUP.md` và làm theo.

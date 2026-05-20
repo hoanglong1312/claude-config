@@ -1,85 +1,78 @@
-# Project Init — Workflow Chuẩn
+# Project Init
 
-*File này được Claude đọc tự động khi init code project mới.*
-*Claude hỏi user 1 câu duy nhất rồi tự làm hết.*
-
----
-
-## Claude: Hỏi user câu này
-
-> "Project này anh muốn dùng workflow chuẩn (Superpowers + Codex + rules/) không?
-> Nếu có em sẽ hỏi thêm 2 câu về stack rồi tự setup hết."
+*Claude đọc file này khi vào project không có CLAUDE.md.*
 
 ---
 
-## Nếu user đồng ý → Hỏi thêm 2 câu (lần lượt, không hỏi cùng lúc)
+## Bước 1 — Hỏi loại project
 
-1. "Project dùng Supabase không?" (có / không)
-2. "Testing tool là gì?" (Playwright / Vitest / Jest / chưa có)
+> "Project này thuộc loại nào: code / research / finance / personal?"
 
 ---
 
-## Sau khi có đủ thông tin → Tự tạo cấu trúc này
+## Bước 2 — Tạo theo loại
+
+### research / finance / personal
+Tạo `CLAUDE.md` trong project root với nội dung từ template tương ứng:
+- research → `~/.claude/templates/research.md`
+- finance → `~/.claude/templates/finance.md`
+- personal → `~/.claude/templates/personal.md`
+
+Xong. Không cần làm thêm gì.
+
+---
+
+### code-project
+Tạo cấu trúc 3 tầng:
 
 ```
 [project]/
 ├── CLAUDE.md
-├── rules/
-│   ├── workflow.md
-│   ├── supabase.md     ← chỉ tạo nếu dùng Supabase
-│   └── testing.md
+├── rules/              ← add-ons tùy chọn
 └── context/
     └── architecture.md
 ```
 
-### Nội dung từng file
-
-**`CLAUDE.md`** — lean, chỉ @imports:
+**`CLAUDE.md`** — @import base template + add-ons:
 ```markdown
 # CLAUDE.md — [Tên Project]
 
-@context/architecture.md
-@rules/workflow.md
+@~/.claude/templates/code-project.md
+
 @rules/supabase.md
 @rules/testing.md
+@context/architecture.md
 ```
 
-**`rules/workflow.md`** — copy từ `~/.claude/templates/rules/workflow-template.md`
+**Add-ons — hỏi trước khi tạo:**
 
-**`rules/supabase.md`** — copy từ `~/.claude/templates/rules/supabase.md` (nếu dùng Supabase)
+| Hỏi | Nếu có → tạo file |
+|-----|-------------------|
+| "Dùng Supabase không?" | `rules/supabase.md` (copy từ `~/.claude/templates/rules/supabase.md`) |
+| "Testing tool là gì?" | `rules/testing.md` (copy từ `~/.claude/templates/rules/testing.md`, điền lệnh test) |
 
-**`rules/testing.md`** — copy từ `~/.claude/templates/rules/testing.md`, sau đó điền lệnh test cụ thể:
-```
-# Bổ sung lệnh E2E test của project này:
-# Playwright: npx playwright test --reporter=line
-# Vitest: npx vitest run
-# Jest: npx jest
-```
+Nếu không dùng thì không tạo, không @import vào CLAUDE.md.
 
-**`context/architecture.md`** — tạo blank template, hỏi user điền dần:
+**`context/architecture.md`** — tạo blank, user điền dần:
 ```markdown
 # Architecture — [Tên Project]
 
 ## Stack
-- Frontend:
-- Backend:
-- Database:
+-
 
 ## File quan trọng
-(điền sau)
+-
 
 ## Constraints & Decisions
-(điền sau)
+-
 ```
 
 ---
 
-## Nếu user không đồng ý → Tạo CLAUDE.md đơn giản
+## Bước 3 — Kiểm tra Superpowers
 
-Chỉ tạo `CLAUDE.md` từ `~/.claude/templates/code-project.md`, không tạo rules/ hay context/.
+Nếu chưa cài → nhắc: `/plugin install superpowers@claude-plugins-official`
 
 ---
 
-## Sau khi xong → Kiểm tra Superpowers
-
-Nếu Superpowers chưa cài → nhắc: `Chạy /plugin install superpowers@claude-plugins-official`
+## Bước 4 — Báo xong, bắt đầu làm việc

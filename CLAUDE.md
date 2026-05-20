@@ -50,7 +50,7 @@ Khi user nói "xong" / "tạm dừng" / "mai tiếp":
 |---|---|
 | Hành vi mọi session, mọi project | `~/.claude/CLAUDE.md` |
 | Hành vi mọi session, theo loại project | `~/.claude/templates/[type].md` |
-| Hành vi mọi session, project cụ thể | `[project]/rules/[name].md` |
+| Tool config cụ thể của project (MCP, lệnh test, quirk) | `[project]/rules/[name].md` |
 | Chỉ chạy khi init / setup project | `~/.claude/SETUP.md` |
 | Chỉ chạy khi skill được invoke | `~/.claude/skills/[skill]/skill.md` |
 | Chỉ Codex đọc | `[project]/AGENTS.md` |

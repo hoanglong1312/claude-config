@@ -97,7 +97,7 @@ Nếu vào project KHÔNG có CLAUDE.md → đọc `~/.claude/SETUP.md` và làm
 
 # Audit Rules
 
-Khi user nói "audit rules" → đọc Bước 0 trong `~/.claude/SETUP.md` và chạy audit trên project hiện tại (dù đã có CLAUDE.md hay chưa).
+Khi user nói "audit rules" → invoke `Skill("audit-rules")` (dù đã có CLAUDE.md hay chưa).
 
 # Add-On Rules — Load Khi Cần
 

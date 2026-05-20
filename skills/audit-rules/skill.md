@@ -6,21 +6,23 @@ description: Audit cấu trúc rules của project hiện tại — đọc ~/.cl
 # Audit Rules
 
 <HARD-GATE>
-**`git status` KHÔNG phải là cách detect gap — chỉ là context.**  
-Gap được detect bằng cách ĐỌC TỪNG FILE và SO SÁNH với template.  
-File không có thay đổi trong git vẫn có thể outdated so với template.
+**Bước đầu tiên bắt buộc: tạo TodoWrite với 8 tasks sau, TRƯỚC KHI làm bất cứ điều gì khác.**
 
-KHÔNG được kết luận "project sạch" hay "không có gap" chỉ từ git status.  
-PHẢI chạy đủ 8 bước dưới đây — tick từng cái sau khi hoàn thành:
+Nếu không tạo todo → không được tiếp tục.
 
-- [ ] B0: `git -C ~/.claude fetch` → đọc output (behind? → dừng)
-- [ ] B1: `git status --short` + `git log -5` → context only, không kết luận gap
-- [ ] B2: **Đọc `~/.claude/SETUP.md`** + đọc deps file thực tế
-- [ ] B3a: **Đọc `CLAUDE.md`** → check @include, thứ tự, so diff template
-- [ ] B3b: **Đọc `AGENTS.md`** → đọc marker date → chạy git diff template
-- [ ] B3c: **Đọc từng file `rules/`** → check ranh giới tool config vs workflow
-- [ ] B3d: check `context/architecture.md` tồn tại không
-- [ ] B4: xuất báo cáo đầy đủ — kể cả khi "✓ tất cả ok" cũng phải liệt kê đã check gì
+Tasks bắt buộc:
+1. B0: chạy `git -C ~/.claude fetch` — check behind/ahead
+2. B1: chạy `git status --short` + `git log -5` trong project — context only
+3. B2: đọc `~/.claude/SETUP.md` + đọc deps file (package.json / pyproject.toml / go.mod)
+4. B3a: đọc `CLAUDE.md` project — check @include, thứ tự, diff template nếu copy
+5. B3b: đọc `AGENTS.md` project — đọc marker date, chạy git diff template, check conflict, check Project Context
+6. B3c: đọc từng file trong `rules/` — check ranh giới tool config vs workflow
+7. B3d: kiểm tra `context/architecture.md` tồn tại
+8. B4: xuất báo cáo đầy đủ — liệt kê từng mục đã check, kể cả khi "✓ tất cả ok"
+
+**`git status` = context only. KHÔNG dùng để kết luận "không có gap".**  
+File không thay đổi trong git vẫn có thể outdated so với template.  
+Gap chỉ được xác định sau khi ĐỌC FILE và SO SÁNH với template thực tế.
 </HARD-GATE>
 
 So sánh project hiện tại với chuẩn được định nghĩa trong `~/.claude/SETUP.md`.  

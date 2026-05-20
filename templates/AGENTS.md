@@ -52,8 +52,18 @@
 
 ### Codex — nhận spec từ Claude
 1. Dùng `writing-plans` + đường dẫn spec (`docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`) → đọc codebase + spec → tạo technical checklist
-2. Sau khi Claude approve → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task độc lập → implement + TDD + commit
-3. Nếu gặp mơ hồ (ambiguity) → ghi `ASSUMPTION:` (giả định) vào commit message
+
+   **Format bắt buộc mỗi task trong checklist:**
+   ```
+   ## Task: [tên ngắn]
+   - Files: [file cần đọc/sửa]
+   - Test: [test case cần pass]
+   - Depends on: [task khác hoặc "none"]
+   - Size: S / M / L
+   ```
+
+2. Sau khi Claude approve → đọc `docs/superpowers/decisions.md` (nếu có) trước khi bắt đầu → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task không có dependency → implement + TDD + commit
+3. Nếu gặp mơ hồ (ambiguity) → **ưu tiên đọc `docs/superpowers/decisions.md` trước** — nếu đã có quyết định thì follow, không cần ghi ASSUMPTION: thêm. Nếu chưa có → ghi `ASSUMPTION:` (giả định) vào commit message
 4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
    - Kiểm thử toàn trình (E2E test): chạy test suite

@@ -52,6 +52,17 @@ Ngoài ra kiểm tra nội dung `CLAUDE.md`:
 - Có `@context/architecture.md` chưa?
 - Các add-on detect được → có `@rules/[tool].md` tương ứng chưa?
 
+Nếu `AGENTS.md` đã tồn tại, kiểm tra thêm xem có đủ các section quan trọng không:
+
+| Section cần có | Kiểm tra bằng cách |
+|----------------|-------------------|
+| Plan format per task (`Files:`, `Test:`, `Depends on:`, `Size:`) | grep "Files:" AGENTS.md |
+| `decisions.md` reference | grep "decisions.md" AGENTS.md |
+| `dispatching-parallel-agents` | grep "dispatching-parallel-agents" AGENTS.md |
+
+Nếu thiếu → báo "AGENTS.md outdated" và đề xuất merge từ template.  
+**Không tự ghi đè** — AGENTS.md có Project Context riêng của project.
+
 ### Bước 4 — Báo cáo gaps
 
 Format báo cáo:
@@ -70,6 +81,7 @@ So sánh với chuẩn SETUP.md:
 Sẽ tạo / sửa:
   - Thêm @~/.claude/templates/code-project.md vào CLAUDE.md
   - Copy AGENTS.md từ ~/.claude/templates/AGENTS.md (điền Project Context tự động)
+  - Nếu AGENTS.md đã có nhưng outdated: chỉ merge phần Workflow + format vào, **giữ nguyên** phần Project Context
   - Tạo rules/supabase.md (blank, structure chuẩn từ CLAUDE.md)
   - Tạo rules/testing.md (blank, điền lệnh test từ deps)
   - Tạo context/architecture.md (blank)

@@ -49,13 +49,23 @@ approval-policy: "never"
 **Template prompt — writing-plans:**
 ```
 Spec: docs/superpowers/specs/[file].md
-Goal: tạo technical checklist từ spec trên + codebase hiện tại
+Constraints: [những gì không được break — DB schema, API contract, existing pattern]
+Goal: tạo technical checklist từ spec + codebase hiện tại
+
+Format mỗi task:
+## Task: [tên ngắn]
+- Files: [file cần đọc/sửa]
+- Test: [test case cần pass]
+- Depends on: [task khác nếu có, hoặc "none"]
+- Size: S / M / L
 ```
 
 **Template prompt — executing-plans:**
 ```
 Plan: docs/superpowers/specs/[file].md
-Goal: execute theo plan, parallelize task độc lập
+Decisions: docs/superpowers/decisions.md  ← đọc trước khi bắt đầu
+Constraints: [copy từ writing-plans prompt]
+Goal: execute theo plan, dùng dispatching-parallel-agents cho task không có dependency
 Nếu gặp mơ hồ: ghi ASSUMPTION: (giả định) vào commit message
 ```
 
@@ -83,9 +93,27 @@ Codex tự đọc file để lấy context — không paste code vào prompt.
 **Khi review output Codex — checklist adversarial:**
 - Đọc `git diff` + commit message (bắt buộc)
 - Kiểm tra: có `ASSUMPTION:` (giả định) nào cần xác nhận không?
+  → Nếu có: quyết định + append vào `docs/superpowers/decisions.md`:
+  ```
+  ## [YYYY-MM-DD] — [feature]
+  - ASSUMPTION: [Codex giả định gì]
+  - Decision: [Claude quyết định gì]
+  - Applies to: [task / file liên quan]
+  ```
 - Kiểm tra: thay đổi đúng scope task, không thêm feature ngoài
 - Kiểm tra: test pass, không regression
 - Kiểm tra: logic nhất quán với spec
+
+## Cấu Trúc `docs/superpowers/`
+
+```
+docs/superpowers/
+├── specs/
+│   └── YYYY-MM-DD-[feature]-design.md   ← spec + plan (Codex ghi)
+└── decisions.md                          ← quyết định từ ASSUMPTION: (Claude ghi)
+```
+
+`decisions.md` tích lũy theo thời gian — Codex đọc trước mỗi lần executing-plans để tránh lặp lại câu hỏi đã có đáp án.
 
 ## Đồng Bộ CLAUDE.md ↔ AGENTS.md
 

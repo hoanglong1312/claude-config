@@ -60,8 +60,8 @@ README chỉ chứa lệnh cài tools — không thêm rule vào đó.
 # Khởi Tạo Project Mới
 Không có CLAUDE.md → đọc `~/.claude/SETUP.md`.
 
-# Audit Rules
-User nói "audit rules" → invoke `Skill("audit-rules")`.
+# Sync Rules
+User nói "sync rules" hoặc "audit rules" → invoke `Skill("sync-rules")`.
 
 # Add-On Rules
 Phát hiện tool chưa có rules trong code project → hỏi user tạo `rules/[tool].md`:

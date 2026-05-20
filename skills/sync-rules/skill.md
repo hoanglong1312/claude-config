@@ -1,6 +1,6 @@
 ---
-name: audit-rules
-description: Audit cấu trúc rules của project hiện tại — đọc ~/.claude/SETUP.md làm source of truth, dùng git để xem tổng thể thay đổi, so sánh với template, báo gaps còn thiếu hoặc sắp xếp sai. Dùng khi user nói "audit rules".
+name: sync-rules
+description: Sync cấu trúc rules của project với global template — dùng git để detect thay đổi, so sánh từng file với ~/.claude/SETUP.md, báo gaps và merge. Dùng khi user nói "sync rules" hoặc "audit rules".
 ---
 
 # Audit Rules

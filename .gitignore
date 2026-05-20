@@ -1,0 +1,13 @@
+backups/
+cache/
+file-history/
+history.jsonl
+ide/
+mcp-needs-auth-cache.json
+plans/
+plugins/
+policy-limits.json
+projects/
+todos/
+.last-cleanup
+*.log

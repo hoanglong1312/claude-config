@@ -148,6 +148,10 @@ docs/superpowers/
 | Convention riêng team | `rules/workflow.md` trong project |
 | Rule áp dụng mọi code project | `~/.claude/templates/code-project.md` |
 
+**⚠️ Local rules KHÔNG được restate global workflow.**  
+`rules/*.md` chỉ chứa những gì template KHÔNG có — DB schema, lệnh test cụ thể, quirk tool, pattern codebase.  
+Nếu thấy mình đang copy workflow từ template vào local rules → đặt sai chỗ, xóa đi.
+
 ## Thông Tin Project
 - Tên: [tên project]
 - Git repo: [link]

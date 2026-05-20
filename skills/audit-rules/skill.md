@@ -170,11 +170,32 @@ Từ diff output → chỉ báo **đúng những section thay đổi**, không l
 
 **Nếu không có marker** → "AGENTS.md không có version marker" → đề xuất merge toàn bộ Workflow section từ template, giữ nguyên Project Context.
 
-#### 3c. Kiểm tra các file còn lại
+#### 3c. Kiểm tra rules/*.md có restate global workflow không
+
+```bash
+ls rules/ 2>/dev/null
+```
+
+Với mỗi file trong `rules/`, đọc nội dung và kiểm tra: có chứa workflow, quy trình Claude/Codex, TDD rules, token discipline, hay bất kỳ nội dung nào đã có trong `~/.claude/templates/code-project.md` không?
+
+Dấu hiệu restate:
+- Mô tả lại cách gọi Codex
+- Liệt kê lại các bước feature flow / bug fix flow
+- Viết lại token discipline
+- Copy commit rules, TDD rules từ template
+
+Nếu phát hiện → flag trong báo cáo:
+```
+  ⚠ rules/workflow.md: chứa nội dung workflow trùng với template → ghi đè template, cần cleanup
+```
+
+Khi cleanup (Bước 5): chỉ xóa phần restate, giữ lại những gì thực sự project-specific (DB schema, lệnh test cụ thể, quirk tool, pattern codebase).
+
+#### 3d. Kiểm tra các file còn lại
 
 ```bash
 # Check sự tồn tại
-ls rules/ context/architecture.md 2>/dev/null
+ls context/architecture.md 2>/dev/null
 ```
 
 ---

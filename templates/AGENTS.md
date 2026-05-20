@@ -17,9 +17,9 @@
 
 | Tool | Vai trò |
 |------|---------|
-| **Superpowers** (Claude plugin) | Planning: brainstorming → spec → writing-plans |
-| **Claude Code** | Orchestration + Review: quyết định kiến trúc, review output, điều phối |
-| **Codex** | Execution + QA: viết code, chạy test, commit |
+| **Superpowers** (Claude plugin) | Planning: brainstorming → spec |
+| **Claude Code** | Orchestration + Review: quyết định kiến trúc, review plan + output |
+| **Codex** | Planning chi tiết + Execution + QA: writing-plans, executing-plans, chạy test, commit |
 | **Cursor** | Quick fix trong editor |
 
 ---
@@ -44,22 +44,22 @@
 
 ### Claude Code — nhận task mới
 1. Check Superpowers skill có apply không
-2. Task phức tạp → `brainstorming` trước
-3. `writing-plans` → chia task theo heuristic: 1 task = 1 commit reviewable
-4. Gọi Codex từng task với prompt chuẩn (goal + files + constraints)
-5. Review output qua `git diff` + commit message
+2. Task phức tạp → `brainstorming` trước → spec
+3. Gọi Codex: `writing-plans` (Codex đọc codebase + spec → technical checklist)
+4. Review plan → approve hoặc feedback cụ thể
+5. Nếu vấn đề → Codex revise, tối đa **2 lần** → vẫn chưa ổn → Claude sửa thẳng file `.md`
+6. Review output thực thi qua `git diff` + commit message
 
-### Codex — nhận task từ Claude
-1. Đọc file liên quan để lấy context (tự đọc, không cần Claude paste)
-2. Viết test trước khi viết code (TDD)
-3. Implement theo đúng spec
-4. Nếu gặp mơ hồ (ambiguity) → ghi `ASSUMPTION:` (giả định) vào commit message: `ASSUMPTION: dùng X thay vì Y vì...`
-5. Chạy Quality Gate trước khi commit:
+### Codex — nhận spec từ Claude
+1. Dùng `writing-plans` → đọc codebase + spec → tạo technical checklist
+2. Sau khi Claude approve → dùng `executing-plans` → implement + TDD
+3. Nếu gặp mơ hồ (ambiguity) → ghi `ASSUMPTION:` (giả định) vào commit message
+4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
    - Kiểm thử toàn trình (E2E test): chạy test suite
-6. Nếu QA fail → tự fix, tối đa **3 lần thử lại (retry)**
-7. Sau 3 lần vẫn fail → ghi `QA-FAIL:` (kiểm thử thất bại) → báo lên (escalate) Claude: `QA-FAIL: [lý do + những gì đã thử]`
-8. Pass → commit + báo Claude review
+5. Nếu QA fail → tự fix, tối đa **3 lần thử lại (retry)**
+6. Sau 3 lần vẫn fail → `QA-FAIL:` (kiểm thử thất bại) → báo lên (escalate) Claude
+7. Pass → commit + báo Claude review
 
 ### Claude Code — review output Codex
 1. Đọc `git diff` + commit message

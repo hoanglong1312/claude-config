@@ -16,11 +16,14 @@
 
 ### Feature mới
 1. Superpowers `brainstorming` → spec
-2. Superpowers `writing-plans` → plan
-3. Gọi Codex từng task → Codex tự đọc file, implement, commit
-4. Claude main review qua `git diff` + commit message
-5. Nếu có vấn đề: gọi Codex lại với feedback cụ thể
-6. Pass → bàn giao user test
+2. Gọi Codex: `writing-plans` (Codex đọc codebase + spec → technical checklist)
+3. Claude review plan → approve hoặc feedback cụ thể
+4. Nếu có vấn đề → Codex revise plan, tối đa **2 lần**
+5. Sau 2 lần vẫn chưa ổn → Claude sửa thẳng file plan `.md`
+6. Gọi Codex: `executing-plans` → implement + TDD + commit
+7. Claude review qua `git diff` + commit message
+8. Nếu có vấn đề: gọi Codex lại với feedback cụ thể
+9. Pass → bàn giao user test
 
 ### Bug fix / small change
 1. Claude main phân tích nguyên nhân (`git log`, `git diff`)

@@ -1,7 +1,6 @@
 # AGENTS.md — Universal AI Rules
 
 *File này được đọc bởi: Claude Code, Codex CLI, Cursor, OpenCode*
-*Thay thế cho CLAUDE.md khi cần cross-tool compatibility*
 
 ---
 
@@ -14,28 +13,25 @@
 
 ---
 
-## Vai Trò Phân Công
+## Phân Công Vai Trò
 
-| Tool | Vai Trò |
+| Tool | Vai trò |
 |------|---------|
-| **Claude Code** | Planning, analysis, code review, git ops |
-| **Codex** | Implementation — viết code từ plan |
-| **Cursor** | In-editor edits, quick fixes |
+| **Superpowers** (Claude plugin) | Planning: brainstorming → spec → writing-plans |
+| **Claude Code** | Orchestration + Review: quyết định kiến trúc, review output, điều phối |
+| **Codex** | Execution + QA: viết code, chạy test, commit |
+| **Cursor** | Quick fix trong editor |
 
 ---
 
 ## Quy Tắc Chung (Mọi AI đều phải follow)
 
 ### Code Quality
-- Test trước khi implement (TDD): RED → GREEN → REFACTOR
+- TDD bắt buộc: RED → GREEN → REFACTOR
 - Commit sau mỗi task hoàn thành
+- 1 task = 1 commit có thể review độc lập (không quá lớn, không quá nhỏ)
 - Không thêm feature ngoài scope đã plan
 - Không comment giải thích WHAT — chỉ comment WHY nếu không rõ
-
-### Communication
-- Báo cáo ngắn gọn: file nào thay đổi, tại sao
-- Nếu blocked → nêu blocker cụ thể, không tự ý skip
-- Nếu có nhiều cách → đề xuất 1 cách tốt nhất với lý do
 
 ### Scope Control
 - Không tự refactor code ngoài task
@@ -46,30 +42,46 @@
 
 ## Workflow
 
-### Claude Code nhận task mới
-1. Check skills có apply không (Superpowers)
-2. Nếu task phức tạp → brainstorm trước
-3. Viết plan → dispatch sang Codex qua MCP
-4. Review output của Codex
+### Claude Code — nhận task mới
+1. Check Superpowers skill có apply không
+2. Task phức tạp → `brainstorming` trước
+3. `writing-plans` → chia task theo heuristic: 1 task = 1 commit reviewable
+4. Gọi Codex từng task với prompt chuẩn (goal + files + constraints)
+5. Review output qua `git diff` + commit message
 
-### Codex nhận task từ Claude
-1. Đọc plan và implement theo đúng spec
-2. Viết test trước khi viết code
-3. Báo lại khi xong hoặc khi blocked
+### Codex — nhận task từ Claude
+1. Đọc file liên quan để lấy context (tự đọc, không cần Claude paste)
+2. Viết test trước khi viết code (TDD)
+3. Implement theo đúng spec
+4. Nếu gặp ambiguity → ghi vào commit message: `ASSUMPTION: dùng X thay vì Y vì...`
+5. Chạy Quality Gate trước khi commit:
+   - Static audit: import đúng, prop match, logic nhất quán
+   - E2E test: chạy test suite
+6. Nếu QA fail → tự fix, tối đa **3 lần retry**
+7. Sau 3 lần vẫn fail → ghi `QA-FAIL: [lý do + những gì đã thử]` → escalate Claude
+8. Pass → commit + báo Claude review
 
-### Fallback
-- Nếu Codex không phản hồi → Claude dùng subagent thay thế
-- Ghi chú lý do fallback trong commit message
+### Claude Code — review output Codex
+1. Đọc `git diff` + commit message
+2. Validate `ASSUMPTION:` nếu có
+3. Kiểm tra: đúng scope, test pass, không regression, nhất quán với spec
+4. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
+
+### Fallback — Codex không giải quyết được sau 3 retry
+1. Claude đọc `git diff` + `QA-FAIL` log
+2. Claude viết analysis ngắn vào file `.md` tạm
+3. Gọi Codex lại với file `.md` đó làm context bổ sung
 
 ---
 
 ## Do NOT
 
-- Sửa file gốc trong `raw/` (nếu có Obsidian vault)
 - Push code chưa pass tests
+- Retry QA quá 3 lần mà không escalate
 - Tự thêm dependencies không có trong plan
 - Bỏ qua step review nếu có code review skill
+- Sửa file gốc trong `raw/` (nếu có Obsidian vault)
 
 ---
 
-*Tạo bởi: Claude Code | Cập nhật: [date]*
+*Cập nhật: 2026-05-20*

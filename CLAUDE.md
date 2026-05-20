@@ -1,5 +1,9 @@
 @RTK.md
 
+# Quy Tắc Ngôn Ngữ
+- Trả lời bằng tiếng Việt
+- Thuật ngữ kỹ thuật: Tiếng Việt (English term) — ví dụ: vòng lặp (loop)
+
 # Markitdown — Chuyển File Trước Khi Đọc
 
 Trước khi đọc bất kỳ file nào thuộc định dạng dưới đây, **bắt buộc chuyển sang .md trước**:
@@ -13,16 +17,9 @@ Trước khi đọc bất kỳ file nào thuộc định dạng dưới đây, *
 | HTML | `.html`, `.htm` |
 | Hình ảnh có text | `.png`, `.jpg`, `.jpeg` |
 
-**Lệnh chuyển đổi:**
 ```bash
 markitdown [file] > [file].md
 ```
-
-Đọc file `.md` vừa tạo — không đọc file gốc. Lý do: tránh Claude hoặc subagent đọc binary/phức tạp gây tốn token.
-
-# Quy Tắc Ngôn Ngữ
-- Trả lời bằng tiếng Việt
-- Thuật ngữ kỹ thuật: Tiếng Việt (English term) — ví dụ: vòng lặp (loop)
 
 # Superpowers — BẮT BUỘC, KHÔNG CÓ NGOẠI LỆ
 
@@ -34,18 +31,22 @@ Trước MỌI action, kiểm tra skill phù hợp và invoke ngay. Không cần
 |---|---|
 | "build X", "thêm tính năng", "tạo mới" | `brainstorming` trước, KHÔNG code ngay |
 | Sau brainstorm xong, có spec | `writing-plans` |
-| Có plan, bắt đầu code | `test-driven-development` |
-| Plan có 2+ task độc lập | `subagent-driven-development` hoặc `dispatching-parallel-agents` |
+| Có plan, bắt đầu code | `test-driven-development` ⚠️ xem ngoại lệ bên dưới |
+| Plan có 2+ task độc lập | `subagent-driven-development` ⚠️ xem ngoại lệ bên dưới |
 | "fix bug", "lỗi", "không chạy" | `systematic-debugging` |
 | Xong implementation | `requesting-code-review` + `verification-before-completion` |
 | Nhận feedback về code | `receiving-code-review` |
 | Merge / kết thúc branch | `finishing-a-development-branch` |
 | Feature cần isolate | `using-git-worktrees` |
 
+**⚠️ Ngoại lệ khi đang trong code project (có `code-project.md`):**
+- `test-driven-development` → **không trigger** — Codex tự follow TDD qua Superpowers của nó
+- `subagent-driven-development` → **không trigger** — Codex thay thế hoàn toàn
+
 ## Quy Tắc Cứng
 - Nếu task là "build/tạo/thêm" mà KHÔNG qua `brainstorming` → SAI, phải làm lại
 - Nếu sắp claim "xong rồi" mà chưa chạy `verification-before-completion` → SAI
-- Nếu có 2+ task độc lập mà làm tuần tự → SAI, dùng parallel agents
+- Nếu có 2+ task độc lập mà làm tuần tự (ngoài code project) → SAI, dùng parallel agents
 
 # Obsidian Bridge — Lưu Kiến Thức Tự Động
 
@@ -72,7 +73,6 @@ Trước khi session kết thúc (user nói "xong", "tạm dừng", "mai tiếp"
 2. **Obsidian** — có insight đáng lưu không? → gợi ý (theo rule trên)
 3. **Task dở** — liệt kê 1-3 việc còn lại để session sau tiếp tục ngay
 
-Format nhắc ngắn gọn, không dài dòng:
 ```
 ✓ Git: [đã commit / chưa commit gì]
 ? Obsidian: [có muốn lưu X không?]

@@ -103,15 +103,42 @@ Khi user nói "audit rules" → invoke `Skill("audit-rules")` (dù đã có CLAU
 
 # Add-On Rules — Load Khi Cần
 
-Khi đang làm việc trong code project, nếu phát hiện project dùng tool có sẵn template → hỏi user:
-> "Project đang dùng [Supabase / Playwright / ...] — có muốn load rules sẵn có không? Em copy từ template global về và thêm vào CLAUDE.md."
+Khi đang làm việc trong code project, nếu phát hiện project dùng tool chưa có rules → hỏi user:
+> "Project đang dùng [Supabase / Playwright / ...] — có muốn tạo rules sẵn có không? Em tạo `rules/[tool].md` và thêm vào CLAUDE.md."
 
-Nếu đồng ý:
-1. Copy `~/.claude/templates/rules/[tool].md` → `[project]/rules/[tool].md`
-2. Thêm `@rules/[tool].md` vào CLAUDE.md của project
+Nếu đồng ý — tạo file blank với structure chuẩn:
 
-| Tool phát hiện | Template có sẵn |
+**`rules/supabase.md`:**
+```markdown
+# Supabase Rules
+
+## MCP Tools
+| Việc | Tool |
+|------|------|
+| Apply migration | `mcp__supabase__apply_migration` |
+| Query / debug | `mcp__supabase__execute_sql` |
+| Kiểm tra schema | `mcp__supabase__list_tables` |
+
+## Quy Tắc
+- Tự apply migration, không bảo user vào dashboard
+- [thêm rule project-specific]
+```
+
+**`rules/testing.md`:**
+```markdown
+# Testing Rules
+
+## Lệnh chạy test
+[điền: npx playwright test / npx vitest run / npx jest]
+
+## Quy Tắc
+- [thêm rule project-specific]
+```
+
+Sau khi tạo: thêm `@rules/[tool].md` vào CLAUDE.md của project.
+
+| Tool phát hiện | File tạo |
 |---|---|
-| Supabase (import, MCP call) | `~/.claude/templates/rules/supabase.md` |
-| Playwright (import, config) | `~/.claude/templates/rules/testing.md` |
-| Vitest / Jest | `~/.claude/templates/rules/testing.md` |
+| Supabase (import, MCP call) | `rules/supabase.md` |
+| Playwright (import, config) | `rules/testing.md` |
+| Vitest / Jest | `rules/testing.md` |

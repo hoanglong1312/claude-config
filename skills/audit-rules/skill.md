@@ -5,8 +5,9 @@ description: Audit cấu trúc rules của project hiện tại — đọc ~/.cl
 
 # Audit Rules
 
-So sánh project hiện tại với chuẩn được định nghĩa trong `~/.claude/SETUP.md` và `~/.claude/templates/`.  
-Không maintain checklist riêng — SETUP.md là source of truth.
+So sánh project hiện tại với chuẩn được định nghĩa trong `~/.claude/SETUP.md`.  
+Không maintain checklist riêng — SETUP.md là source of truth.  
+Structure chuẩn của add-on files xem trong `~/.claude/CLAUDE.md` phần Add-On Rules.
 
 ## Quy Trình
 
@@ -68,9 +69,9 @@ So sánh với chuẩn SETUP.md:
 
 Sẽ tạo / sửa:
   - Thêm @~/.claude/templates/code-project.md vào CLAUDE.md
-  - Copy AGENTS.md từ ~/.claude/templates/AGENTS.md
-  - Copy rules/supabase.md từ template global
-  - Copy rules/testing.md từ template global (Playwright)
+  - Copy AGENTS.md từ ~/.claude/templates/AGENTS.md (điền Project Context tự động)
+  - Tạo rules/supabase.md (blank, structure chuẩn từ CLAUDE.md)
+  - Tạo rules/testing.md (blank, điền lệnh test từ deps)
   - Tạo context/architecture.md (blank)
 
 Tạo hết không?

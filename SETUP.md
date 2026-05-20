@@ -95,9 +95,13 @@ Claude tự nhận ra khi project dùng tool nào → hỏi user → copy từ t
 
 ---
 
-## Bước 3 — Kiểm tra Superpowers
+## Bước 3 — Kiểm tra Dependencies
 
+**Superpowers:**
 Nếu chưa cài → nhắc: `/plugin install superpowers@claude-plugins-official`
+
+**Markitdown:**
+Chạy `markitdown --version` để kiểm tra. Nếu chưa có → nhắc: `pip install markitdown`
 
 ---
 

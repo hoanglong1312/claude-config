@@ -85,9 +85,9 @@ Trước khi thêm rule, xác định layer phù hợp:
 
 | Rule áp dụng cho | Đặt ở đâu |
 |---|---|
-| Mọi project, mọi loại | `~/.claude/CLAUDE.md` |
-| Loại project cụ thể (code/finance/research/personal) | `~/.claude/templates/[type].md` |
-| 1 project cụ thể | `[project]/rules/[name].md` |
+| Mọi project, mọi loại (toàn cục / universal) | `~/.claude/CLAUDE.md` |
+| Loại project cụ thể (theo loại / type-specific): code/finance/research/personal | `~/.claude/templates/[type].md` |
+| Một project duy nhất (theo dự án / project-specific) | `[project]/rules/[name].md` |
 
 Không thêm rule vào README — README chỉ chứa lệnh cài tools cho máy mới.
 

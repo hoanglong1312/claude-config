@@ -6,18 +6,21 @@ description: Audit cấu trúc rules của project hiện tại — đọc ~/.cl
 # Audit Rules
 
 <HARD-GATE>
-KHÔNG được tự đánh giá "project ok rồi" mà bỏ qua bước nào.
-Mỗi bước BẮT BUỘC chạy lệnh thực tế và đọc output — không suy luận từ memory hay context.
-Checklist bắt buộc theo thứ tự:
+**`git status` KHÔNG phải là cách detect gap — chỉ là context.**  
+Gap được detect bằng cách ĐỌC TỪNG FILE và SO SÁNH với template.  
+File không có thay đổi trong git vẫn có thể outdated so với template.
 
-- [ ] Bước 0: chạy `git -C ~/.claude fetch` + đọc output
-- [ ] Bước 1: chạy `git status --short` + `git log --oneline -5` trong project
-- [ ] Bước 2: đọc file `~/.claude/SETUP.md` + đọc file deps (package.json / pyproject.toml / go.mod)
-- [ ] Bước 3a: đọc `CLAUDE.md` của project (hoặc xác nhận file không tồn tại)
-- [ ] Bước 3b: đọc `AGENTS.md` của project (hoặc xác nhận file không tồn tại)
-- [ ] Bước 3c: đọc từng file trong `rules/` (hoặc xác nhận folder không tồn tại)
-- [ ] Bước 3d: kiểm tra `context/architecture.md`
-- [ ] Bước 4: xuất báo cáo — dù không có gap nào vẫn phải báo "✓ tất cả ok"
+KHÔNG được kết luận "project sạch" hay "không có gap" chỉ từ git status.  
+PHẢI chạy đủ 8 bước dưới đây — tick từng cái sau khi hoàn thành:
+
+- [ ] B0: `git -C ~/.claude fetch` → đọc output (behind? → dừng)
+- [ ] B1: `git status --short` + `git log -5` → context only, không kết luận gap
+- [ ] B2: **Đọc `~/.claude/SETUP.md`** + đọc deps file thực tế
+- [ ] B3a: **Đọc `CLAUDE.md`** → check @include, thứ tự, so diff template
+- [ ] B3b: **Đọc `AGENTS.md`** → đọc marker date → chạy git diff template
+- [ ] B3c: **Đọc từng file `rules/`** → check ranh giới tool config vs workflow
+- [ ] B3d: check `context/architecture.md` tồn tại không
+- [ ] B4: xuất báo cáo đầy đủ — kể cả khi "✓ tất cả ok" cũng phải liệt kê đã check gì
 </HARD-GATE>
 
 So sánh project hiện tại với chuẩn được định nghĩa trong `~/.claude/SETUP.md`.  

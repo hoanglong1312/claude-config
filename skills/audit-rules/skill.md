@@ -100,20 +100,47 @@ grep "@~/.claude/templates/code-project.md" CLAUDE.md
 ```
 
 - **Có** → CLAUDE.md dùng @include, tự nhận template mới → không cần sync thủ công
-- **Không có** → CLAUDE.md là bản copy thủ công → flag là outdated nếu đã sửa template
-- **File không tồn tại** → flag là thiếu
+- **File không tồn tại** → flag là thiếu, dừng bước này
+- **Không có** → CLAUDE.md là bản copy thủ công → tiến hành so sánh với template
 
-Nếu CLAUDE.md là copy thủ công → kiểm tra ngày sửa cuối vs ngày template update:
+Nếu CLAUDE.md là copy thủ công:
 
 ```bash
 # Ngày CLAUDE.md được commit lần cuối trong project
 git log --oneline -1 -- CLAUDE.md
 
-# Ngày code-project.md được sửa lần cuối trong ~/.claude
-git -C ~/.claude log --oneline -1 -- templates/code-project.md
+# Lấy hash commit của template tại thời điểm đó (để biết version project đang dùng)
+PROJECT_DATE=$(git log --format="%ai" -1 -- CLAUDE.md | cut -c1-10)
+TEMPLATE_HASH=$(git -C ~/.claude log --oneline --before="$PROJECT_DATE 23:59" -1 -- templates/code-project.md | cut -d' ' -f1)
+
+# Xem template đã thay đổi gì kể từ đó
+git -C ~/.claude diff $TEMPLATE_HASH..HEAD -- templates/code-project.md
 ```
 
-Nếu template mới hơn CLAUDE.md → flag "CLAUDE.md outdated (dùng @include thay copy thủ công)".
+Nếu diff **rỗng** → template chưa thay đổi kể từ lần project commit CLAUDE.md → không cần làm gì.
+
+Nếu diff **có nội dung** → hiện cho user thấy đúng những section thay đổi, rồi hỏi:
+
+```
+Template code-project.md đã cập nhật [N] section kể từ lần cuối sync:
+  + [tóm tắt section thay đổi từ diff]
+
+Project CLAUDE.md hiện có phần override riêng. Muốn merge thay đổi không?
+  1. Merge (giữ override của project, cập nhật phần template thay đổi)
+  2. Bỏ qua lần này
+  3. Chuyển sang @include (xóa copy, để template tự propagate)
+```
+
+Chờ user chọn trước khi làm bất cứ điều gì.
+
+Nếu user chọn **1 (Merge)**:
+- Áp dụng đúng những section thay đổi từ diff vào CLAUDE.md project
+- Giữ nguyên phần project-specific (không xóa override)
+- Không commit — báo user tự commit sau khi review
+
+Nếu user chọn **3 (@include)**:
+- Xác nhận lại: "Phần override hiện tại sẽ mất. Xác nhận?"
+- Nếu đồng ý → thay toàn bộ nội dung bằng `@~/.claude/templates/code-project.md` + các @include còn lại
 
 Kiểm tra thêm:
 - Có `@context/architecture.md` không?

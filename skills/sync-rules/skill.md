@@ -11,7 +11,7 @@ description: Sync cấu trúc rules của project với global template — dùn
 Nếu không tạo todo → không được tiếp tục.
 
 1. B0: chạy `git -C ~/.claude fetch` — check behind/ahead
-2. B1: detect loại project (code / personal / research / finance)
+2. B1: detect loại project (code / personal / research / finance / business)
 3. B2: đọc `CLAUDE.md` project — check @include đúng template chưa, diff nếu copy, review trùng lặp
 4. B3: đọc `AGENTS.md` project — marker date → git diff template → check conflict (bỏ qua nếu non-code và không có file)
 5. B4: đọc từng file `rules/` — check ranh giới tool config vs workflow (CHỈ code project)
@@ -86,7 +86,7 @@ grep "@~/.claude/templates/" CLAUDE.md 2>/dev/null
 Không tìm thấy dòng nào → hỏi user:
 ```
 Không detect được loại project. Đây là project loại gì?
-  1. code  2. personal  3. research  4. finance
+  1. code  2. personal  3. research  4. finance  5. business
 ```
 
 Sau khi biết loại → tiếp tục B2.
@@ -118,7 +118,7 @@ Sai thứ tự → flag `✗ thứ tự @include sai`.
 
 Kiểm tra add-on detect ở B1 → có `@rules/[tool].md` tương ứng chưa?
 
-*Với personal / research / finance* → kiểm tra dòng @include đúng template chưa:
+*Với personal / research / finance / business* → kiểm tra dòng @include đúng template chưa:
 ```
 @~/.claude/templates/[type].md   ← phải có và đứng đầu
 ```
@@ -154,7 +154,7 @@ Option 3 → xác nhận "Override sẽ mất. Xác nhận?" trước khi xóa.
 
 ### B3 — Kiểm tra AGENTS.md
 
-**Non-code project (personal / research / finance):**
+**Non-code project (personal / research / finance / business):**
 Không có file AGENTS.md → bình thường, bỏ qua B3.
 Có file → vẫn check như code project bên dưới.
 
@@ -191,7 +191,7 @@ Section "[tên]" bị conflict:
 
 ### B4 — Kiểm tra rules/*.md
 
-**Chỉ chạy B4 với code project.** Personal / research / finance không có `rules/` → bỏ qua.
+**Chỉ chạy B4 với code project.** Personal / research / finance / business không có `rules/` → bỏ qua.
 
 `rules/*.md` chỉ được chứa tool config thuần túy — không chứa workflow.
 
@@ -209,7 +209,9 @@ File rỗng sau cleanup → xóa luôn.
 
 ### B5 — Báo cáo + Fix
 
-**Báo cáo trước:**
+**Báo cáo trước — adapt theo loại project:**
+
+*Code project:*
 ```
 [PROJECT — fix ngay]
   ✗ CLAUDE.md: [vấn đề]
@@ -218,18 +220,37 @@ File rỗng sau cleanup → xóa luôn.
   ⚠ rules/workflow.md: xóa "[section]", giữ "[section]"
   ✗ rules/supabase.md: thiếu (dùng Supabase)
   ✗ context/architecture.md: thiếu
+```
 
+*Business project:*
+```
+[PROJECT — fix ngay]
+  ✗ CLAUDE.md: [vấn đề]
+  ✗ context/business-overview.md: thiếu
+  ✗ context/decisions.md: thiếu
+  ✗ data/raw/: thiếu
+  ✗ reports/: thiếu
+  ⚠ CLAUDE.md: "[section]" trùng template → xóa
+```
+
+*Personal / research / finance:*
+```
+[PROJECT — fix ngay]
+  ✗ CLAUDE.md: [vấn đề — @include sai template hoặc thiếu]
+  ⚠ CLAUDE.md: "[section]" trùng template → xóa
+```
+
+```
 [GLOBAL — mở session ~/.claude để xử lý]
   ⚠ ...
 ```
 
-Dù không có gap → vẫn liệt kê "✓ đã check: CLAUDE.md, AGENTS.md, rules/, context/".
+Dù không có gap → vẫn liệt kê những gì đã check: `✓ đã check: CLAUDE.md, [danh sách phù hợp loại project]`.
 
-Hỏi "Xử lý hết không?" → sau khi user OK:
+Hỏi "Xử lý hết không?" → sau khi user OK, chỉ chạy bước phù hợp loại:
 
-1. Tạo file thiếu từ template
-2. Fix thứ tự @include CLAUDE.md
-3. Merge AGENTS.md — hỏi từng conflict
-4. Cleanup rules/*.md — di chuyển project-specific → CLAUDE.md trước khi xóa
-5. Xóa trùng lặp trong CLAUDE.md
-6. Báo: "Xong. Tự review + commit."
+**Code:** Fix @include → Merge AGENTS.md → Cleanup rules/ → Xóa trùng lặp CLAUDE.md
+**Business:** Tạo folder thiếu → Fix @include → Xóa trùng lặp CLAUDE.md
+**Personal/research/finance:** Fix @include → Xóa trùng lặp CLAUDE.md
+
+Báo: "Xong. Tự review + commit."

@@ -16,10 +16,10 @@ markitdown [file] > [file].md
 |---|---|
 | "build X", "thêm tính năng", "tạo mới" | `brainstorming` |
 | Có spec xong | `writing-plans` |
-| Bắt đầu code | `test-driven-development` ⚠️ |
-| 2+ task độc lập | `subagent-driven-development` ⚠️ |
+| Bắt đầu code | `test-driven-development` |
+| 2+ task độc lập | `subagent-driven-development` |
 | "fix bug", "lỗi" | `systematic-debugging` |
-| Xong implementation | `requesting-code-review` + `verification-before-completion` ⚠️ |
+| Xong implementation | `requesting-code-review` + `verification-before-completion` |
 | Nhận feedback | `receiving-code-review` |
 | Kết thúc branch | `finishing-a-development-branch` |
 | Feature cần isolate | `using-git-worktrees` |

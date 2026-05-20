@@ -43,6 +43,7 @@ Trước MỌI action, kiểm tra skill phù hợp và invoke ngay. Không cần
 **⚠️ Ngoại lệ khi đang trong code project (có `code-project.md`):**
 - `test-driven-development` → **không trigger** — Codex tự follow TDD qua Superpowers của nó
 - `subagent-driven-development` → **không trigger** — Codex thay thế hoàn toàn
+- `requesting-code-review` → **không trigger** — Claude review qua adversarial checklist trong `code-project.md`
 
 ## Quy Tắc Cứng
 - Nếu task là "build/tạo/thêm" mà KHÔNG qua `brainstorming` → SAI, phải làm lại

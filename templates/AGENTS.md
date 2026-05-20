@@ -80,7 +80,6 @@
 - Thử lại (retry) QA quá 3 lần mà không báo lên (escalate)
 - Tự thêm dependencies không có trong plan
 - Bỏ qua step review nếu có code review skill
-- Sửa file gốc trong `raw/` (nếu có Obsidian vault)
 
 ---
 

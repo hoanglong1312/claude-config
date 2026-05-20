@@ -16,7 +16,10 @@ Dùng git làm nguồn chính để detect thay đổi — không grep từng fi
 |-----------|-----------------|
 | Đọc `~/.claude/` (reference) | Ghi bất kỳ file nào vào `~/.claude/` |
 | Tạo/sửa file trong project | Sửa global templates, skills, CLAUDE.md global |
+| `git status`, `git log`, `git diff` (read-only) | `git add`, `git commit`, `git init` trong project |
 | Merge nội dung vào project's AGENTS.md | Commit vào repo `~/.claude` |
+
+**Git trong project = chỉ đọc.** Skill không commit, không stage, không init repo project. Sau khi tạo file xong → báo user tự commit.
 
 Nếu audit phát hiện vấn đề ở global config (`~/.claude`) → **chỉ báo cáo**, không sửa. User tự mở session `~/.claude` để xử lý.
 

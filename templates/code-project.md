@@ -9,7 +9,6 @@
 | Orchestration + Review | Claude main | kiến trúc, review plan, review git diff |
 
 - `subagent-driven-development` của Claude main KHÔNG dùng → Codex thay thế hoàn toàn
-- Codex có Superpowers cài sẵn → tự follow TDD, dispatching-parallel-agents, không cần Claude embed
 - Workflow chi tiết của Codex xem trong `AGENTS.md`
 
 ## Quy Trình Execution
@@ -30,8 +29,11 @@
 
 ### Bug fix / small change
 1. Claude main phân tích nguyên nhân (`git log`, `git diff`)
-2. Gọi Codex fix trực tiếp
-3. Review `git diff` sau khi Codex xong
+2. Nếu cần trace source → gọi Codex `read-only` đọc file + báo cáo root cause (không fix)
+3. Claude đánh giá root cause → quyết định approach
+4. Gọi Codex `workspace-write` fix
+5. Review `git diff` sau khi Codex xong
+6. Claude main chạy Playwright trực tiếp — **không** giao Codex (sandbox EPERM khi bind port)
 
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào

@@ -124,7 +124,34 @@ Nếu user muốn dùng Codex để implement:
 claude mcp add codex
 ```
 
-### Bước 7 — Verify
+### Bước 7 — Cấu Trúc Project Chuẩn (Code Projects)
+
+Mỗi code project mới cần cấu trúc 3 tầng. Claude sẽ tự tạo khi vào project không có CLAUDE.md, nhưng bạn cần biết để kiểm tra:
+
+```
+[project]/
+├── CLAUDE.md                ← lean, chỉ dùng @imports
+├── rules/
+│   ├── workflow.md          ← copy từ ~/.claude/templates/rules/workflow-template.md
+│   ├── supabase.md          ← chỉ có nếu dùng Supabase
+│   └── testing.md           ← điền lệnh test cụ thể của project
+└── context/
+    └── architecture.md      ← stack, file quan trọng, constraints
+```
+
+**CLAUDE.md chuẩn:**
+```markdown
+# CLAUDE.md — [Tên Project]
+
+@context/architecture.md
+@rules/workflow.md
+@rules/supabase.md
+@rules/testing.md
+```
+
+Các template rule files nằm tại `~/.claude/templates/rules/` — copy vào project và customize.
+
+### Bước 8 — Verify
 
 Kiểm tra mọi thứ hoạt động:
 ```bash

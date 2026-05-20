@@ -6,14 +6,27 @@ description: Audit cấu trúc rules của project hiện tại — đọc ~/.cl
 # Audit Rules
 
 So sánh project hiện tại với chuẩn được định nghĩa trong `~/.claude/SETUP.md`.  
-Không maintain checklist riêng — SETUP.md là source of truth.  
-Structure chuẩn của add-on files xem trong `~/.claude/CLAUDE.md` phần Add-On Rules.
+Không maintain checklist riêng — SETUP.md là source of truth.
+
+## GIỚI HẠN PHẠM VI — BẮT BUỘC
+
+**Skill này chỉ được đọc/ghi trong thư mục project hiện tại.**
+
+| Được phép | KHÔNG được phép |
+|-----------|-----------------|
+| Đọc `~/.claude/` (reference) | Ghi bất kỳ file nào vào `~/.claude/` |
+| Tạo/sửa file trong project | Sửa global templates, skills, CLAUDE.md global |
+| Merge nội dung vào project's AGENTS.md | Commit vào repo `~/.claude` |
+
+Nếu audit phát hiện vấn đề ở global config (`~/.claude`) → **chỉ báo cáo**, không sửa. User tự mở session `~/.claude` để xử lý.
+
+---
 
 ## Quy Trình
 
 ### Bước 1 — Đọc global standard
 
-Đọc `~/.claude/SETUP.md` để lấy cấu trúc skeleton bắt buộc cho từng loại project.  
+Đọc `~/.claude/SETUP.md` để lấy cấu trúc skeleton bắt buộc.  
 (Global CLAUDE.md đã load sẵn trong context — không cần đọc lại.)
 
 ### Bước 2 — Đọc deps để detect stack
@@ -36,10 +49,8 @@ Detect stack + các tool có add-on template:
 
 ### Bước 3 — So sánh project với SETUP.md
 
-Đọc SETUP.md để lấy danh sách files bắt buộc cho loại project tương ứng (code/research/finance/personal).  
-Sau đó kiểm tra từng item có tồn tại trong project không.
+Kiểm tra từng item của skeleton có tồn tại không:
 
-Ví dụ với **code project**, SETUP.md yêu cầu skeleton:
 ```
 CLAUDE.md  
 AGENTS.md  
@@ -47,55 +58,48 @@ rules/
 context/architecture.md
 ```
 
-Ngoài ra kiểm tra nội dung `CLAUDE.md`:
+Kiểm tra nội dung `CLAUDE.md` của project:
 - Có `@~/.claude/templates/code-project.md` chưa?
 - Có `@context/architecture.md` chưa?
 - Các add-on detect được → có `@rules/[tool].md` tương ứng chưa?
 
-Nếu `AGENTS.md` đã tồn tại, kiểm tra thêm xem có đủ các section quan trọng không:
+Nếu `AGENTS.md` đã tồn tại, kiểm tra version marker và các section quan trọng:
 
-| Section cần có | Kiểm tra bằng cách |
-|----------------|-------------------|
-| Plan format per task (`Files:`, `Test:`, `Depends on:`, `Size:`) | grep "Files:" AGENTS.md |
-| `decisions.md` reference | grep "decisions.md" AGENTS.md |
-| `dispatching-parallel-agents` | grep "dispatching-parallel-agents" AGENTS.md |
+```bash
+grep "template:" AGENTS.md          # version marker
+grep "Files:" AGENTS.md             # plan format
+grep "decisions.md" AGENTS.md       # ASSUMPTION: loop
+grep "dispatching-parallel-agents" AGENTS.md
+```
 
-Nếu thiếu → báo "AGENTS.md outdated" và đề xuất merge từ template.  
-**Không tự ghi đè** — AGENTS.md có Project Context riêng của project.
+Nếu thiếu → "AGENTS.md outdated" → đề xuất merge phần Workflow từ template, **giữ nguyên** Project Context.
 
-### Bước 4 — Báo cáo gaps
+### Bước 4 — Báo cáo
 
-Format báo cáo:
+Tách thành **2 nhóm rõ ràng**:
 
 ```
-Phát hiện: [stack — ví dụ: Next.js + Supabase + Playwright]
-
-So sánh với chuẩn SETUP.md:
-  ✓ CLAUDE.md: có
-  ✗ @code-project.md: chưa import trong CLAUDE.md
+[PROJECT — có thể fix ngay]
   ✗ AGENTS.md: chưa có
+  ✗ AGENTS.md: outdated (thiếu decisions.md, plan format)
   ✗ rules/supabase.md: chưa có (nhưng dùng Supabase)
-  ✗ rules/testing.md: chưa có (nhưng dùng Playwright)
   ✗ context/architecture.md: chưa có
 
-Sẽ tạo / sửa:
-  - Thêm @~/.claude/templates/code-project.md vào CLAUDE.md
-  - Copy AGENTS.md từ ~/.claude/templates/AGENTS.md (điền Project Context tự động)
-  - Nếu AGENTS.md đã có nhưng outdated: chỉ merge phần Workflow + format vào, **giữ nguyên** phần Project Context
-  - Tạo rules/supabase.md (blank, structure chuẩn từ CLAUDE.md)
-  - Tạo rules/testing.md (blank, điền lệnh test từ deps)
-  - Tạo context/architecture.md (blank)
-
-Tạo hết không?
+[GLOBAL CONFIG — cần fix thủ công trong session ~/.claude]
+  ⚠ (liệt kê nếu phát hiện, nhưng không sửa)
 ```
+
+Chỉ hỏi "Tạo hết không?" cho nhóm PROJECT.
 
 ### Bước 5 — Tạo (sau khi user đồng ý)
 
-Tạo đúng theo những gì SETUP.md yêu cầu:
-- Copy files từ `~/.claude/templates/` về đúng vị trí trong project
-- Thêm `@import` vào `CLAUDE.md` theo thứ tự: code-project → add-ons → context
-- Khi tạo `AGENTS.md`: tự điền luôn phần Project Context từ những gì đã detect ở Bước 2 (tên project từ `package.json` → `name`, stack từ deps, loại project từ cấu trúc). Không để placeholder blank.
+Tạo/sửa chỉ trong project directory:
+- Copy files từ `~/.claude/templates/` vào project
+- Thêm `@import` vào `CLAUDE.md` project theo thứ tự: code-project → add-ons → context
+- Khi tạo `AGENTS.md`: tự điền Project Context từ deps (tên từ `package.json name`, stack từ deps). Không để placeholder blank.
+- Khi merge `AGENTS.md` outdated: chỉ cập nhật phần Workflow + Quy Tắc Chung, giữ nguyên Project Context.
 
 ### Bước 6 — Xác nhận xong
 
-Báo ngắn gọn: file nào đã tạo, @import nào đã thêm.
+Báo ngắn gọn: file nào đã tạo/sửa trong project.  
+Nếu có global config issues → nhắc user: "Mở session `~/.claude` để xử lý."

@@ -79,6 +79,18 @@ Format nhắc ngắn gọn, không dài dòng:
 → Còn lại: [task 1], [task 2]
 ```
 
+# Thêm Rule Mới — Routing
+
+Trước khi thêm rule, xác định layer phù hợp:
+
+| Rule áp dụng cho | Đặt ở đâu |
+|---|---|
+| Mọi project, mọi loại | `~/.claude/CLAUDE.md` |
+| Loại project cụ thể (code/finance/research/personal) | `~/.claude/templates/[type].md` |
+| 1 project cụ thể | `[project]/rules/[name].md` |
+
+Không thêm rule vào README — README chỉ chứa lệnh cài tools cho máy mới.
+
 # Khởi Tạo Project Mới
 
 Nếu vào project KHÔNG có CLAUDE.md → đọc `~/.claude/SETUP.md` và làm theo.

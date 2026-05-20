@@ -24,6 +24,22 @@ Nếu audit phát hiện vấn đề ở global config (`~/.claude`) → **chỉ
 
 ## Quy Trình
 
+### Bước 0 — Kiểm tra ~/.claude có up-to-date không
+
+```bash
+git -C ~/.claude fetch --quiet
+git -C ~/.claude status --short --branch
+```
+
+Nếu output có `behind` → **dừng lại**, báo user:
+```
+⚠ ~/.claude chưa up-to-date với remote ([N] commits behind).
+  Chạy: git -C ~/.claude pull
+  Sau đó gọi lại audit rules.
+```
+
+Nếu up-to-date hoặc không có remote → tiếp tục.
+
 ### Bước 1 — Đọc global standard
 
 Đọc `~/.claude/SETUP.md` để lấy cấu trúc skeleton bắt buộc.  

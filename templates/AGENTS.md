@@ -50,7 +50,7 @@
 6. Review output thực thi qua `git diff` + commit message
 
 ### Codex — nhận spec từ Claude
-1. Dùng `writing-plans` + đường dẫn spec (`docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`) → đọc codebase + spec → tạo technical checklist
+1. Dùng `writing-plans` + đường dẫn spec (`docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`) → đọc codebase + spec → tạo technical checklist → lưu vào `docs/superpowers/specs/YYYY-MM-DD-[feature]-plan.md` (file riêng, không append vào spec)
 
    **Format bắt buộc mỗi task trong checklist:**
    ```
@@ -61,7 +61,7 @@
    - Size: S / M / L
    ```
 
-2. Sau khi Claude approve → đọc `docs/superpowers/decisions.md` (nếu có) trước khi bắt đầu → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task không có dependency → implement + TDD + commit
+2. Sau khi Claude approve → đọc `docs/superpowers/decisions.md` (nếu có) trước khi bắt đầu → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task **chỉ khi `Depends on: none`** — task có dependency phải chờ task trước commit xong mới bắt đầu
 3. Nếu gặp mơ hồ (ambiguity) → **ưu tiên đọc `docs/superpowers/decisions.md` trước** — nếu đã có quyết định thì follow, không cần ghi ASSUMPTION: thêm. Nếu chưa có → ghi `ASSUMPTION:` (giả định) vào commit message
 4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
@@ -84,7 +84,8 @@
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào
 2. Đọc file plan trong `docs/superpowers/specs/` → biết còn task nào chưa làm
-3. Gọi Codex tiếp từ task còn dở
+3. Đọc `docs/superpowers/decisions.md` (nếu có) → nắm các quyết định đã xác nhận
+4. Gọi Codex tiếp từ task còn dở
 
 ### Fallback — Codex không giải quyết được sau 3 lần thử lại (retry)
 

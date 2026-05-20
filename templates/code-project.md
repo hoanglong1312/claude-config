@@ -43,7 +43,8 @@
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào
 2. Đọc file plan trong `docs/superpowers/specs/` → biết còn task nào chưa làm
-3. Gọi Codex tiếp từ task còn dở
+3. Đọc `docs/superpowers/decisions.md` (nếu có) → nắm các quyết định đã xác nhận
+4. Gọi Codex tiếp từ task còn dở
 
 ## Cách Gọi Codex
 
@@ -58,6 +59,7 @@ approval-policy: "never"
 Spec: docs/superpowers/specs/[file].md
 Constraints: [những gì không được break — DB schema, API contract, existing pattern]
 Goal: tạo technical checklist từ spec + codebase hiện tại
+Output: lưu vào docs/superpowers/specs/[same-date]-[feature]-plan.md (tách khỏi spec)
 
 Format mỗi task:
 ## Task: [tên ngắn]

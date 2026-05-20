@@ -48,7 +48,7 @@ Codex tự đọc file để lấy context — không cần paste code vào prom
 ## Token Discipline — Claude Main Session
 
 **KHÔNG làm:**
-- Đọc file source code thay cho Codex
+- Đọc toàn bộ file source để lấy context (việc của Codex)
 - Paste nội dung file vào Codex prompt
 - Dùng Edit/Write cho file .jsx/.js/.sql
 - Dispatch Claude subagent làm middleman
@@ -57,8 +57,12 @@ Codex tự đọc file để lấy context — không cần paste code vào prom
 - Đọc git log / git diff
 - Viết/sửa file .md (plan, spec, rules)
 - Gọi Codex: goal + file paths + constraints
-- Review output Codex (adversarial)
 - Quyết định kiến trúc trước khi giao Codex
+
+**Khi review output Codex:**
+- Ưu tiên đọc `git diff` — đủ cho hầu hết trường hợp
+- Được đọc snippet nhỏ nếu diff tham chiếu code nằm ngoài phạm vi thay đổi
+- Không đọc toàn bộ file chỉ để "hiểu context chung"
 
 ## Quality Gate — Bắt Buộc Trước Khi Bàn Giao User
 

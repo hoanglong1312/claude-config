@@ -1,5 +1,25 @@
 @RTK.md
 
+# Markitdown — Chuyển File Trước Khi Đọc
+
+Trước khi đọc bất kỳ file nào thuộc định dạng dưới đây, **bắt buộc chuyển sang .md trước**:
+
+| Định dạng | Extension |
+|-----------|-----------|
+| PDF | `.pdf` |
+| Word | `.docx`, `.doc` |
+| PowerPoint | `.pptx`, `.ppt` |
+| Excel | `.xlsx`, `.xls` |
+| HTML | `.html`, `.htm` |
+| Hình ảnh có text | `.png`, `.jpg`, `.jpeg` |
+
+**Lệnh chuyển đổi:**
+```bash
+markitdown [file] > [file].md
+```
+
+Đọc file `.md` vừa tạo — không đọc file gốc. Lý do: tránh Claude hoặc subagent đọc binary/phức tạp gây tốn token.
+
 # Quy Tắc Ngôn Ngữ
 - Trả lời bằng tiếng Việt
 - Thuật ngữ kỹ thuật: Tiếng Việt (English term) — ví dụ: vòng lặp (loop)

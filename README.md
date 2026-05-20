@@ -4,7 +4,17 @@
 
 ---
 
-## 1. Superpowers Plugin
+## 1. Markitdown — Chuyển File Sang Markdown
+
+```bash
+pip install markitdown
+```
+
+Dùng để chuyển PDF/DOCX/PPTX/XLSX/HTML/ảnh → `.md` trước khi Claude đọc. Tiết kiệm token đáng kể.
+
+---
+
+## 2. Superpowers Plugin
 
 ```bash
 /plugin install superpowers@claude-plugins-official

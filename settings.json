@@ -20,12 +20,6 @@
   },
   "permissions": {
     "allow": [
-      "Bash(source *)",
-      "Bash(npm run lint *)",
-      "Bash(npm run typecheck *)",
-      "Bash(npm run test *)",
-      "Bash(supabase status *)",
-      "Bash(supabase db *)",
       "Bash(claude mcp *)"
     ]
   },

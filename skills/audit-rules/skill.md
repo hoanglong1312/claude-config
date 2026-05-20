@@ -69,11 +69,14 @@ Nếu `AGENTS.md` đã tồn tại, kiểm tra version marker:
 grep "template:" AGENTS.md    # lấy date, ví dụ: <!-- template: 2026-05-20 -->
 ```
 
-Nếu có marker → so sánh với template hiện tại bằng git diff (chỉ đọc delta, không đọc lại toàn bộ):
+Nếu có marker → extract date (lấy 10 ký tự đầu sau "template: "), so sánh với template bằng git diff:
 
 ```bash
-# Lấy commit hash tại thời điểm version marker
-git -C ~/.claude log --oneline --before="[marker-date] 23:59" -1 -- templates/AGENTS.md
+# Extract date từ marker (format: YYYY-MM-DD)
+grep "template:" AGENTS.md | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}'
+
+# Lấy commit hash tại thời điểm đó
+git -C ~/.claude log --oneline --before="[YYYY-MM-DD] 23:59" -1 -- templates/AGENTS.md
 
 # Xem chỉ những phần đã thay đổi kể từ đó
 git -C ~/.claude diff [commit-hash]..HEAD -- templates/AGENTS.md

@@ -23,6 +23,7 @@ markitdown [file] > [file].md
 | Nhận feedback | `receiving-code-review` |
 | Kết thúc branch | `finishing-a-development-branch` |
 | Feature cần isolate | `using-git-worktrees` |
+| Xong brainstorming, spec có 3+ task hoặc động vào core logic | hỏi user: "Feature này có cần worktree riêng không?" → nếu có → `using-git-worktrees` |
 
 **⚠️ Ngoại lệ trong code project (có `code-project.md`):**
 - `test-driven-development` → không trigger — Codex tự follow

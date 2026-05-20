@@ -45,10 +45,37 @@ Nếu project trống → tiếp tục Bước 1.
 ```
 [project]/
 ├── CLAUDE.md   (@~/.claude/templates/code-project.md + @context/architecture.md)
-├── AGENTS.md   ← copy từ ~/.claude/templates/AGENTS.md, điền Project Context
-├── rules/      ← trống, add-ons thêm khi cần
+├── AGENTS.md   ← copy từ ~/.claude/templates/AGENTS.md, tự điền Project Context từ package.json
+├── rules/      ← tạo khi detect tool tương ứng trong deps
 └── context/
     └── architecture.md  ← blank
+```
+
+**Blank structure khi tạo add-on files:**
+
+`rules/supabase.md`:
+```markdown
+# Supabase Rules
+
+## MCP Tools
+| Việc | Tool |
+|------|------|
+| Apply migration | `mcp__supabase__apply_migration` |
+| Query / debug | `mcp__supabase__execute_sql` |
+| Kiểm tra schema | `mcp__supabase__list_tables` |
+
+## Quy Tắc
+- Tự apply migration, không bảo user vào dashboard
+```
+
+`rules/testing.md`:
+```markdown
+# Testing Rules
+
+## Lệnh chạy test
+[tự điền từ deps: npx playwright test / npx vitest run / npx jest]
+
+## Quy Tắc
 ```
 
 ---

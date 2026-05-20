@@ -11,10 +11,10 @@ description: Sync cấu trúc rules của project với global template — dùn
 Nếu không tạo todo → không được tiếp tục.
 
 1. B0: chạy `git -C ~/.claude fetch` — check behind/ahead
-2. B1: đọc deps file (package.json / pyproject.toml / go.mod) — detect stack + add-ons
-3. B2: đọc `CLAUDE.md` project — check @include, thứ tự, diff template nếu copy, review trùng lặp
-4. B3: đọc `AGENTS.md` project — marker date → git diff template → check conflict
-5. B4: đọc từng file `rules/` — check ranh giới tool config vs workflow
+2. B1: detect loại project (code / personal / research / finance)
+3. B2: đọc `CLAUDE.md` project — check @include đúng template chưa, diff nếu copy, review trùng lặp
+4. B3: đọc `AGENTS.md` project — marker date → git diff template → check conflict (bỏ qua nếu non-code và không có file)
+5. B4: đọc từng file `rules/` — check ranh giới tool config vs workflow (CHỈ code project)
 6. B5: xuất báo cáo đầy đủ + fix sau khi user OK
 
 **`git status` KHÔNG phải cách detect gap.**
@@ -53,33 +53,61 @@ Up-to-date hoặc không có remote → tiếp tục.
 
 ---
 
-### B1 — Detect stack từ deps
+### B1 — Detect loại project
 
-Đọc file deps để biết cần add-on nào:
+**Bước 1: check deps file**
 
-| Phát hiện | Add-on cần có |
-|-----------|---------------|
+```bash
+ls package.json pyproject.toml go.mod 2>/dev/null
+```
+
+Có → **code project**. Ghi nhớ add-ons cần check:
+
+| Phát hiện trong deps | Add-on cần có |
+|---|---|
 | `@supabase/supabase-js` | `rules/supabase.md` |
 | `playwright` / `@playwright/test` | `rules/testing.md` |
-| `vitest` | `rules/testing.md` |
-| `jest` | `rules/testing.md` |
+| `vitest` / `jest` | `rules/testing.md` |
 
-Không có file deps → project chưa có code, dừng.
+**Bước 2: nếu không có deps → đọc CLAUDE.md để xác định loại**
+
+```bash
+grep "@~/.claude/templates/" CLAUDE.md 2>/dev/null
+```
+
+| Tìm thấy | Loại project | Template so sánh |
+|---|---|---|
+| `@~/.claude/templates/personal.md` | personal | `~/.claude/templates/personal.md` |
+| `@~/.claude/templates/research.md` | research | `~/.claude/templates/research.md` |
+| `@~/.claude/templates/finance.md` | finance | `~/.claude/templates/finance.md` |
+| `@~/.claude/templates/code-project.md` | code (không có deps) | `~/.claude/templates/code-project.md` |
+
+Không tìm thấy dòng nào → hỏi user:
+```
+Không detect được loại project. Đây là project loại gì?
+  1. code  2. personal  3. research  4. finance
+```
+
+Sau khi biết loại → tiếp tục B2.
 
 ---
 
 ### B2 — Kiểm tra CLAUDE.md
 
 **File tồn tại không?**
-Không tồn tại → flag thiếu, skip phần còn lại.
+Không tồn tại → flag `✗ CLAUDE.md thiếu`, skip phần còn lại của B2.
 
 **@include hay copy thủ công?**
 
+Dùng `TEMPLATE` = tên template detect ở B1 (ví dụ: `personal.md`, `code-project.md`).
+
 ```bash
-grep "@~/.claude/templates/code-project.md" CLAUDE.md
+grep "@~/.claude/templates/$TEMPLATE" CLAUDE.md
 ```
 
-**Nếu dùng @include** → kiểm tra thứ tự:
+**Nếu dùng @include:**
+
+*Với code project* → kiểm tra thứ tự:
 ```
 @~/.claude/templates/code-project.md   ← PHẢI đứng đầu
 @rules/[tool].md                        ← sau
@@ -89,13 +117,19 @@ Sai thứ tự → flag `✗ thứ tự @include sai`.
 
 Kiểm tra add-on detect ở B1 → có `@rules/[tool].md` tương ứng chưa?
 
-**Nếu là copy thủ công** → so sánh với template:
+*Với personal / research / finance* → kiểm tra dòng @include đúng template chưa:
+```
+@~/.claude/templates/[type].md   ← phải có và đứng đầu
+```
+
+**Nếu là copy thủ công** → so sánh với template đúng loại:
 
 ```bash
 PROJECT_DATE=$(git log --format="%ai" -1 -- CLAUDE.md | cut -c1-10)
 # Nếu CLAUDE.md chưa commit → dùng ngày hôm nay làm mốc
-TEMPLATE_HASH=$(git -C ~/.claude log --oneline --before="$PROJECT_DATE 23:59" -1 -- templates/code-project.md | cut -d' ' -f1)
-git -C ~/.claude diff $TEMPLATE_HASH..HEAD -- templates/code-project.md
+TEMPLATE_FILE="templates/$TEMPLATE"
+TEMPLATE_HASH=$(git -C ~/.claude log --oneline --before="$PROJECT_DATE 23:59" -1 -- $TEMPLATE_FILE | cut -d' ' -f1)
+git -C ~/.claude diff $TEMPLATE_HASH..HEAD -- $TEMPLATE_FILE
 ```
 
 Diff rỗng → không cần làm gì.  
@@ -112,16 +146,19 @@ Option 3 → xác nhận "Override sẽ mất. Xác nhận?" trước khi xóa.
 
 Đọc toàn bộ CLAUDE.md. Với mỗi nội dung nằm ngoài các dòng `@include`:
 
-- Đã có trong `code-project.md` hoặc `rules/*.md` → **trùng lặp, đề xuất xóa**
-- Chỉ có trong local (constraints, quality gate, convention team) → **giữ**
-
-Trùng lặp điển hình: viết lại cách gọi Codex, liệt kê Superpowers skills, nhắc lại TDD rules.
+- Đã có trong template tương ứng → **trùng lặp, đề xuất xóa**
+- Chỉ có trong local (constraints, convention riêng) → **giữ**
 
 ---
 
 ### B3 — Kiểm tra AGENTS.md
 
-Không tồn tại → flag thiếu, dừng.
+**Non-code project (personal / research / finance):**
+Không có file AGENTS.md → bình thường, bỏ qua B3.
+Có file → vẫn check như code project bên dưới.
+
+**Code project:**
+Không tồn tại → flag `✗ AGENTS.md thiếu`, dừng.
 
 **Phát hiện thay đổi template:**
 
@@ -152,6 +189,8 @@ Section "[tên]" bị conflict:
 ---
 
 ### B4 — Kiểm tra rules/*.md
+
+**Chỉ chạy B4 với code project.** Personal / research / finance không có `rules/` → bỏ qua.
 
 `rules/*.md` chỉ được chứa tool config thuần túy — không chứa workflow.
 

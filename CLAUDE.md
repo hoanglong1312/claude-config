@@ -29,6 +29,7 @@ markitdown [file] > [file].md
 - `test-driven-development` → không trigger — Codex tự follow
 - `subagent-driven-development` → không trigger — Codex thay thế
 - `requesting-code-review` → không trigger — dùng adversarial checklist trong `code-project.md`
+- `systematic-debugging` → không trigger — dùng 2-phase flow trong `code-project.md` (Codex investigation, Claude fix)
 
 # Obsidian Bridge
 Vault: `~/Library/Mobile Documents/com~apple~CloudDocs/AI/my-brain/`

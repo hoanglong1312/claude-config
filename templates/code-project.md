@@ -28,15 +28,27 @@
    - [ ] User acceptance test pass
 
 ### Bug fix / small change
-1. Claude main phân tích nguyên nhân (`git log`, `git diff`)
-2. Nếu cần trace source → gọi Codex `read-only` đọc file + báo cáo root cause (không fix)
-3. Claude đánh giá root cause → quyết định approach
-4. Gọi Codex `workspace-write` fix
-5. Review `git diff` sau khi Codex xong
+
+**Phase 1 — Investigation (Codex làm, không ăn main context)**
+
+1. Claude đọc `git log` / `git diff` → hiểu symptom
+2. Claude viết investigation plan vào `docs/superpowers/debug-[issue].md`:
+   ```
+   Symptom: [mô tả bug]
+   Suspect files: [danh sách file/pattern cần kiểm tra]
+   Questions: [những gì cần tìm — function nào, data flow nào, error nào]
+   ```
+3. Gọi Codex `read-only`: đọc file + grep theo plan → trả findings (không fix)
+
+**Phase 2 — Fix (Claude phán đoán, Codex thực thi)**
+
+4. Claude đọc findings → xác định root cause → quyết định approach
+5. Append root cause + approach vào `docs/superpowers/debug-[issue].md`
+6. Gọi Codex `workspace-write` fix theo approach đã xác định
+7. Review `git diff` sau khi Codex xong
 
 **Fallback nếu Codex fix sai 3 lần:**
-- Claude đọc `git diff` + commit log của 3 lần thử
-- Viết analysis ngắn vào file `.md` tạm (`docs/superpowers/debug-[issue].md`)
+- Claude đọc `git diff` + commit log của 3 lần thử → update `debug-[issue].md`
 - Gọi lại Codex với file đó làm context bổ sung
 - Nếu vẫn fail → Claude tự fix bằng Edit/Write (ngoại lệ token discipline)
 
@@ -86,6 +98,7 @@ Codex tự đọc file để lấy context — không paste code vào prompt.
 
 **KHÔNG làm:**
 - Đọc toàn bộ file source để lấy context (việc của Codex)
+- Tự grep/trace source khi debug — viết investigation plan rồi giao Codex
 - Paste nội dung file vào Codex prompt
 - Dùng Edit/Write cho file .jsx/.js/.sql
 - Dispatch Claude subagent làm middleman

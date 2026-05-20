@@ -28,7 +28,7 @@ Nếu project trống → tiếp tục Bước 1.
 
 ## Bước 1 — Hỏi loại project
 
-> "Project này thuộc loại nào: code / research / finance / personal?"
+> "Project này thuộc loại nào: code / research / finance / personal / business?"
 
 ---
 
@@ -39,7 +39,47 @@ Nếu project trống → tiếp tục Bước 1.
 | research | Tạo `CLAUDE.md` từ `~/.claude/templates/research.md` |
 | finance | Tạo `CLAUDE.md` từ `~/.claude/templates/finance.md` |
 | personal | Tạo `CLAUDE.md` từ `~/.claude/templates/personal.md` |
+| business | Tạo skeleton — xem chi tiết bên dưới |
 | code | Tạo skeleton — xem chi tiết trong `~/.claude/templates/code-project.md` |
+
+**Skeleton business project:**
+```
+[project]/
+├── CLAUDE.md              ← @include business.md + khai báo specialization
+├── data/
+│   ├── raw/               ← file gốc KHÔNG sửa
+│   └── processed/         ← đã clean, sẵn phân tích
+├── reports/
+│   ├── weekly/
+│   └── monthly/
+├── sop/                   ← blank, viết dần
+└── context/
+    ├── business-overview.md   ← blank, điền thông tin doanh nghiệp
+    └── decisions.md           ← blank
+```
+
+Nếu specialization = F&B → thêm:
+```
+├── menu/
+│   ├── current/
+│   └── costing/
+└── hr/
+    ├── schedules/
+    └── onboarding/
+```
+
+**Cấu trúc CLAUDE.md chuẩn cho business:**
+```markdown
+@~/.claude/templates/business.md
+
+## Project-Specific Rules
+- Specialization: [F&B / retail / dịch vụ / khác]
+- Scale: [số cơ sở, số nhân viên]
+- Phần mềm POS: [tên hoặc "chưa có"]
+- Đơn vị tiền tệ: VND
+```
+
+---
 
 **Skeleton code project:**
 ```

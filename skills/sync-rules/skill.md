@@ -80,6 +80,7 @@ grep "@~/.claude/templates/" CLAUDE.md 2>/dev/null
 | `@~/.claude/templates/personal.md` | personal | `~/.claude/templates/personal.md` |
 | `@~/.claude/templates/research.md` | research | `~/.claude/templates/research.md` |
 | `@~/.claude/templates/finance.md` | finance | `~/.claude/templates/finance.md` |
+| `@~/.claude/templates/business.md` | business | `~/.claude/templates/business.md` |
 | `@~/.claude/templates/code-project.md` | code (không có deps) | `~/.claude/templates/code-project.md` |
 
 Không tìm thấy dòng nào → hỏi user:

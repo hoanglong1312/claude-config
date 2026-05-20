@@ -184,12 +184,14 @@ Dấu hiệu restate:
 - Viết lại token discipline
 - Copy commit rules, TDD rules từ template
 
-Nếu phát hiện → flag trong báo cáo:
+Nếu phát hiện → **đánh dấu để xóa ngay trong Bước 5** (không cần confirm riêng — restate là sai chắc chắn):
 ```
-  ⚠ rules/workflow.md: chứa nội dung workflow trùng với template → ghi đè template, cần cleanup
+  ⚠ rules/workflow.md: chứa [tên section] trùng với template → sẽ xóa khi fix
 ```
 
-Khi cleanup (Bước 5): chỉ xóa phần restate, giữ lại những gì thực sự project-specific (DB schema, lệnh test cụ thể, quirk tool, pattern codebase).
+Ghi rõ: section nào sẽ bị xóa, section nào giữ lại — để user biết trước khi đồng ý ở Bước 4.
+
+Khi cleanup (Bước 5): xóa đúng phần restate, giữ lại những gì thực sự project-specific (DB schema, lệnh test cụ thể, quirk tool, pattern codebase). Nếu sau khi xóa file rỗng → xóa luôn file.
 
 #### 3d. Kiểm tra các file còn lại
 
@@ -211,6 +213,8 @@ Tách thành **2 nhóm rõ ràng**:
   ✗ AGENTS.md: outdated (thiếu section X, Y từ [date])
   ✗ rules/supabase.md: chưa có (nhưng dùng Supabase)
   ✗ context/architecture.md: chưa có
+  ⚠ rules/workflow.md: sẽ xóa section "Superpowers Skills", "Cách gọi Codex" (restate template)
+                        giữ lại: [những gì project-specific]
 
 [GLOBAL CONFIG — cần fix thủ công trong session ~/.claude]
   ⚠ (liệt kê nếu phát hiện, nhưng không sửa)

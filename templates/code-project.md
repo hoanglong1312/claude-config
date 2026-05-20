@@ -5,29 +5,27 @@
 | Phase | Công cụ | Việc làm |
 |-------|---------|----------|
 | Planning | Superpowers (Claude plugin) | brainstorming → spec → writing-plans |
-| Execution | Codex MCP | Viết/sửa code, commit, chạy lệnh |
-| Orchestration + QA | Claude main | Quyết định kiến trúc, review output, quality gate |
+| Execution | Codex MCP | Viết/sửa code, commit, chạy lệnh, quality gate |
+| Orchestration + Review | Claude main | Quyết định kiến trúc, review output, điều phối |
 
 **Lưu ý quan trọng:**
 - Codex có Superpowers cài sẵn → tự follow TDD, brainstorming workflow của riêng nó
 - `subagent-driven-development` của Claude main KHÔNG dùng → Codex thay thế hoàn toàn
-- Fallback nếu Codex lỗi: dùng Claude subagent-driven-development, ghi chú lý do
 
 ## Quy Trình Execution
 
 ### Feature mới
 1. Superpowers `brainstorming` → spec
 2. Superpowers `writing-plans` → plan
-3. Gọi Codex từng task → Codex tự đọc file, implement, commit
-4. Claude main review (adversarial)
+3. Gọi Codex từng task → Codex tự đọc file, implement, chạy quality gate, commit
+4. Claude main review qua `git diff` + commit message
 5. Nếu có vấn đề: gọi Codex lại với feedback cụ thể
-6. Quality Gate: static audit + E2E test
-7. Chỉ khi pass → bàn giao user test
+6. Pass → bàn giao user test
 
 ### Bug fix / small change
-1. Claude main phân tích nguyên nhân (git log, git diff)
+1. Claude main phân tích nguyên nhân (`git log`, `git diff`)
 2. Gọi Codex fix trực tiếp
-3. Quality Gate rút gọn: build + test
+3. Codex chạy quality gate rút gọn: build + test
 
 ## Cách Gọi Codex
 
@@ -37,13 +35,32 @@ sandbox: "workspace-write"
 approval-policy: "never"
 ```
 
-Prompt phải có:
-- **Goal** rõ ràng (làm gì, tại sao)
-- **Danh sách file** cần đọc / sửa
-- **Constraints** (không break X, phải tương thích Y)
-- **Lệnh git commit** cuối
+**Template prompt chuẩn — dùng mỗi lần gọi:**
 
-Codex tự đọc file để lấy context — không cần paste code vào prompt.
+```
+Goal: [1-2 câu — làm gì, tại sao]
+
+Files cần đọc: [list]
+Files cần sửa: [list]
+
+Constraints:
+- Không break: [X]
+- Phải tương thích: [Y]
+
+Nếu gặp ambiguity: ghi assumption vào commit message dạng ASSUMPTION: ...
+
+Git commit: [format message]
+```
+
+Codex tự đọc file để lấy context — không paste code vào prompt.
+
+## Xử Lý Ambiguity — Khi Codex Không Chắc
+
+Codex không thể interrupt hỏi lại Claude giữa chừng. Thay vào đó:
+
+- Codex ghi assumption vào commit message: `ASSUMPTION: dùng X thay vì Y vì...`
+- Claude đọc commit message khi review → validate assumption
+- Nếu assumption sai → gọi Codex lại với correction cụ thể
 
 ## Token Discipline — Claude Main Session
 
@@ -54,22 +71,37 @@ Codex tự đọc file để lấy context — không cần paste code vào prom
 - Dispatch Claude subagent làm middleman
 
 **CHỈ làm:**
-- Đọc git log / git diff
+- Đọc `git log` / `git diff`
 - Viết/sửa file .md (plan, spec, rules)
 - Gọi Codex: goal + file paths + constraints
 - Quyết định kiến trúc trước khi giao Codex
 
 **Khi review output Codex:**
-- Ưu tiên đọc `git diff` — đủ cho hầu hết trường hợp
+- Ưu tiên đọc `git diff` + commit message — đủ cho hầu hết trường hợp
 - Được đọc snippet nhỏ nếu diff tham chiếu code nằm ngoài phạm vi thay đổi
 - Không đọc toàn bộ file chỉ để "hiểu context chung"
 
-## Quality Gate — Bắt Buộc Trước Khi Bàn Giao User
+## Quality Gate — Codex Tự Chạy
 
-1. **Static audit**: Codex tự rà soát output — import đúng, prop match, logic nhất quán
-2. **E2E test**: chạy test suite của project
+**Ownership: Codex chạy, không phải Claude.**
 
-Chỉ khi pass cả 2 → báo user test.
+1. **Static audit**: Codex tự rà soát — import đúng, prop match, logic nhất quán
+2. **E2E test**: Codex chạy lệnh test suite của project
+
+**Nếu fail:**
+- Codex tự fix trong cùng session → chạy lại test
+- Nếu không fix được → báo lỗi cụ thể vào commit message: `QA-FAIL: [lý do]`
+- Claude đọc → phân tích → gọi Codex lại với hướng xử lý rõ
+
+Chỉ khi pass cả 2 → commit + báo Claude review.
+
+## Fallback — Khi Codex Lỗi
+
+Fallback **không phải** "Claude subagent đọc source". Thay vào đó:
+
+1. Claude đọc `git diff` + error log Codex báo về
+2. Claude viết analysis ngắn vào file `.md` tạm
+3. Gọi Codex lại với file `.md` đó làm context bổ sung
 
 ## Quy Tắc Code
 - Viết test trước khi implement (TDD) — Codex tự follow qua Superpowers

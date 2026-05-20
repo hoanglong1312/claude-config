@@ -191,26 +191,32 @@ Nếu phát hiện → hỏi user xác nhận stack mới trước khi update.
 
 ---
 
-#### 3c. Kiểm tra rules/*.md có restate global workflow không
+#### 3c. Kiểm tra rules/*.md — chỉ được chứa tool config
 
 ```bash
 ls rules/ 2>/dev/null
 ```
 
-Với mỗi file trong `rules/`, kiểm tra có chứa nội dung đã có trong `~/.claude/templates/code-project.md` không.
+**Ranh giới cứng:** `rules/*.md` chỉ được chứa tool config thuần túy.  
+Workflow project-specific → phải nằm trong section `## Project-Specific Rules` của `CLAUDE.md`.
 
-Dấu hiệu restate:
-- Mô tả lại cách gọi Codex
-- Liệt kê lại các bước feature flow / bug fix flow
-- Viết lại token discipline, TDD rules, commit rules
+Với mỗi file trong `rules/`, kiểm tra có vi phạm ranh giới không:
 
-Nếu phát hiện → **đánh dấu xóa ngay trong Bước 5** (restate là sai chắc chắn, không cần confirm riêng):
+| Vi phạm (phải xóa khỏi rules/) | Đúng chỗ (giữ lại) |
+|--------------------------------|---------------------|
+| Workflow, quy trình Claude/Codex | MCP tool names, commands |
+| TDD rules, commit rules | Lệnh chạy test cụ thể |
+| Token discipline, feature flow | Quirk tool (EPERM, port) |
+| Bug fix flow | Pattern folder structure |
+
+Nếu `rules/workflow.md` tồn tại → **đánh dấu xóa toàn bộ** (file này không nên tồn tại):
 ```
-  ⚠ rules/workflow.md: sẽ xóa "[tên section]" (restate template)
-                        giữ lại: [những gì project-specific]
+  ⚠ rules/workflow.md: sẽ xóa (workflow config thuộc CLAUDE.md ## Project-Specific Rules)
 ```
 
-Khi cleanup: xóa phần restate, giữ project-specific. File rỗng sau khi xóa → xóa luôn file.
+Nếu file khác (supabase.md, testing.md...) có section workflow lẫn vào → chỉ xóa phần vi phạm, giữ tool config.
+
+Khi cleanup (Bước 5): di chuyển nội dung project-specific từ rules/ vào `## Project-Specific Rules` trong `CLAUDE.md` trước khi xóa. File rỗng sau cleanup → xóa luôn.
 
 ---
 

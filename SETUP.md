@@ -44,12 +44,36 @@ Nếu project trống → tiếp tục Bước 1.
 **Skeleton code project:**
 ```
 [project]/
-├── CLAUDE.md   (@~/.claude/templates/code-project.md + @context/architecture.md)
+├── CLAUDE.md   ← xem cấu trúc bên dưới
 ├── AGENTS.md   ← copy từ ~/.claude/templates/AGENTS.md, tự điền Project Context từ package.json
-├── rules/      ← tạo khi detect tool tương ứng trong deps
+├── rules/      ← CHỈ tool config (Supabase, testing...), KHÔNG chứa workflow
 └── context/
     └── architecture.md  ← blank
 ```
+
+**Cấu trúc CLAUDE.md chuẩn:**
+```markdown
+@~/.claude/templates/code-project.md
+@context/architecture.md
+@rules/supabase.md        ← thêm nếu dùng Supabase
+@rules/testing.md         ← thêm nếu có test framework
+
+## Project-Specific Rules   ← thêm ở đây nếu cần override nhỏ
+```
+
+**Thứ tự @include bắt buộc:** `code-project.md` → `rules/*` → `context/`  
+Sai thứ tự → rules ghi đè template thay vì extend.
+
+**Ranh giới rules/*.md — bắt buộc:**
+
+| Được phép trong rules/*.md | KHÔNG được phép |
+|---------------------------|-----------------|
+| MCP tool names, commands | Workflow, quy trình Claude/Codex |
+| Lệnh chạy test cụ thể | TDD rules, commit rules |
+| Quirk tool (EPERM, port, timeout) | Token discipline |
+| Pattern codebase (folder structure) | Feature flow, bug fix flow |
+
+Workflow nhỏ project-specific → thêm vào section `## Project-Specific Rules` trong `CLAUDE.md`, không tạo `rules/workflow.md`.
 
 **Blank structure khi tạo add-on files:**
 
@@ -74,8 +98,6 @@ Nếu project trống → tiếp tục Bước 1.
 
 ## Lệnh chạy test
 [tự điền từ deps: npx playwright test / npx vitest run / npx jest]
-
-## Quy Tắc
 ```
 
 ---

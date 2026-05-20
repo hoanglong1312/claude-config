@@ -34,6 +34,12 @@
 4. Gọi Codex `workspace-write` fix
 5. Review `git diff` sau khi Codex xong
 
+**Fallback nếu Codex fix sai 3 lần:**
+- Claude đọc `git diff` + commit log của 3 lần thử
+- Viết analysis ngắn vào file `.md` tạm (`docs/superpowers/debug-[issue].md`)
+- Gọi lại Codex với file đó làm context bổ sung
+- Nếu vẫn fail → Claude tự fix bằng Edit/Write (ngoại lệ token discipline)
+
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào
 2. Đọc file plan trong `docs/superpowers/specs/` → biết còn task nào chưa làm
@@ -63,12 +69,14 @@ Format mỗi task:
 
 **Template prompt — executing-plans:**
 ```
-Plan: docs/superpowers/specs/[file].md
+Plan: docs/superpowers/specs/[file].md  ← đã được Claude review và approve
 Decisions: docs/superpowers/decisions.md  ← đọc trước khi bắt đầu
 Constraints: [copy từ writing-plans prompt]
 Goal: execute theo plan, dùng dispatching-parallel-agents cho task không có dependency
 Nếu gặp mơ hồ: ghi ASSUMPTION: (giả định) vào commit message
 ```
+
+Nếu Claude đã sửa trực tiếp file plan (fallback): thêm note `Plan đã được Claude chỉnh sửa — follow file, không cần revise thêm.`
 
 Codex tự đọc file để lấy context — không paste code vào prompt.
 

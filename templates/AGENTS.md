@@ -87,9 +87,17 @@
 3. Gọi Codex tiếp từ task còn dở
 
 ### Fallback — Codex không giải quyết được sau 3 lần thử lại (retry)
+
+**Feature flow:**
 1. Claude đọc `git diff` + log `QA-FAIL:` (kiểm thử thất bại)
-2. Claude viết analysis ngắn vào file `.md` tạm
-3. Gọi Codex lại với file `.md` đó làm context bổ sung
+2. Claude viết analysis ngắn vào `docs/superpowers/debug-[feature].md`
+3. Gọi Codex lại với file đó làm context bổ sung
+
+**Bug fix flow:**
+1. Claude đọc `git diff` của 3 lần thử
+2. Claude viết analysis vào `docs/superpowers/debug-[issue].md`
+3. Gọi Codex lại với file đó
+4. Nếu vẫn fail → Claude tự fix bằng Edit/Write (ngoại lệ token discipline)
 
 ---
 

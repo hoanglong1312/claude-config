@@ -82,10 +82,12 @@ Nếu project trống → tiếp tục Bước 1.
 
 ## Bước 3 — Kiểm tra Dependencies
 
-| Tool | Kiểm tra | Cài nếu thiếu |
-|------|----------|---------------|
-| Superpowers | `/plugin list` | `/plugin install superpowers@claude-plugins-official` |
-| Markitdown | `markitdown --version` | `pip install markitdown` |
+| Tool | Kiểm tra |
+|------|----------|
+| Superpowers | `/plugin list` |
+| Markitdown | `markitdown --version` |
+
+Nếu thiếu → xem `~/.claude/README.md` để cài.
 
 ---
 

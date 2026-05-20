@@ -14,7 +14,7 @@ Tasks bắt buộc:
 1. B0: chạy `git -C ~/.claude fetch` — check behind/ahead
 2. B1: chạy `git status --short` + `git log -5` trong project — context only
 3. B2: đọc `~/.claude/SETUP.md` + đọc deps file (package.json / pyproject.toml / go.mod)
-4. B3a: đọc `CLAUDE.md` project — check @include, thứ tự, diff template nếu copy
+4. B3a: đọc `CLAUDE.md` project — check @include, thứ tự, diff template nếu copy, review toàn file tìm trùng lặp với @included content
 5. B3b: đọc `AGENTS.md` project — đọc marker date, chạy git diff template, check conflict, check Project Context
 6. B3c: đọc từng file trong `rules/` — check ranh giới tool config vs workflow
 7. B3d: kiểm tra `context/architecture.md` tồn tại
@@ -159,6 +159,30 @@ Project CLAUDE.md có phần override riêng. Muốn merge không?
 Chờ user chọn. Nếu chọn **3**: xác nhận lại "Phần override sẽ mất. Xác nhận?" trước khi xóa.
 
 Kiểm tra thêm: các add-on detect được → có `@rules/[tool].md` tương ứng chưa?
+
+**Review toàn bộ CLAUDE.md — check trùng lặp với @included content:**
+
+Đọc toàn bộ `CLAUDE.md` project. Với mỗi nội dung nằm NGOÀI các dòng `@include` (tức là nội dung local, thường trong `## Project-Specific Rules` hoặc các section khác):
+
+So sánh với nội dung thực tế của các file được @include (`code-project.md`, `rules/*.md`, `context/architecture.md`):
+- Nội dung đã có trong @include → **trùng lặp, đề xuất xóa**
+- Nội dung chỉ có trong local → **giữ lại, đúng chỗ**
+
+Ví dụ trùng lặp cần xóa:
+- Viết lại "Cách gọi Codex" trong khi code-project.md đã có
+- Liệt kê lại Superpowers skills trong khi code-project.md đã có
+- Nhắc lại TDD rules
+
+Ví dụ đúng chỗ (giữ):
+- Constraints riêng của project (DB schema không được sửa, API contract cụ thể)
+- Quality Gate riêng (lệnh test, threshold cụ thể)
+- Convention team riêng (branch naming, PR format)
+
+Nếu phát hiện trùng → báo trong Bước 4:
+```
+  ⚠ CLAUDE.md: "[tên section]" trùng với code-project.md → đề xuất xóa
+```
+Xóa trong Bước 5 sau khi user đồng ý.
 
 ---
 

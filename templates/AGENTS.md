@@ -37,6 +37,10 @@
 - Không thêm error handling cho cases không thể xảy ra
 - Không tạo abstraction nếu chỉ dùng 1-2 lần
 
+### Context Management
+- Compact / pause / dừng session **chỉ tại task boundary** (sau commit), không dừng giữa chừng implementation
+- Dừng mid-task → context mất state → risk implement sai hoặc duplicate ở lần tiếp theo
+
 ---
 
 ## Workflow

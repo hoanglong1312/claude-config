@@ -11,3 +11,6 @@ projects/
 todos/
 .last-cleanup
 *.log
+sessions/
+shell-snapshots/
+telemetry/

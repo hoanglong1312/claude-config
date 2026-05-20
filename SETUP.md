@@ -44,8 +44,9 @@ Nếu project trống → tiếp tục Bước 1.
 **Skeleton code project:**
 ```
 [project]/
-├── CLAUDE.md  (@~/.claude/templates/code-project.md + @context/architecture.md)
-├── rules/     ← trống, add-ons thêm khi cần
+├── CLAUDE.md   (@~/.claude/templates/code-project.md + @context/architecture.md)
+├── AGENTS.md   ← copy từ ~/.claude/templates/AGENTS.md, điền Project Context
+├── rules/      ← trống, add-ons thêm khi cần
 └── context/
     └── architecture.md  ← blank
 ```

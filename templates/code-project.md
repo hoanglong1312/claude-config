@@ -118,6 +118,20 @@ Fallback **không phải** "Claude subagent đọc source". Thay vào đó:
 2. Claude viết analysis ngắn vào file `.md` tạm
 3. Gọi Codex lại với file `.md` đó làm context bổ sung
 
+## Đồng Bộ CLAUDE.md ↔ AGENTS.md
+
+Mọi thay đổi ảnh hưởng đến cả Claude lẫn Codex phải cập nhật **cả 2 file cùng lúc**:
+
+| Thay đổi | Cập nhật |
+|----------|----------|
+| Workflow, quy trình mới | `CLAUDE.md` + `AGENTS.md` |
+| Convention mới (ASSUMPTION:, QA-FAIL:...) | `CLAUDE.md` + `AGENTS.md` |
+| Thêm/bỏ tool, stack | `AGENTS.md` Project Context + `context/architecture.md` |
+| Rule chỉ liên quan Claude main | `CLAUDE.md` hoặc `rules/*.md` |
+| Rule chỉ liên quan Codex | `AGENTS.md` |
+
+Không cập nhật 1 file mà bỏ quên file kia.
+
 ## Quy Tắc Code
 - Viết test trước khi implement (TDD) — Codex tự follow qua Superpowers
 - Commit sau mỗi task hoàn thành

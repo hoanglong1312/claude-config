@@ -62,3 +62,18 @@ Format nhắc ngắn gọn, không dài dòng:
 # Khởi Tạo Project Mới
 
 Nếu vào project KHÔNG có CLAUDE.md → đọc `~/.claude/SETUP.md` và làm theo.
+
+# Add-On Rules — Load Khi Cần
+
+Khi đang làm việc trong code project, nếu phát hiện project dùng tool có sẵn template → hỏi user:
+> "Project đang dùng [Supabase / Playwright / ...] — có muốn load rules sẵn có không? Em copy từ template global về và thêm vào CLAUDE.md."
+
+Nếu đồng ý:
+1. Copy `~/.claude/templates/rules/[tool].md` → `[project]/rules/[tool].md`
+2. Thêm `@rules/[tool].md` vào CLAUDE.md của project
+
+| Tool phát hiện | Template có sẵn |
+|---|---|
+| Supabase (import, MCP call) | `~/.claude/templates/rules/supabase.md` |
+| Playwright (import, config) | `~/.claude/templates/rules/testing.md` |
+| Vitest / Jest | `~/.claude/templates/rules/testing.md` |

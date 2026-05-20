@@ -23,35 +23,26 @@ Xong. Không cần làm thêm gì.
 ---
 
 ### code-project
-Tạo cấu trúc 3 tầng:
+Tạo cấu trúc skeleton — không hỏi về stack, add-ons load sau khi cần:
 
 ```
 [project]/
 ├── CLAUDE.md
-├── rules/              ← add-ons tùy chọn
+├── rules/              ← trống, add-ons thêm dần khi cần
 └── context/
     └── architecture.md
 ```
 
-**`CLAUDE.md`** — @import base template + add-ons:
+**`CLAUDE.md`** — chỉ @import base template + context:
 ```markdown
 # CLAUDE.md — [Tên Project]
 
 @~/.claude/templates/code-project.md
-
-@rules/supabase.md
-@rules/testing.md
 @context/architecture.md
 ```
 
-**Add-ons — hỏi trước khi tạo:**
-
-| Hỏi | Nếu có → tạo file |
-|-----|-------------------|
-| "Dùng Supabase không?" | `rules/supabase.md` (copy từ `~/.claude/templates/rules/supabase.md`) |
-| "Testing tool là gì?" | `rules/testing.md` (copy từ `~/.claude/templates/rules/testing.md`, điền lệnh test) |
-
-Nếu không dùng thì không tạo, không @import vào CLAUDE.md.
+Add-ons (`rules/supabase.md`, `rules/testing.md`...) **KHÔNG tạo lúc init**.
+Claude tự nhận ra khi project dùng tool nào → hỏi user → copy từ template global về → thêm @import vào CLAUDE.md.
 
 **`context/architecture.md`** — tạo blank, user điền dần:
 ```markdown

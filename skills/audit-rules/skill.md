@@ -63,16 +63,25 @@ Kiểm tra nội dung `CLAUDE.md` của project:
 - Có `@context/architecture.md` chưa?
 - Các add-on detect được → có `@rules/[tool].md` tương ứng chưa?
 
-Nếu `AGENTS.md` đã tồn tại, kiểm tra version marker và các section quan trọng:
+Nếu `AGENTS.md` đã tồn tại, kiểm tra version marker:
 
 ```bash
-grep "template:" AGENTS.md          # version marker
-grep "Files:" AGENTS.md             # plan format
-grep "decisions.md" AGENTS.md       # ASSUMPTION: loop
-grep "dispatching-parallel-agents" AGENTS.md
+grep "template:" AGENTS.md    # lấy date, ví dụ: <!-- template: 2026-05-20 -->
 ```
 
-Nếu thiếu → "AGENTS.md outdated" → đề xuất merge phần Workflow từ template, **giữ nguyên** Project Context.
+Nếu có marker → so sánh với template hiện tại bằng git diff (chỉ đọc delta, không đọc lại toàn bộ):
+
+```bash
+# Lấy commit hash tại thời điểm version marker
+git -C ~/.claude log --oneline --before="[marker-date] 23:59" -1 -- templates/AGENTS.md
+
+# Xem chỉ những phần đã thay đổi kể từ đó
+git -C ~/.claude diff [commit-hash]..HEAD -- templates/AGENTS.md
+```
+
+Từ diff output → chỉ báo **đúng những section thay đổi**, không list lại toàn bộ file.
+
+Nếu không có marker → "AGENTS.md không có version marker" → đề xuất merge toàn bộ Workflow section từ template, giữ nguyên Project Context.
 
 ### Bước 4 — Báo cáo
 

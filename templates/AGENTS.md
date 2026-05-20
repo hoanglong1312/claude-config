@@ -20,7 +20,6 @@
 | **Superpowers** (Claude plugin) | Planning: brainstorming → spec |
 | **Claude Code** | Orchestration + Review: quyết định kiến trúc, review plan + output |
 | **Codex** | Planning chi tiết + Execution + QA: writing-plans, executing-plans, chạy test, commit |
-| **Cursor** | Quick fix trong editor |
 
 ---
 
@@ -73,7 +72,7 @@
 
 ### Claude Code — review output Codex
 1. Đọc `git diff` + commit message
-2. Xác nhận (validate) `ASSUMPTION:` (giả định) nếu có
+2. Xác nhận (validate) `ASSUMPTION:` (giả định) nếu có → ghi quyết định vào `docs/superpowers/decisions.md`
 3. Kiểm tra: đúng scope, test pass, không regression, nhất quán với spec
 4. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
 5. **Definition of Done** trước khi bàn giao:
@@ -100,9 +99,10 @@
 - Thử lại (retry) QA quá 3 lần mà không báo lên (escalate)
 - Tự thêm dependencies không có trong plan
 - Bỏ qua step review nếu có code review skill
+- Thêm project-specific rules vào file này → đặt vào `rules/[tool].md` trong project
 
 ---
 
 *Cập nhật: 2026-05-20*
 
-<!-- template: 2026-05-20 -->
+<!-- template: 2026-05-20 v2 -->

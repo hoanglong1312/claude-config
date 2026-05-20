@@ -33,7 +33,6 @@
 3. Claude đánh giá root cause → quyết định approach
 4. Gọi Codex `workspace-write` fix
 5. Review `git diff` sau khi Codex xong
-6. Claude main chạy Playwright trực tiếp — **không** giao Codex (sandbox EPERM khi bind port)
 
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào
@@ -126,6 +125,18 @@ docs/superpowers/
 | Thêm/bỏ tool, stack | `AGENTS.md` Project Context + `context/architecture.md` |
 | Rule chỉ liên quan Claude main | `CLAUDE.md` hoặc `rules/*.md` |
 | Rule chỉ liên quan Codex | `AGENTS.md` |
+| Sửa template `AGENTS.md` | Cập nhật `<!-- template: YYYY-MM-DD -->` ở cuối file |
+
+## Quy Tắc Mở Rộng
+
+**Project-specific rules → `rules/[tool].md` trong project, KHÔNG sửa file global.**
+
+| Loại rule | Đặt ở đâu |
+|-----------|-----------|
+| Quirk của tool (EPERM, bind port, timeout) | `rules/[tool].md` trong project |
+| Pattern riêng của codebase | `context/architecture.md` |
+| Convention riêng team | `rules/workflow.md` trong project |
+| Rule áp dụng mọi code project | `~/.claude/templates/code-project.md` |
 
 ## Thông Tin Project
 - Tên: [tên project]

@@ -70,10 +70,10 @@ Không có file deps → project chưa có code, dừng.
 
 ### B2 — Kiểm tra CLAUDE.md
 
-#### Bước 1: file tồn tại không?
+**File tồn tại không?**
 Không tồn tại → flag thiếu, skip phần còn lại.
 
-#### Bước 2: dùng @include hay copy thủ công?
+**@include hay copy thủ công?**
 
 ```bash
 grep "@~/.claude/templates/code-project.md" CLAUDE.md
@@ -108,7 +108,7 @@ Template đã cập nhật [N] section. Muốn merge không?
 ```
 Option 3 → xác nhận "Override sẽ mất. Xác nhận?" trước khi xóa.
 
-#### Bước 3: review nội dung local — tìm trùng lặp
+**Review nội dung local — tìm trùng lặp:**
 
 Đọc toàn bộ CLAUDE.md. Với mỗi nội dung nằm ngoài các dòng `@include`:
 
@@ -123,7 +123,7 @@ Trùng lặp điển hình: viết lại cách gọi Codex, liệt kê Superpowe
 
 Không tồn tại → flag thiếu, dừng.
 
-#### Phát hiện thay đổi template
+**Phát hiện thay đổi template:**
 
 ```bash
 MARKER_DATE=$(grep "template:" AGENTS.md | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
@@ -135,7 +135,7 @@ Không có marker → đề xuất merge toàn bộ Workflow section, giữ Proj
 
 Diff rỗng → AGENTS.md up-to-date ✓
 
-#### Xử lý từng section thay đổi
+**Xử lý từng section thay đổi:**
 
 Với mỗi section trong diff:
 - Project chưa sửa section đó → merge tự động

@@ -61,46 +61,10 @@ Format nhắc ngắn gọn, không dài dòng:
 
 # Khởi Tạo Project Mới
 
-Nếu vào project KHÔNG có CLAUDE.md, chạy flow sau:
+Nếu vào project KHÔNG có CLAUDE.md:
 
-## Bước 1 — Xác định loại project
-Hỏi: "Project này thuộc loại nào?"
-- **code-project** → đi tiếp Bước 2
-- **research** → tạo CLAUDE.md từ `~/.claude/templates/research.md`, xong
-- **finance** → tạo CLAUDE.md từ `~/.claude/templates/finance.md`, xong
-- **personal** → tạo CLAUDE.md từ `~/.claude/templates/personal.md`, xong
-
-## Bước 2 — Code project: hỏi thêm stack
-Hỏi lần lượt (không hỏi cùng lúc):
-1. "Project dùng Supabase không?" (có/không)
-2. "Testing tool là gì?" (Playwright / Vitest / Jest / chưa có)
-
-## Bước 3 — Tạo cấu trúc chuẩn
-
-Tạo các folder và file theo cấu trúc 3 tầng:
-
-```
-[project]/
-├── CLAUDE.md                ← lean, chỉ dùng @imports
-├── rules/
-│   ├── workflow.md          ← copy từ ~/.claude/templates/rules/workflow-template.md
-│   ├── supabase.md          ← CHỈ tạo nếu dùng Supabase
-│   └── testing.md           ← copy từ ~/.claude/templates/rules/testing.md + điền lệnh test
-└── context/
-    └── architecture.md      ← điền stack, file quan trọng, constraints
-```
-
-**CLAUDE.md chuẩn:**
-```markdown
-# CLAUDE.md — [Tên Project]
-
-@context/architecture.md
-@rules/workflow.md
-@rules/supabase.md    ← chỉ có nếu dùng Supabase
-@rules/testing.md
-```
-
-## Bước 4 — Nhắc cài plugin nếu chưa có
-Kiểm tra Superpowers đã cài chưa. Nếu chưa → nhắc: "Chạy `/plugin install superpowers@claude-plugins-official` để cài Superpowers."
-
-## Bước 5 — Báo xong và tiếp tục làm việc
+1. Hỏi: "Project này thuộc loại nào?"
+   - **research** → tạo CLAUDE.md từ `~/.claude/templates/research.md`, xong
+   - **finance** → tạo CLAUDE.md từ `~/.claude/templates/finance.md`, xong
+   - **personal** → tạo CLAUDE.md từ `~/.claude/templates/personal.md`, xong
+   - **code-project** → đọc `~/.claude/SETUP.md` và làm theo hướng dẫn trong đó

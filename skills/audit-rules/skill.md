@@ -42,27 +42,25 @@ Nếu up-to-date hoặc không có remote → tiếp tục.
 
 ---
 
-### Bước 1 — Xem project có gì thay đổi gần đây (git-first)
+### Bước 1 — Snapshot toàn project bằng git
 
-Dùng git để có cái nhìn tổng thể trước khi check từng file:
+Dùng 2 lệnh để có cái nhìn tổng thể — tracked + untracked + history:
 
 ```bash
-# Xem 10 commit gần nhất liên quan đến rules files
-git log --oneline -10 -- CLAUDE.md AGENTS.md rules/ context/
+git status --short        # tất cả thay đổi: staged, unstaged, untracked
+git log --oneline -5      # 5 commit gần nhất (không filter theo path)
 ```
 
 Nếu project **không có git** → skip bước này, tiếp tục Bước 2.
 
-Nếu có git → đọc output để hiểu:
-- File nào vừa được sửa (và khi nào)
-- File nào chưa bao giờ commit (untracked)
-- File nào không có trong git history (chưa tồn tại)
+Từ `git status --short` → nhận dạng:
+- `??` = file mới chưa commit (rules/, context/ thường rơi vào đây)
+- `M` = file đã sửa
+- `A` = file đã stage để commit
 
-Tiếp theo, xem staged/unstaged changes nếu có:
+Từ `git log` → biết project đang ở giai đoạn nào (mới init, đang dev, hay ổn định).
 
-```bash
-git status -- CLAUDE.md AGENTS.md rules/ context/
-```
+Không cần filter theo path — mục tiêu là thấy toàn cảnh trước khi đi sâu.
 
 ---
 

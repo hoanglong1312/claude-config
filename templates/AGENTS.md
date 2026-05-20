@@ -53,22 +53,22 @@
 1. Đọc file liên quan để lấy context (tự đọc, không cần Claude paste)
 2. Viết test trước khi viết code (TDD)
 3. Implement theo đúng spec
-4. Nếu gặp mơ hồ (ambiguity) → ghi vào commit message: `ASSUMPTION: dùng X thay vì Y vì...`
+4. Nếu gặp mơ hồ (ambiguity) → ghi `ASSUMPTION:` (giả định) vào commit message: `ASSUMPTION: dùng X thay vì Y vì...`
 5. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
    - Kiểm thử toàn trình (E2E test): chạy test suite
 6. Nếu QA fail → tự fix, tối đa **3 lần thử lại (retry)**
-7. Sau 3 lần vẫn fail → ghi `QA-FAIL: [lý do + những gì đã thử]` → báo lên (escalate) Claude
+7. Sau 3 lần vẫn fail → ghi `QA-FAIL:` (kiểm thử thất bại) → báo lên (escalate) Claude: `QA-FAIL: [lý do + những gì đã thử]`
 8. Pass → commit + báo Claude review
 
 ### Claude Code — review output Codex
 1. Đọc `git diff` + commit message
-2. Xác nhận (validate) `ASSUMPTION:` nếu có
+2. Xác nhận (validate) `ASSUMPTION:` (giả định) nếu có
 3. Kiểm tra: đúng scope, test pass, không regression, nhất quán với spec
 4. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
 
 ### Fallback — Codex không giải quyết được sau 3 lần thử lại (retry)
-1. Claude đọc `git diff` + log `QA-FAIL`
+1. Claude đọc `git diff` + log `QA-FAIL:` (kiểm thử thất bại)
 2. Claude viết analysis ngắn vào file `.md` tạm
 3. Gọi Codex lại với file `.md` đó làm context bổ sung
 

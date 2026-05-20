@@ -3,6 +3,7 @@
 # Quy Tắc Ngôn Ngữ
 - Trả lời bằng tiếng Việt
 - Thuật ngữ kỹ thuật: Tiếng Việt (English term) — ví dụ: vòng lặp (loop)
+- Ký hiệu cố định (commit convention, code): giữ nguyên ký hiệu, thêm nghĩa tiếng Việt trong () — ví dụ: `ASSUMPTION:` (giả định), `QA-FAIL:` (kiểm thử thất bại)
 
 # Markitdown — Chuyển File Trước Khi Đọc
 

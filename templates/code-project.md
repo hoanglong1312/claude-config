@@ -29,7 +29,18 @@
 
 ### Bug fix / small change
 
-**Phase 1 — Investigation (Codex làm, không ăn main context)**
+**Phân loại bug trước — bắt buộc:**
+
+| Size | Dấu hiệu | Flow |
+|------|----------|------|
+| S | 1-2 file, triệu chứng rõ, error message cụ thể | Skip Phase 1 → giao Codex fix thẳng |
+| M/L | Cross-file, unclear cause, nhiều suspect | 2-phase đầy đủ |
+
+**Bug S — fast path:**
+1. Claude đọc symptom → viết fix instruction ngắn (file + expected behavior)
+2. Giao Codex fix thẳng, không cần investigation plan
+
+**Bug M/L — Phase 1 — Investigation (Codex làm, không ăn main context)**
 
 1. Claude đọc `git log` / `git diff` → hiểu symptom
 2. Claude viết investigation plan vào `docs/superpowers/debug-[issue].md`:
@@ -103,6 +114,34 @@ Codex tự đọc file để lấy context — không paste code vào prompt.
 - KHÔNG parallel: agent A thêm prop → agent B dùng prop đó (race condition)
 - Có dependency → gộp 1 agent hoặc chạy tuần tự
 
+## DB / RLS Pattern
+
+**Phân công cứng:**
+
+| Việc | Ai làm |
+|------|--------|
+| Viết SQL migration file | Codex |
+| Apply migration | Claude (`mcp__supabase__apply_migration`) |
+| Verify kết quả | Claude (`mcp__supabase__execute_sql`) |
+| Tra schema khi viết SQL | Codex (nếu có read-only MCP) |
+
+**Codex read-only Supabase (tùy chọn, recommended):**
+
+Thêm vào `~/.codex/config.yaml` của project:
+```yaml
+mcpServers:
+  supabase-readonly:
+    command: npx
+    args: ["-y", "@supabase/mcp-server-supabase@latest",
+           "--access-token", "${SUPABASE_ACCESS_TOKEN}",
+           "--read-only"]
+```
+
+Cho phép Codex tự tra `list_tables`, `execute_sql` (SELECT) → ít ASSUMPTION hơn.
+Write operations (`apply_migration`, INSERT/UPDATE/DELETE) vẫn do Claude thực thi.
+
+---
+
 ## Token Discipline — Claude Main Session
 
 **KHÔNG làm:**
@@ -125,6 +164,7 @@ Codex tự đọc file để lấy context — không paste code vào prompt.
 
 **Khi review output Codex — checklist adversarial:**
 - Đọc `git diff` + commit message (bắt buộc)
+- Grep `ASSUMPTION:` trong commit message ngay — nếu có → append vào `docs/superpowers/decisions.md` TRƯỚC KHI làm bất cứ gì khác (không để sang session sau)
 - Kiểm tra: có `ASSUMPTION:` (giả định) nào cần xác nhận không?
   → Nếu có: quyết định + append vào `docs/superpowers/decisions.md`:
   ```

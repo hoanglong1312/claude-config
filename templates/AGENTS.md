@@ -67,7 +67,21 @@
 
 2. Sau khi Claude approve → đọc `docs/superpowers/decisions.md` (nếu có) trước khi bắt đầu → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task **chỉ khi `Depends on: none`** — task có dependency phải chờ task trước commit xong mới bắt đầu
 
-   **Parallel safety rule:** KHÔNG parallel nếu agent A thêm prop/type/interface mà agent B sẽ dùng — race condition, agent B break khi A chưa commit. Gộp vào 1 agent hoặc chạy tuần tự.
+   **Task Size gate — bắt buộc trước executing-plans:**
+   - Task `Size: L` → PHẢI chia thành 2-3 sub-task trước khi execute
+   - List sub-task trong plan file → báo Claude approve → mới chạy
+   - Task `Size: S / M` → execute bình thường
+
+   **Parallel safety rule — kiểm tra trước khi dispatch:**
+   KHÔNG parallel nếu agent A thêm prop/type/interface mà agent B sẽ dùng — race condition, agent B break khi A chưa commit. Gộp vào 1 agent hoặc chạy tuần tự.
+
+   **Parallel safety check — chạy trước khi dispatch:**
+   ```bash
+   # Tìm file nào export type/interface được import bởi file khác trong task list
+   grep -r "export type\|export interface" [files-in-task-A] 2>/dev/null
+   grep -r "import.*from.*[files-in-task-A]" [files-in-task-B] 2>/dev/null
+   ```
+   Nếu task B import từ file task A đang sửa → gộp 1 agent, không parallel.
 3. Nếu gặp mơ hồ (ambiguity) → **ưu tiên đọc `docs/superpowers/decisions.md` trước** — nếu đã có quyết định thì follow, không cần ghi ASSUMPTION: thêm. Nếu chưa có → ghi `ASSUMPTION:` (giả định) vào commit message
 4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
@@ -118,6 +132,6 @@
 
 ---
 
-*Cập nhật: 2026-05-20*
+*Cập nhật: 2026-05-21*
 
-<!-- template: 2026-05-20 -->
+<!-- template: 2026-05-21 -->

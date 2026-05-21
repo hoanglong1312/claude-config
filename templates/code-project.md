@@ -24,8 +24,11 @@
 8. **Definition of Done** trước khi bàn giao:
    - [ ] Tất cả tests pass, không regression
    - [ ] `ASSUMPTION:` (giả định) đã được xác nhận (validate)
+   - [ ] `ENV-REQUIRED:` (nếu có) đã được user set
+   - [ ] Không có package mới ngoài plan
    - [ ] git diff đã được Claude approve
    - [ ] User acceptance test pass
+   - [ ] `docs/superpowers/debug-*.md` của feature này đã archive hoặc xóa
 
 ### Bug fix / small change
 
@@ -173,9 +176,11 @@ Write operations (`apply_migration`, INSERT/UPDATE/DELETE) vẫn do Claude thự
   - Decision: [Claude quyết định gì]
   - Applies to: [task / file liên quan]
   ```
+- Kiểm tra: có `ENV-REQUIRED:` không → nhắc user set trước khi deploy
 - Kiểm tra: thay đổi đúng scope task, không thêm feature ngoài
+- Kiểm tra: không có package mới ngoài plan (xem `package.json` diff)
 - Kiểm tra: test pass, không regression
-- Kiểm tra: logic nhất quán với spec
+- Kiểm tra: logic nhất quán với spec — nếu lệch → cập nhật spec ngay
 
 ## Cấu Trúc `docs/superpowers/`
 

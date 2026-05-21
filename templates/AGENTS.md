@@ -83,6 +83,11 @@
    ```
    Nếu task B import từ file task A đang sửa → gộp 1 agent, không parallel.
 3. Nếu gặp mơ hồ (ambiguity) → **ưu tiên đọc `docs/superpowers/decisions.md` trước** — nếu đã có quyết định thì follow, không cần ghi ASSUMPTION: thêm. Nếu chưa có → ghi `ASSUMPTION:` (giả định) vào commit message
+
+   **Signals bắt buộc trong commit message:**
+   - `ASSUMPTION:` — giả định cần Claude xác nhận
+   - `ENV-REQUIRED: VAR_NAME — [dùng cho gì]` — env var mới cần set trước khi deploy
+   - `QA-FAIL:` — test fail sau 3 lần retry, cần Claude can thiệp
 4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
    - Kiểm thử toàn trình (E2E test): chạy test suite
@@ -98,8 +103,10 @@
 5. **Definition of Done** trước khi bàn giao:
    - [ ] Tất cả tests pass, không regression
    - [ ] `ASSUMPTION:` (giả định) đã được xác nhận (validate)
+   - [ ] `ENV-REQUIRED:` (nếu có) đã được user set
    - [ ] git diff đã được Claude approve
    - [ ] User acceptance test pass
+   - [ ] `docs/superpowers/debug-*.md` của feature này đã archive hoặc xóa
 
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào
@@ -126,12 +133,13 @@
 
 - Push code chưa pass tests
 - Thử lại (retry) QA quá 3 lần mà không báo lên (escalate)
-- Tự thêm dependencies không có trong plan
+- Tự thêm dependencies không có trong plan → ghi `ASSUMPTION:` báo Claude approve trước
 - Bỏ qua step review nếu có code review skill
 - Thêm project-specific rules vào file này → đặt vào `rules/[tool].md` trong project
+- Âm thầm lệch spec — nếu implementation cần lệch → ghi `ASSUMPTION: [lý do lệch]` → dừng → báo Claude cập nhật spec trước khi continue
 
 ---
 
-*Cập nhật: 2026-05-21*
+*Cập nhật: 2026-05-21 (rev2)*
 
 <!-- template: 2026-05-21 -->

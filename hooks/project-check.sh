@@ -44,7 +44,12 @@ if [ -f "$PROJECT_DIR/package.json" ] || [ -f "$PROJECT_DIR/go.mod" ] || [ -f "$
 fi
 
 if [ -n "$GAPS" ]; then
-  echo "PROJECT-GAPS-DETECTED: Thiếu:$GAPS — Hỏi user: 'Phát hiện project thiếu một số file chuẩn ($GAPS). Muốn tạo không?' → nếu có: đọc ~/.claude/SETUP.md section tương ứng"
+  GAP_COUNT=$(echo "$GAPS" | wc -w | tr -d ' ')
+  if [ "$GAP_COUNT" -ge 3 ]; then
+    echo "PROJECT-GAPS-DETECTED: Thiếu:$GAPS — Hỏi user: 'Phát hiện project thiếu $GAP_COUNT file chuẩn ($GAPS). Muốn tạo không?' → nếu có: đọc ~/.claude/SETUP.md. Nhiều gap → đề xuất thêm: 'Hoặc chạy sync-rules để audit toàn bộ?'"
+  else
+    echo "PROJECT-GAPS-DETECTED: Thiếu:$GAPS — Hỏi user: 'Phát hiện project thiếu một số file chuẩn ($GAPS). Muốn tạo không?' → nếu có: đọc ~/.claude/SETUP.md section tương ứng"
+  fi
 fi
 
 # Nếu không có gap → im lặng, không output gì

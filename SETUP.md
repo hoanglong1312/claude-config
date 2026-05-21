@@ -1,12 +1,14 @@
-# Project Init
+# SETUP.md — Project Master Reference
 
-*Claude đọc file này khi vào project không có CLAUDE.md.*
+*Đọc file này khi: (1) init project mới, (2) mở rộng project hiện tại, (3) tìm template component.*
 
 ---
 
-## Bước 0 — Audit project hiện tại
+## PHẦN 1 — Init Project Mới
 
-Nếu project có sẵn code (`package.json`, `*.py`, `*.go`...):
+### Bước 0 — Audit project có sẵn code
+
+Nếu project có `package.json`, `*.py`, `*.go`:
 
 1. Đọc file deps → detect stack
 2. Kiểm tra gaps:
@@ -14,87 +16,68 @@ Nếu project có sẵn code (`package.json`, `*.py`, `*.go`...):
 | Kiểm tra | Kết quả |
 |----------|---------|
 | `CLAUDE.md` | có / chưa → sẽ tạo |
-| `CLAUDE.local.md` | có / chưa → sẽ tạo + gitignore |
+| `CLAUDE.local.md` | có / chưa → tạo + gitignore |
 | `.gitignore` | có / chưa → tạo hoặc append |
-| `.mcp.json` | có / chưa → hỏi (code project) |
-| `rules/` folder | có / chưa → sẽ tạo |
+| `.mcp.json` | có / chưa → hỏi |
+| `.claude/rules/` | có / chưa → sẽ tạo |
 | `context/architecture.md` | có / chưa → tạo blank |
-| `@supabase/supabase-js` trong deps | → hỏi load `rules/supabase.md` |
-| `playwright` trong deps | → hỏi load `rules/testing.md` (Playwright) |
-| `vitest` / `jest` trong deps | → hỏi load `rules/testing.md` |
+| `@supabase/supabase-js` trong deps | → hỏi load `supabase.md` |
+| `playwright` trong deps | → hỏi load `testing.md` |
+| `vitest` / `jest` trong deps | → hỏi load `testing.md` |
 
 3. Báo cáo + xác nhận 1 lần → tạo hết.
 
-Nếu project trống → tiếp tục Bước 1.
+Nếu project trống → Bước 1.
 
 ---
 
-## Bước 1 — Hỏi loại project
+### Bước 1 — Hỏi loại project
 
 > "Project này thuộc loại nào: code / research / finance / personal / business?"
 
 ---
 
-## Bước 2 — Tạo theo loại
+### Bước 2 — Skeleton theo loại
 
-| Loại | Làm gì |
-|------|--------|
-| research | Tạo `CLAUDE.md` từ `~/.claude/templates/research.md` |
-| finance | Tạo `CLAUDE.md` từ `~/.claude/templates/finance.md` |
-| personal | Tạo `CLAUDE.md` từ `~/.claude/templates/personal.md` |
-| business | Tạo skeleton — xem chi tiết bên dưới |
-| code | Tạo skeleton — xem chi tiết bên dưới |
-
----
-
-### Skeleton — Personal / Research / Finance
-
+**Personal / Research / Finance:**
 ```
 [project]/
 ├── CLAUDE.md              ← @include template tương ứng
-├── CLAUDE.local.md        ← gitignored, override cá nhân
+├── CLAUDE.local.md        ← gitignored
 └── .gitignore
 ```
 
-`.gitignore` tối thiểu:
-```
-CLAUDE.local.md
-.env
-*.local.*
+CLAUDE.md:
+```markdown
+@~/.claude/templates/[personal|research|finance].md
+
+## Project-Specific Rules
+[thêm nếu cần]
 ```
 
 ---
 
-### Skeleton — Business Project
-
+**Business:**
 ```
 [project]/
-├── CLAUDE.md              ← @include business.md + khai báo specialization
-├── CLAUDE.local.md        ← gitignored
+├── CLAUDE.md
+├── CLAUDE.local.md
 ├── .gitignore
 ├── data/
-│   ├── raw/               ← file gốc KHÔNG sửa
-│   └── processed/         ← đã clean, sẵn phân tích
+│   ├── raw/               ← KHÔNG sửa file gốc
+│   └── processed/
 ├── reports/
 │   ├── weekly/
 │   └── monthly/
-├── sop/                   ← blank, viết dần
+├── sop/
 └── context/
-    ├── business-overview.md   ← blank, điền thông tin doanh nghiệp
-    └── decisions.md           ← blank
+    ├── business-overview.md
+    └── decisions.md
 ```
 
-Nếu specialization = F&B → thêm:
-```
-├── menu/
-│   ├── current/
-│   └── costing/
-└── hr/
-    ├── schedules/
-    └── onboarding/
-```
+F&B thêm: `menu/current/`, `menu/costing/`, `hr/schedules/`, `hr/onboarding/`
 
-**Cấu trúc CLAUDE.md chuẩn cho business:**
+CLAUDE.md:
 ```markdown
 @~/.claude/templates/business.md
 
@@ -107,151 +90,295 @@ Nếu specialization = F&B → thêm:
 
 ---
 
-### Skeleton — Code Project
-
+**Code:**
 ```
 [project]/
-├── CLAUDE.md              ← xem cấu trúc bên dưới
-├── CLAUDE.local.md        ← gitignored, override cá nhân
+├── CLAUDE.md
+├── CLAUDE.local.md
 ├── .gitignore
-├── .mcp.json              ← MCP servers (Codex bắt buộc, Supabase nếu dùng)
+├── .mcp.json
 ├── AGENTS.md              ← copy từ ~/.claude/templates/AGENTS.md
-├── .claude/               ← tạo component nào khi cần, không bắt buộc tất cả
-│   ├── settings.json      ← khi cần permission / hook riêng
-│   ├── settings.local.json ← gitignored, cá nhân
-│   ├── hooks/             ← khi cần automation
-│   ├── agents/            ← khi cần sub-agent context riêng
-│   ├── commands/          ← khi cần /slash command riêng
-│   ├── output-styles/     ← khi project cần format output đặc thù
-│   └── rules/             ← CHỈ tool config + path-scoped rules
-│       ├── supabase.md    ← nếu dùng Supabase
-│       ├── testing.md     ← nếu có test framework
-│       └── api.md         ← nếu có API layer riêng (path-scoped)
+├── .claude/               ← chỉ tạo component cần thiết
+│   ├── rules/
+│   │   ├── supabase.md    ← nếu dùng Supabase
+│   │   └── testing.md     ← nếu có test framework
+│   └── settings.json      ← nếu cần permission riêng
 ├── context/
-│   └── architecture.md    ← blank
+│   └── architecture.md
 └── docs/superpowers/
     ├── specs/
-    └── decisions.md       ← blank
+    └── decisions.md
 ```
 
-**Cấu trúc CLAUDE.md chuẩn:**
+CLAUDE.md:
 ```markdown
 @~/.claude/templates/code-project.md
 @context/architecture.md
-@.claude/rules/supabase.md   ← thêm nếu dùng Supabase
-@.claude/rules/testing.md    ← thêm nếu có test framework
+@.claude/rules/supabase.md
+@.claude/rules/testing.md
 
-## Project-Specific Rules   ← thêm ở đây nếu cần override nhỏ
+## Project-Specific Rules
 ```
 
-**Thứ tự @include bắt buộc:** `code-project.md` → `.claude/rules/*` → `context/`
-Sai thứ tự → rules ghi đè template thay vì extend.
+Thứ tự @include: `code-project.md` → `.claude/rules/*` → `context/`
+
+`.gitignore` tối thiểu:
+```
+CLAUDE.local.md
+.claude/settings.local.json
+.env
+*.local.*
+```
 
 ---
 
-## Hướng Dẫn `.claude/` — Tạo Khi Nào
+### Bước 3 — Kiểm tra Dependencies
 
-Không tạo folder `.claude/` mặc định. Chỉ tạo component nào khi project thực sự cần:
+| Tool | Kiểm tra |
+|------|----------|
+| Superpowers | `/plugin list` |
+| Markitdown | `markitdown --version` |
 
-| Component | Tạo khi nào | Ví dụ dùng |
-|---|---|---|
-| `settings.json` | Cần permission hoặc hook riêng cho project | Allowlist lệnh test cụ thể |
-| `hooks/SessionStart.sh` | Muốn auto-load context khi khởi động session | Đọc `decisions.md` tự động |
-| `hooks/PreCompact.sh` | Muốn lưu state trước khi compact context | Ghi todo còn dở |
-| `hooks/PostToolUse.sh` | Muốn auto-commit sau mỗi lần edit file | CI workflow |
-| `agents/` | Cần sub-agent chạy với context window riêng | Security reviewer, researcher |
-| `commands/` | Muốn `/slash` command riêng cho project | `/ship`, `/deploy`, `/test` |
+Nếu thiếu → xem `~/.claude/README.md`.
 
-**Template `hooks/SessionStart.sh`:**
+### Bước 4 — Báo xong, bắt đầu làm việc
+
+---
+
+## PHẦN 2 — Mở Rộng Project Hiện Tại
+
+Khi user nói muốn thêm gì → đọc PHẦN 3 để lấy template, tạo component tương ứng.
+
+| User muốn | Component cần tạo |
+|---|---|
+| Auto-commit sau khi edit | `.claude/hooks/PostToolUse.sh` |
+| Load context khi mở session | `.claude/hooks/SessionStart.sh` |
+| Lưu state trước compact | `.claude/hooks/PreCompact.sh` |
+| Sub-agent review code | `.claude/agents/code-reviewer.md` |
+| Sub-agent tìm web | `.claude/agents/researcher.md` |
+| Sub-agent phân tích log | `.claude/agents/log-analyzer.md` |
+| Sub-agent security review | `.claude/agents/security-reviewer.md` |
+| /ship command | `.claude/commands/ship.md` |
+| /test command | `.claude/commands/test.md` |
+| Rules cho Supabase | `.claude/rules/supabase.md` |
+| Rules cho testing | `.claude/rules/testing.md` |
+| Rules riêng cho API layer | `.claude/rules/api.md` (path-scoped) |
+| Format output đặc thù | `.claude/output-styles/[name].md` |
+| MCP server mới | `.mcp.json` |
+
+Sau khi tạo component → thêm vào `.claude/settings.json` nếu là hook.
+
+---
+
+## PHẦN 3 — Component Library
+
+### `.mcp.json`
+
+```json
+{
+  "mcpServers": {
+    "codex": {
+      "command": "npx",
+      "args": ["-y", "@openai/codex-mcp"]
+    }
+  }
+}
+```
+
+Thêm Supabase:
+```json
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase@latest",
+               "--access-token", "${SUPABASE_ACCESS_TOKEN}"]
+    }
+```
+
+---
+
+### `.claude/hooks/SessionStart.sh`
+
 ```bash
 #!/bin/bash
 # Load project context khi khởi động
 if [ -f "docs/superpowers/decisions.md" ]; then
   echo "decisions.md: $(wc -l < docs/superpowers/decisions.md) entries"
 fi
-if [ -f "docs/superpowers/specs" ]; then
-  echo "Active specs: $(ls docs/superpowers/specs/*.md 2>/dev/null | wc -l)"
+SPEC_COUNT=$(ls docs/superpowers/specs/*.md 2>/dev/null | wc -l | tr -d ' ')
+[ "$SPEC_COUNT" -gt 0 ] && echo "Active specs: $SPEC_COUNT"
+```
+
+### `.claude/hooks/PostToolUse.sh`
+
+```bash
+#!/bin/bash
+# Auto-commit sau khi edit file (chỉ khi có staged changes)
+TOOL_NAME="${CLAUDE_TOOL_NAME:-}"
+if [[ "$TOOL_NAME" == "Write" || "$TOOL_NAME" == "Edit" ]]; then
+  if ! git diff --cached --quiet 2>/dev/null; then
+    git commit -m "auto: $(git diff --cached --name-only | head -3 | tr '\n' ' ')" 2>/dev/null
+  fi
 fi
 ```
 
-**Template `commands/ship.md`:**
+### `.claude/hooks/PreCompact.sh`
+
+```bash
+#!/bin/bash
+# Lưu trạng thái trước khi compact context
+TIMESTAMP=$(date +%Y-%m-%d-%H%M)
+TODO_FILE=".claude/pre-compact-state-$TIMESTAMP.md"
+echo "# Pre-compact state: $TIMESTAMP" > "$TODO_FILE"
+echo "" >> "$TODO_FILE"
+echo "## Git status" >> "$TODO_FILE"
+git status --short >> "$TODO_FILE" 2>/dev/null
+echo "" >> "$TODO_FILE"
+echo "## Recent commits" >> "$TODO_FILE"
+git log --oneline -5 >> "$TODO_FILE" 2>/dev/null
+echo "State saved: $TODO_FILE"
+```
+
+Đăng ký hook trong `.claude/settings.json`:
+```json
+{
+  "hooks": {
+    "PostToolUse": [{"hooks": [{"type": "command", "command": "bash .claude/hooks/PostToolUse.sh"}]}],
+    "PreCompact": [{"hooks": [{"type": "command", "command": "bash .claude/hooks/PreCompact.sh"}]}]
+  }
+}
+```
+
+---
+
+### `.claude/agents/code-reviewer.md`
+
+```markdown
+# Agent: Code Reviewer
+
+Review code diff và báo cáo kết quả ngắn gọn.
+
+## Nhiệm vụ
+Đọc git diff được cung cấp → báo cáo:
+1. Thay đổi đúng scope task chưa?
+2. Có ASSUMPTION: nào cần xác nhận?
+3. Có vấn đề logic hoặc regression không?
+4. Test cover đủ chưa?
+
+## Output format
+```
+SCOPE: [đúng / lệch — giải thích]
+ASSUMPTION: [có / không — liệt kê nếu có]
+ISSUES: [có / không — liệt kê nếu có]
+TEST: [đủ / thiếu — giải thích]
+VERDICT: APPROVE / REQUEST_CHANGES
+```
+
+## Constraints
+- Chỉ đọc diff được cung cấp, không tự đọc thêm file
+- Không sửa code, chỉ báo cáo
+```
+
+### `.claude/agents/security-reviewer.md`
+
+```markdown
+# Agent: Security Reviewer
+
+Chạy khi commit có SECURITY-SENSITIVE: signal.
+
+## Checklist
+Đọc git diff → kiểm tra từng điểm:
+
+| # | Loại | Kiểm tra |
+|---|------|----------|
+| 1 | SQL Injection | Raw query nối chuỗi user input? |
+| 2 | RLS hole | Bảng mới có policy? Cover đủ roles? |
+| 3 | Auth bypass | Endpoint mới có guard? |
+| 4 | IDOR | Query có filter by user_id? |
+| 5 | XSS | User input render HTML không sanitize? |
+| 6 | Hardcoded secret | String literal trông như key/token? |
+| 7 | Input validation | Validate tại API boundary? |
+| 8 | Privilege escalation | Role check trước khi xử lý? |
+
+## Output format
+```
+PASS: [danh sách điểm pass]
+FAIL: [điểm fail — mô tả lỗ hổng cụ thể]
+VERDICT: SECURE / VULNERABLE
+```
+```
+
+### `.claude/agents/researcher.md`
+
+```markdown
+# Agent: Researcher
+
+Tìm kiếm web và tổng hợp thông tin theo yêu cầu.
+
+## Nhiệm vụ
+Nhận câu hỏi / topic → tìm kiếm → tổng hợp → trả về:
+1. Tóm tắt 3-5 điểm chính
+2. Nguồn (URL)
+3. Mức độ tin cậy (official doc / blog / forum)
+
+## Constraints
+- Không suy luận ngoài nguồn tìm được
+- Đánh dấu [chưa kiểm chứng] với thông tin từ blog/forum
+- Ưu tiên official docs
+```
+
+### `.claude/agents/log-analyzer.md`
+
+```markdown
+# Agent: Log Analyzer
+
+Phân tích log, error stack trace, crash report.
+
+## Nhiệm vụ
+Nhận log → phân tích → báo cáo:
+1. Error type + root cause
+2. File:line gây ra
+3. Context (request, user action nào trigger)
+4. Đề xuất fix hướng (không tự fix)
+
+## Output format
+```
+ERROR: [loại lỗi]
+ROOT CAUSE: [nguyên nhân]
+LOCATION: [file:line]
+CONTEXT: [điều kiện trigger]
+FIX DIRECTION: [hướng fix ngắn gọn]
+```
+```
+
+---
+
+### `.claude/commands/ship.md`
+
 ```markdown
 # /ship
 
-Chạy toàn bộ quality gate trước khi push:
-1. `npm run lint` (hoặc tương đương)
-2. `npm test` (hoặc tương đương)
+Chạy quality gate trước khi push:
+1. Lint: `[điền lệnh]`
+2. Test: `[điền lệnh]`
 3. `git diff --stat` → xác nhận scope
-4. Báo kết quả — KHÔNG tự push
+4. Báo kết quả — KHÔNG tự push nếu có lỗi
 ```
 
----
+### `.claude/commands/test.md`
 
-## Hướng Dẫn `.mcp.json`
-
-Đặt ở root project. Tạo khi project dùng MCP server.
-
-**Code project với Codex:**
-```json
-{
-  "mcpServers": {
-    "codex": {
-      "command": "npx",
-      "args": ["-y", "@openai/codex-mcp"]
-    }
-  }
-}
-```
-
-**Thêm Supabase (nếu dùng):**
-```json
-{
-  "mcpServers": {
-    "codex": {
-      "command": "npx",
-      "args": ["-y", "@openai/codex-mcp"]
-    },
-    "supabase": {
-      "command": "npx",
-      "args": ["-y", "@supabase/mcp-server-supabase@latest",
-               "--access-token", "${SUPABASE_ACCESS_TOKEN}"]
-    }
-  }
-}
-```
-
----
-
-## Hướng Dẫn `.claude/rules/*.md`
-
-Đặt trong `.claude/rules/` — không phải root. Hỗ trợ path-scoping (apply cho file/folder cụ thể).
-
-**Ranh giới bắt buộc:**
-
-| Được phép | KHÔNG được phép |
-|---|---|
-| MCP tool names, commands | Workflow, quy trình Claude/Codex |
-| Lệnh chạy test cụ thể | TDD rules, commit rules |
-| Quirk tool (EPERM, port, timeout) | Token discipline |
-| Pattern codebase (folder structure) | Feature flow, bug fix flow |
-| Path-scoped convention (API format, naming) | Global workflow |
-
-Workflow nhỏ project-specific → thêm vào `## Project-Specific Rules` trong `CLAUDE.md`, không tạo `rules/workflow.md`.
-
-**Path-scoped rule** — thêm frontmatter `path:`:
 ```markdown
----
-path: src/api/**
----
-# API Rules
-- Mọi endpoint phải có auth middleware
-- Response format: { data, error, meta }
+# /test
+
+Chạy test suite và báo cáo kết quả:
+1. `[điền lệnh test]`
+2. Nếu fail → liệt kê test nào fail + error message
+3. Nếu pass → báo coverage nếu có
 ```
-Rule này chỉ apply khi Claude đang làm việc với file trong `src/api/`.
 
-**Blank structure khi tạo:**
+---
 
-`.claude/rules/supabase.md`:
+### `.claude/rules/supabase.md`
+
 ```markdown
 # Supabase Rules
 
@@ -264,45 +391,60 @@ Rule này chỉ apply khi Claude đang làm việc với file trong `src/api/`.
 
 ## Quy Tắc
 - Tự apply migration, không bảo user vào dashboard
+- Codex viết SQL file → Claude apply → Claude verify
 ```
 
-`.claude/rules/testing.md`:
+### `.claude/rules/testing.md`
+
 ```markdown
 # Testing Rules
 
 ## Lệnh chạy test
-[tự điền từ deps: npx playwright test / npx vitest run / npx jest]
+[npx playwright test / npx vitest run / npx jest]
+
+## Quy Tắc
+- Chạy test trước khi commit
+- Không commit khi test fail
 ```
 
-## Hướng Dẫn `.claude/output-styles/`
+### `.claude/rules/api.md` (path-scoped)
 
-Chỉ tạo khi project cần format output đặc thù — không phải mặc định.
-
-| Tạo khi nào | Không cần tạo |
-|---|---|
-| Project cần format JSON/markdown cụ thể | Format đã cover bởi global CLAUDE.md |
-| Team cần output nhất quán cho CI/CD | Chỉ muốn ngắn gọn (dùng caveman global) |
-| Output feed vào tool khác (parser, webhook) | Preference cá nhân |
-
-`.claude/output-styles/terse.md` ví dụ:
 ```markdown
-# Output Style: Terse
-- Chỉ trả code, không giải thích
-- Không có header, bullet point
-- Error: 1 dòng mô tả + code fix
+---
+path: src/api/**
+---
+# API Layer Rules
+
+- Mọi endpoint phải có auth middleware
+- Response format chuẩn: `{ data, error, meta }`
+- Validate input tại đây, không để lọt vào service layer
+- Không return raw DB object
 ```
 
 ---
 
-## Bước 3 — Kiểm tra Dependencies
+## PHẦN 4 — Global vs Per-Project
 
-| Tool | Kiểm tra |
-|------|----------|
-| Superpowers | `/plugin list` |
-| Markitdown | `markitdown --version` |
+**Quy tắc:** *"Rule này có apply cho MỌI project không?"*
+- YES → `~/.claude/` (global)
+- NO → `[project]/.claude/` (per-project)
 
-Nếu thiếu → xem `~/.claude/README.md` để cài.
+| Loại dữ liệu | Global `~/.claude/` | Per-project `.claude/` |
+|---|---|---|
+| Ngôn ngữ trả lời | ✓ CLAUDE.md | |
+| Superpowers triggers | ✓ CLAUDE.md | |
+| Codex delegation rules | ✓ CLAUDE.md | |
+| Workflow Claude+Codex | ✓ templates/ | @include template |
+| Hook chạy mọi project | ✓ settings.json | |
+| Hook riêng project | | ✓ .claude/hooks/ |
+| MCP server | | ✓ .mcp.json |
+| Lệnh test cụ thể | | ✓ .claude/rules/ |
+| DB schema convention | | ✓ .claude/rules/ |
+| API layer rules | | ✓ .claude/rules/api.md |
+| Sub-agent chung | | ✓ .claude/agents/ |
+| /slash command | | ✓ .claude/commands/ |
+| Output style chung | ✓ CLAUDE.md | |
+| Output style đặc thù | | ✓ .claude/output-styles/ |
+| Override cá nhân | | ✓ CLAUDE.local.md / settings.local.json |
 
----
-
-## Bước 4 — Báo xong, bắt đầu làm việc
+**Khi không chắc:** đặt per-project trước, nếu thấy dùng ở 3+ project → move lên global template.

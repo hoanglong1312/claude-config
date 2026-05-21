@@ -118,12 +118,15 @@ Nếu specialization = F&B → thêm:
 ├── AGENTS.md              ← copy từ ~/.claude/templates/AGENTS.md
 ├── .claude/               ← tạo component nào khi cần, không bắt buộc tất cả
 │   ├── settings.json      ← khi cần permission / hook riêng
+│   ├── settings.local.json ← gitignored, cá nhân
 │   ├── hooks/             ← khi cần automation
 │   ├── agents/            ← khi cần sub-agent context riêng
-│   └── commands/          ← khi cần /slash command riêng
-├── rules/                 ← CHỈ tool config, KHÔNG chứa workflow
-│   ├── supabase.md        ← nếu dùng Supabase
-│   └── testing.md         ← nếu có test framework
+│   ├── commands/          ← khi cần /slash command riêng
+│   ├── output-styles/     ← khi project cần format output đặc thù
+│   └── rules/             ← CHỈ tool config + path-scoped rules
+│       ├── supabase.md    ← nếu dùng Supabase
+│       ├── testing.md     ← nếu có test framework
+│       └── api.md         ← nếu có API layer riêng (path-scoped)
 ├── context/
 │   └── architecture.md    ← blank
 └── docs/superpowers/
@@ -135,13 +138,13 @@ Nếu specialization = F&B → thêm:
 ```markdown
 @~/.claude/templates/code-project.md
 @context/architecture.md
-@rules/supabase.md        ← thêm nếu dùng Supabase
-@rules/testing.md         ← thêm nếu có test framework
+@.claude/rules/supabase.md   ← thêm nếu dùng Supabase
+@.claude/rules/testing.md    ← thêm nếu có test framework
 
 ## Project-Specific Rules   ← thêm ở đây nếu cần override nhỏ
 ```
 
-**Thứ tự @include bắt buộc:** `code-project.md` → `rules/*` → `context/`
+**Thứ tự @include bắt buộc:** `code-project.md` → `.claude/rules/*` → `context/`
 Sai thứ tự → rules ghi đè template thay vì extend.
 
 ---
@@ -219,22 +222,36 @@ Chạy toàn bộ quality gate trước khi push:
 
 ---
 
-## Hướng Dẫn `rules/*.md`
+## Hướng Dẫn `.claude/rules/*.md`
+
+Đặt trong `.claude/rules/` — không phải root. Hỗ trợ path-scoping (apply cho file/folder cụ thể).
 
 **Ranh giới bắt buộc:**
 
-| Được phép trong rules/*.md | KHÔNG được phép |
+| Được phép | KHÔNG được phép |
 |---|---|
 | MCP tool names, commands | Workflow, quy trình Claude/Codex |
 | Lệnh chạy test cụ thể | TDD rules, commit rules |
 | Quirk tool (EPERM, port, timeout) | Token discipline |
 | Pattern codebase (folder structure) | Feature flow, bug fix flow |
+| Path-scoped convention (API format, naming) | Global workflow |
 
 Workflow nhỏ project-specific → thêm vào `## Project-Specific Rules` trong `CLAUDE.md`, không tạo `rules/workflow.md`.
 
+**Path-scoped rule** — thêm frontmatter `path:`:
+```markdown
+---
+path: src/api/**
+---
+# API Rules
+- Mọi endpoint phải có auth middleware
+- Response format: { data, error, meta }
+```
+Rule này chỉ apply khi Claude đang làm việc với file trong `src/api/`.
+
 **Blank structure khi tạo:**
 
-`rules/supabase.md`:
+`.claude/rules/supabase.md`:
 ```markdown
 # Supabase Rules
 
@@ -249,12 +266,30 @@ Workflow nhỏ project-specific → thêm vào `## Project-Specific Rules` trong
 - Tự apply migration, không bảo user vào dashboard
 ```
 
-`rules/testing.md`:
+`.claude/rules/testing.md`:
 ```markdown
 # Testing Rules
 
 ## Lệnh chạy test
 [tự điền từ deps: npx playwright test / npx vitest run / npx jest]
+```
+
+## Hướng Dẫn `.claude/output-styles/`
+
+Chỉ tạo khi project cần format output đặc thù — không phải mặc định.
+
+| Tạo khi nào | Không cần tạo |
+|---|---|
+| Project cần format JSON/markdown cụ thể | Format đã cover bởi global CLAUDE.md |
+| Team cần output nhất quán cho CI/CD | Chỉ muốn ngắn gọn (dùng caveman global) |
+| Output feed vào tool khác (parser, webhook) | Preference cá nhân |
+
+`.claude/output-styles/terse.md` ví dụ:
+```markdown
+# Output Style: Terse
+- Chỉ trả code, không giải thích
+- Không có header, bullet point
+- Error: 1 dòng mô tả + code fix
 ```
 
 ---

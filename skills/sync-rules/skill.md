@@ -189,16 +189,19 @@ Section "[tên]" bị conflict:
 
 ---
 
-### B4 — Kiểm tra rules/*.md
+### B4 — Kiểm tra `.claude/rules/*.md`
 
-**Chỉ chạy B4 với code project.** Personal / research / finance / business không có `rules/` → bỏ qua.
+**Chỉ chạy B4 với code project.** Personal / research / finance / business không có `.claude/rules/` → bỏ qua.
 
-`rules/*.md` chỉ được chứa tool config thuần túy — không chứa workflow.
+Rules đặt trong `.claude/rules/` (không phải root `rules/`). Nếu phát hiện `rules/` ở root → đề xuất di chuyển vào `.claude/rules/`.
+
+`.claude/rules/*.md` chỉ được chứa tool config thuần túy — không chứa workflow.
 
 | Được phép | KHÔNG được phép |
 |-----------|-----------------|
 | MCP commands, lệnh test | Workflow, feature flow, bug fix flow |
 | Quirk tool (EPERM, port) | TDD rules, commit rules, token discipline |
+| Path-scoped convention (frontmatter `path:`) | Global workflow |
 
 `rules/workflow.md` tồn tại → xóa toàn bộ (không nên tồn tại).  
 File khác có workflow lẫn vào → xóa phần vi phạm, giữ tool config.  

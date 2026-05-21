@@ -161,6 +161,15 @@ Write operations (`apply_migration`, INSERT/UPDATE/DELETE) vẫn do Claude thự
 - Gọi Codex với goal + spec path + constraints
 - Quyết định kiến trúc trước khi giao Codex
 
+**CLAUDE.md project — cấu trúc @include chuẩn:**
+```markdown
+@~/.claude/templates/code-project.md
+@context/architecture.md
+@.claude/rules/supabase.md   ← nếu dùng Supabase
+@.claude/rules/testing.md    ← nếu có test framework
+```
+Thứ tự bắt buộc: template → rules → context. Sai thứ tự → rules ghi đè template.
+
 **Khi review plan Codex — checklist:**
 - Plan có cover đủ spec không?
 - Task có quá lớn không? (1 task = 1 commit reviewable)

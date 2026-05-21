@@ -71,7 +71,7 @@ Khi user nói "xong" / "tạm dừng" / "mai tiếp":
 |---|---|
 | Hành vi mọi session, mọi project | `~/.claude/CLAUDE.md` |
 | Hành vi mọi session, theo loại project | `~/.claude/templates/[type].md` |
-| Tool config cụ thể của project (MCP, lệnh test, quirk) | `[project]/rules/[name].md` |
+| Tool config cụ thể của project (MCP, lệnh test, quirk) | `[project]/.claude/rules/[name].md` |
 | Chỉ chạy khi init / setup project | `~/.claude/SETUP.md` |
 | Chỉ chạy khi skill được invoke | `~/.claude/skills/[skill]/skill.md` |
 | Chỉ Codex đọc | `[project]/AGENTS.md` |
@@ -99,12 +99,3 @@ Trigger nhận diện: "thêm hook", "tạo agent", "thêm command", "cần MCP"
 # Sync Rules
 User nói "sync rules" hoặc "audit rules" → invoke `Skill("sync-rules")`.
 
-# Add-On Rules
-Phát hiện tool chưa có rules trong code project → hỏi user tạo `rules/[tool].md`:
-
-| Tool phát hiện | File |
-|---|---|
-| Supabase | `rules/supabase.md` |
-| Playwright / Vitest / Jest | `rules/testing.md` |
-
-Tạo theo structure chuẩn trong `~/.claude/SETUP.md`, thêm `@rules/[tool].md` vào CLAUDE.md project.

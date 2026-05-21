@@ -88,6 +88,8 @@
    - `ASSUMPTION:` — giả định cần Claude xác nhận
    - `ENV-REQUIRED: VAR_NAME — [dùng cho gì]` — env var mới cần set trước khi deploy
    - `QA-FAIL:` — test fail sau 3 lần retry, cần Claude can thiệp
+   - `SECURITY-SENSITIVE:` — bắt buộc ghi nếu commit động vào bất kỳ file nào liên quan:
+     auth, middleware, policy, rls, migration, permission, role, token, session, password, secret, api route, input handling (`req.body`, `req.params`, `formData`)
 4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
    - Kiểm thử toàn trình (E2E test): chạy test suite
@@ -99,11 +101,13 @@
 1. Đọc `git diff` + commit message
 2. Xác nhận (validate) `ASSUMPTION:` (giả định) nếu có → ghi quyết định vào `docs/superpowers/decisions.md`
 3. Kiểm tra: đúng scope, test pass, không regression, nhất quán với spec
-4. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
-5. **Definition of Done** trước khi bàn giao:
+4. Nếu commit có `SECURITY-SENSITIVE:` → chạy security review (xem checklist trong CLAUDE.md)
+5. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
+6. **Definition of Done** trước khi bàn giao:
    - [ ] Tất cả tests pass, không regression
    - [ ] `ASSUMPTION:` (giả định) đã được xác nhận (validate)
    - [ ] `ENV-REQUIRED:` (nếu có) đã được user set
+   - [ ] `SECURITY-SENSITIVE:` (nếu có) đã qua security review — không có lỗ hổng
    - [ ] git diff đã được Claude approve
    - [ ] User acceptance test pass
    - [ ] `docs/superpowers/debug-*.md` của feature này đã archive hoặc xóa
@@ -140,6 +144,6 @@
 
 ---
 
-*Cập nhật: 2026-05-21 (rev2)*
+*Cập nhật: 2026-05-21 (rev3)*
 
 <!-- template: 2026-05-21 -->

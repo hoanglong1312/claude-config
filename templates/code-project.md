@@ -25,6 +25,7 @@
    - [ ] Tất cả tests pass, không regression
    - [ ] `ASSUMPTION:` (giả định) đã được xác nhận (validate)
    - [ ] `ENV-REQUIRED:` (nếu có) đã được user set
+   - [ ] `SECURITY-SENSITIVE:` (nếu có) đã qua security review — không có lỗ hổng
    - [ ] Không có package mới ngoài plan
    - [ ] git diff đã được Claude approve
    - [ ] User acceptance test pass
@@ -181,6 +182,21 @@ Write operations (`apply_migration`, INSERT/UPDATE/DELETE) vẫn do Claude thự
 - Kiểm tra: không có package mới ngoài plan (xem `package.json` diff)
 - Kiểm tra: test pass, không regression
 - Kiểm tra: logic nhất quán với spec — nếu lệch → cập nhật spec ngay
+
+**Security Review — chạy khi commit có `SECURITY-SENSITIVE:` hoặc Claude tự detect:**
+
+| Loại lỗ hổng | Kiểm tra gì trong diff |
+|---|---|
+| SQL Injection | Raw query có nối chuỗi user input? → phải dùng parameterized query |
+| RLS hole | Bảng mới có RLS policy? Policy cover đủ roles (anon/authenticated/service_role)? |
+| Auth bypass | Endpoint/route mới có auth middleware/guard? |
+| IDOR | Query theo ID có filter `WHERE user_id = auth.uid()`? User A lấy được data user B? |
+| XSS | User input render vào HTML không qua sanitize/escape? |
+| Hardcoded secret | Có string literal trông như key/token/password trong code? |
+| Input validation | User input từ `req.body`/`req.params`/`formData` có validate tại API boundary? |
+| Privilege escalation | Endpoint admin có kiểm tra role trước khi xử lý? |
+
+Nếu phát hiện lỗ hổng → KHÔNG approve → gọi Codex fix với mô tả lỗ hổng cụ thể.
 
 ## Cấu Trúc `docs/superpowers/`
 

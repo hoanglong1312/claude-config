@@ -66,6 +66,8 @@
    ```
 
 2. Sau khi Claude approve → đọc `docs/superpowers/decisions.md` (nếu có) trước khi bắt đầu → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task **chỉ khi `Depends on: none`** — task có dependency phải chờ task trước commit xong mới bắt đầu
+
+   **Parallel safety rule:** KHÔNG parallel nếu agent A thêm prop/type/interface mà agent B sẽ dùng — race condition, agent B break khi A chưa commit. Gộp vào 1 agent hoặc chạy tuần tự.
 3. Nếu gặp mơ hồ (ambiguity) → **ưu tiên đọc `docs/superpowers/decisions.md` trước** — nếu đã có quyết định thì follow, không cần ghi ASSUMPTION: thêm. Nếu chưa có → ghi `ASSUMPTION:` (giả định) vào commit message
 4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán

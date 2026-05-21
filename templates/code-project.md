@@ -40,6 +40,10 @@
    ```
 3. Gọi Codex `read-only`: đọc file + grep theo plan → trả findings (không fix)
 
+**Exception — Claude tự làm Phase 1 khi:**
+- Cần cross-reference đồng thời nhiều nguồn khác loại (DB schema + RLS policy + code logic)
+- Grep đơn thuần không đủ — cần judgment để biết đang đọc cái gì
+
 **Phase 2 — Fix (Claude phán đoán, Codex thực thi)**
 
 4. Claude đọc findings → xác định root cause → quyết định approach
@@ -93,6 +97,11 @@ Nếu gặp mơ hồ: ghi ASSUMPTION: (giả định) vào commit message
 Nếu Claude đã sửa trực tiếp file plan (fallback): thêm note `Plan đã được Claude chỉnh sửa — follow file, không cần revise thêm.`
 
 Codex tự đọc file để lấy context — không paste code vào prompt.
+
+**Parallel agents — chỉ khi thực sự độc lập:**
+- Được parallel: file không share prop/type/interface với nhau
+- KHÔNG parallel: agent A thêm prop → agent B dùng prop đó (race condition)
+- Có dependency → gộp 1 agent hoặc chạy tuần tự
 
 ## Token Discipline — Claude Main Session
 

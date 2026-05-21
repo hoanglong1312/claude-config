@@ -14,6 +14,9 @@ Nếu project có sẵn code (`package.json`, `*.py`, `*.go`...):
 | Kiểm tra | Kết quả |
 |----------|---------|
 | `CLAUDE.md` | có / chưa → sẽ tạo |
+| `CLAUDE.local.md` | có / chưa → sẽ tạo + gitignore |
+| `.gitignore` | có / chưa → tạo hoặc append |
+| `.mcp.json` | có / chưa → hỏi (code project) |
 | `rules/` folder | có / chưa → sẽ tạo |
 | `context/architecture.md` | có / chưa → tạo blank |
 | `@supabase/supabase-js` trong deps | → hỏi load `rules/supabase.md` |
@@ -40,12 +43,35 @@ Nếu project trống → tiếp tục Bước 1.
 | finance | Tạo `CLAUDE.md` từ `~/.claude/templates/finance.md` |
 | personal | Tạo `CLAUDE.md` từ `~/.claude/templates/personal.md` |
 | business | Tạo skeleton — xem chi tiết bên dưới |
-| code | Tạo skeleton — xem chi tiết trong `~/.claude/templates/code-project.md` |
+| code | Tạo skeleton — xem chi tiết bên dưới |
 
-**Skeleton business project:**
+---
+
+### Skeleton — Personal / Research / Finance
+
+```
+[project]/
+├── CLAUDE.md              ← @include template tương ứng
+├── CLAUDE.local.md        ← gitignored, override cá nhân
+└── .gitignore
+```
+
+`.gitignore` tối thiểu:
+```
+CLAUDE.local.md
+.env
+*.local.*
+```
+
+---
+
+### Skeleton — Business Project
+
 ```
 [project]/
 ├── CLAUDE.md              ← @include business.md + khai báo specialization
+├── CLAUDE.local.md        ← gitignored
+├── .gitignore
 ├── data/
 │   ├── raw/               ← file gốc KHÔNG sửa
 │   └── processed/         ← đã clean, sẵn phân tích
@@ -81,14 +107,28 @@ Nếu specialization = F&B → thêm:
 
 ---
 
-**Skeleton code project:**
+### Skeleton — Code Project
+
 ```
 [project]/
-├── CLAUDE.md   ← xem cấu trúc bên dưới
-├── AGENTS.md   ← copy từ ~/.claude/templates/AGENTS.md, tự điền Project Context từ package.json
-├── rules/      ← CHỈ tool config (Supabase, testing...), KHÔNG chứa workflow
-└── context/
-    └── architecture.md  ← blank
+├── CLAUDE.md              ← xem cấu trúc bên dưới
+├── CLAUDE.local.md        ← gitignored, override cá nhân
+├── .gitignore
+├── .mcp.json              ← MCP servers (Codex bắt buộc, Supabase nếu dùng)
+├── AGENTS.md              ← copy từ ~/.claude/templates/AGENTS.md
+├── .claude/               ← tạo component nào khi cần, không bắt buộc tất cả
+│   ├── settings.json      ← khi cần permission / hook riêng
+│   ├── hooks/             ← khi cần automation
+│   ├── agents/            ← khi cần sub-agent context riêng
+│   └── commands/          ← khi cần /slash command riêng
+├── rules/                 ← CHỈ tool config, KHÔNG chứa workflow
+│   ├── supabase.md        ← nếu dùng Supabase
+│   └── testing.md         ← nếu có test framework
+├── context/
+│   └── architecture.md    ← blank
+└── docs/superpowers/
+    ├── specs/
+    └── decisions.md       ← blank
 ```
 
 **Cấu trúc CLAUDE.md chuẩn:**
@@ -101,21 +141,98 @@ Nếu specialization = F&B → thêm:
 ## Project-Specific Rules   ← thêm ở đây nếu cần override nhỏ
 ```
 
-**Thứ tự @include bắt buộc:** `code-project.md` → `rules/*` → `context/`  
+**Thứ tự @include bắt buộc:** `code-project.md` → `rules/*` → `context/`
 Sai thứ tự → rules ghi đè template thay vì extend.
 
-**Ranh giới rules/*.md — bắt buộc:**
+---
+
+## Hướng Dẫn `.claude/` — Tạo Khi Nào
+
+Không tạo folder `.claude/` mặc định. Chỉ tạo component nào khi project thực sự cần:
+
+| Component | Tạo khi nào | Ví dụ dùng |
+|---|---|---|
+| `settings.json` | Cần permission hoặc hook riêng cho project | Allowlist lệnh test cụ thể |
+| `hooks/SessionStart.sh` | Muốn auto-load context khi khởi động session | Đọc `decisions.md` tự động |
+| `hooks/PreCompact.sh` | Muốn lưu state trước khi compact context | Ghi todo còn dở |
+| `hooks/PostToolUse.sh` | Muốn auto-commit sau mỗi lần edit file | CI workflow |
+| `agents/` | Cần sub-agent chạy với context window riêng | Security reviewer, researcher |
+| `commands/` | Muốn `/slash` command riêng cho project | `/ship`, `/deploy`, `/test` |
+
+**Template `hooks/SessionStart.sh`:**
+```bash
+#!/bin/bash
+# Load project context khi khởi động
+if [ -f "docs/superpowers/decisions.md" ]; then
+  echo "decisions.md: $(wc -l < docs/superpowers/decisions.md) entries"
+fi
+if [ -f "docs/superpowers/specs" ]; then
+  echo "Active specs: $(ls docs/superpowers/specs/*.md 2>/dev/null | wc -l)"
+fi
+```
+
+**Template `commands/ship.md`:**
+```markdown
+# /ship
+
+Chạy toàn bộ quality gate trước khi push:
+1. `npm run lint` (hoặc tương đương)
+2. `npm test` (hoặc tương đương)
+3. `git diff --stat` → xác nhận scope
+4. Báo kết quả — KHÔNG tự push
+```
+
+---
+
+## Hướng Dẫn `.mcp.json`
+
+Đặt ở root project. Tạo khi project dùng MCP server.
+
+**Code project với Codex:**
+```json
+{
+  "mcpServers": {
+    "codex": {
+      "command": "npx",
+      "args": ["-y", "@openai/codex-mcp"]
+    }
+  }
+}
+```
+
+**Thêm Supabase (nếu dùng):**
+```json
+{
+  "mcpServers": {
+    "codex": {
+      "command": "npx",
+      "args": ["-y", "@openai/codex-mcp"]
+    },
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@supabase/mcp-server-supabase@latest",
+               "--access-token", "${SUPABASE_ACCESS_TOKEN}"]
+    }
+  }
+}
+```
+
+---
+
+## Hướng Dẫn `rules/*.md`
+
+**Ranh giới bắt buộc:**
 
 | Được phép trong rules/*.md | KHÔNG được phép |
-|---------------------------|-----------------|
+|---|---|
 | MCP tool names, commands | Workflow, quy trình Claude/Codex |
 | Lệnh chạy test cụ thể | TDD rules, commit rules |
 | Quirk tool (EPERM, port, timeout) | Token discipline |
 | Pattern codebase (folder structure) | Feature flow, bug fix flow |
 
-Workflow nhỏ project-specific → thêm vào section `## Project-Specific Rules` trong `CLAUDE.md`, không tạo `rules/workflow.md`.
+Workflow nhỏ project-specific → thêm vào `## Project-Specific Rules` trong `CLAUDE.md`, không tạo `rules/workflow.md`.
 
-**Blank structure khi tạo add-on files:**
+**Blank structure khi tạo:**
 
 `rules/supabase.md`:
 ```markdown

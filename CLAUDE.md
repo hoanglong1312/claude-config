@@ -13,18 +13,27 @@ markitdown [file] > [file].md
 
 # Superpowers — BẮT BUỘC
 
-| Trigger | Skill |
+**Trước mỗi response: classify intent của user.**
+Không đợi exact trigger word — dùng *ý nghĩa*, không dùng *từ khóa*.
+
+**Nếu user muốn** tạo / thay đổi / cải thiện / tự động hóa / setup / test / fix / điều tra / so sánh / quyết định implementation → **check Superpowers trước**.
+Nếu không chắc → assume skill áp dụng.
+Announce skill trong 1 câu trước khi tiếp tục.
+
+**Chỉ bỏ qua skill check khi:** câu hỏi thuần túy informational (giải thích khái niệm, đọc file, hỏi đáp nhanh).
+
+| Intent | Skill |
 |---|---|
-| "build X", "thêm tính năng", "tạo mới" | `brainstorming` |
-| Có spec xong | `writing-plans` |
+| Muốn tạo / design feature mới | `brainstorming` |
+| Có spec, cần plan implement | `writing-plans` |
 | Bắt đầu code | `test-driven-development` |
 | 2+ task độc lập | `subagent-driven-development` |
-| "fix bug", "lỗi" | `systematic-debugging` |
-| Xong implementation | `requesting-code-review` + `verification-before-completion` |
-| Nhận feedback | `receiving-code-review` |
+| Bug / lỗi / không hoạt động | `systematic-debugging` |
+| Xong implement, muốn kiểm tra | `requesting-code-review` + `verification-before-completion` |
+| Nhận review feedback | `receiving-code-review` |
 | Kết thúc branch | `finishing-a-development-branch` |
-| Feature cần isolate | `using-git-worktrees` |
-| Xong brainstorming, spec có 3+ task hoặc động vào core logic | hỏi user: "Feature này có cần worktree riêng không?" → nếu có → `using-git-worktrees` |
+| Feature cần isolate / song song | `using-git-worktrees` |
+| Spec xong, có 3+ task hoặc động core logic | hỏi: "Feature này cần worktree riêng không?" → `using-git-worktrees` |
 
 **⚠️ Ngoại lệ trong code project (có `code-project.md`):**
 - `test-driven-development` → không trigger — Codex tự follow

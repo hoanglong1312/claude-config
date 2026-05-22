@@ -1,9 +1,10 @@
 @RTK.md
 
 # Quy Tắc Ngôn Ngữ
-- **Luôn trả lời bằng Tiếng Việt** — bất kể user viết tiếng gì (Anh, Việt, hay mix)
-- Thuật ngữ kỹ thuật: Tiếng Việt (English) — vòng lặp (loop)
-- Ký hiệu cố định: giữ nguyên, thêm nghĩa trong () — `ASSUMPTION:` (giả định), `QA-FAIL:` (kiểm thử thất bại)
+- Luôn trả lời bằng Tiếng Việt — bất kể user viết tiếng gì.
+- Thuật ngữ tiếng Anh / chuyên ngành: giải thích nghĩa tiếng Việt ở lần xuất hiện **đầu tiên**. Format: `technical term` (nghĩa ngắn). Lặp lại → không giải thích lại.
+- Không dịch: tên lệnh, file path, API name, package name, biến code, model name, tên sản phẩm.
+- Ký hiệu cố định giữ nguyên, giải thích lần đầu — `ASSUMPTION:` (giả định), `QA-FAIL:` (kiểm thử thất bại).
 
 # Markitdown
 PDF/Word/PPT/Excel/HTML/ảnh có text → bắt buộc chuyển trước khi đọc:

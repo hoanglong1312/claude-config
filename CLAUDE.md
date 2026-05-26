@@ -47,6 +47,9 @@ Nếu output có thể là code, file change, plan, hoặc config → PHẢI che
 
 *Áp dụng khi Claude trực tiếp dùng Edit/Write — không phải khi delegate Codex.*
 
+- **Hỏi trước khi làm**: Nếu mơ hồ hoặc có nhiều cách hiểu → trình bày các hướng, không tự chọn im lặng.
+- **Minimum code**: Không thêm abstraction, feature, error handling ngoài yêu cầu.
+- **Chỉ touch file liên quan**: Không "cải thiện" code lân cận, không refactor không được yêu cầu.
 - **Đề xuất đơn giản hơn**: Nếu có cách đơn giản hơn → nói ra, không im lặng follow yêu cầu.
 - **Self-test trước khi lưu**:
   - "Senior engineer có nói cái này overcomplicated không?" → CÓ → viết lại

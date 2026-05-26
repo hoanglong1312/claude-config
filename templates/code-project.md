@@ -4,21 +4,45 @@
 
 | Phase | Công cụ | Việc làm |
 |-------|---------|----------|
-| Spec | Superpowers (Claude plugin) | brainstorming → spec → lưu `docs/superpowers/specs/` |
-| Planning chi tiết + Execution | Codex MCP | writing-plans, executing-plans, TDD, commit |
-| Orchestration + Review | Claude main | kiến trúc, review plan, review git diff |
+| Spec + Planning | Claude main (Superpowers skills) | brainstorming → spec → `writing-plans` → append vào `docs/plan-overview.md` → compile HTML |
+| Execution + QA | Codex Plugin (`codex:codex-rescue` subagent) | executing-plans, TDD, commit |
+| Orchestration + Review | Claude main | kiến trúc, approve plan, review git diff, code review, update HTML |
 
-- `subagent-driven-development` của Claude main KHÔNG dùng → Codex thay thế hoàn toàn
+- Claude dùng `writing-plans` skill trực tiếp (Superpowers plugin) — Codex KHÔNG invoke được skill này
+- `subagent-driven-development` của Claude main KHÔNG dùng → Codex thay thế cho execution
 - Workflow chi tiết của Codex xem trong `AGENTS.md`
+
+## Codex Delegation Rules
+
+**Delegate sớm, prompt cấp cao:**
+- Chỉ cần: WHAT cần sửa + file/spec path + constraints ngắn gọn
+- KHÔNG cần: line numbers, exact code, paste source dài
+- Codex tự tìm HOW (đọc file, locate code, viết fix)
+
+**Parallel agents chỉ khi thực sự độc lập:**
+- Được parallel: các file không share prop/type/interface với nhau
+- KHÔNG parallel: agent A thêm prop/type/interface mà agent B sẽ dùng
+- Khi có dependency: gộp vào 1 agent hoặc chạy tuần tự
+
+**Claude giữ lại:**
+- MCP tools / external APIs / Supabase write + verify operations
+- Architecture decisions + final review qua `git diff` và commit message
+- Playwright/dev server chỉ khi Codex báo `EPERM`, lỗi bind port, sandbox, hoặc browser không khởi động được
+- Root cause investigation khi cần đọc nhiều nguồn đồng thời (DB schema + code + RLS policies + React data flow)
+
+**Codex đảm nhận:**
+- Code changes, unit/integration tests, `npm run build`
+- Playwright/dev server nếu môi trường cho phép
+- Commit từng task hoàn chỉnh
 
 ## Quy Trình Execution
 
 ### Feature mới
-1. Superpowers `brainstorming` → spec → lưu `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`
-2. Gọi Codex: `writing-plans` + đường dẫn spec → Codex đọc codebase + spec → technical checklist
-3. Claude review plan → approve hoặc feedback cụ thể
-4. Nếu có vấn đề → Codex revise plan, tối đa **2 lần** → vẫn chưa ổn → Claude sửa thẳng file `.md`
-5. Gọi Codex: `executing-plans` → Codex tự parallelize task độc lập, implement + TDD + commit
+1. Claude: Superpowers `brainstorming` → spec → lưu `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`
+2. Claude: invoke `writing-plans` skill → đọc codebase + spec → tạo technical checklist → append section mới vào `docs/plan-overview.md` (hybrid) → chạy `html-eff` → compile HTML
+3. Claude self-review plan → approve hoặc revise trực tiếp (optional: dispatch Codex review cho plan phức tạp)
+3.5. User mở `docs/plan-overview.html` → review → confirm trước khi Codex chạy
+4. Gọi Codex: `executing-plans` → Codex nhận task list do Claude extract từ `plan-overview.md`, tự parallelize task độc lập, implement + TDD + commit
 6. Claude review qua `git diff` + commit message
 7. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
 8. **Definition of Done** trước khi bàn giao:
@@ -35,14 +59,22 @@
 
 **Phân loại bug trước — bắt buộc:**
 
-| Size | Dấu hiệu | Flow |
+| Type | Dấu hiệu | Flow |
 |------|----------|------|
-| S | 1-2 file, triệu chứng rõ, error message cụ thể | Skip Phase 1 → giao Codex fix thẳng |
+| S | 1-2 file, triệu chứng rõ, error message cụ thể | Codex mini root-cause → fix |
 | M/L | Cross-file, unclear cause, nhiều suspect | 2-phase đầy đủ |
+| SYS | Silent failure: no error + 0 rows affected + data không đổi sau action | Claude Phase 1 trực tiếp |
 
 **Bug S — fast path:**
 1. Claude đọc symptom → viết fix instruction ngắn (file + expected behavior)
-2. Giao Codex fix thẳng, không cần investigation plan
+2. Giao Codex làm mini investigation trước khi fix:
+   ```
+   Symptom: [mô tả bug]
+   Suspect file(s): [1-2 file/pattern]
+   Root cause: [nguyên nhân ngắn]
+   Verification: [test/build/check sẽ chạy]
+   ```
+3. Codex fix theo root cause đã tìm, chạy verification, commit
 
 **Bug M/L — Phase 1 — Investigation (Codex làm, không ăn main context)**
 
@@ -53,23 +85,26 @@
    Suspect files: [danh sách file/pattern cần kiểm tra]
    Questions: [những gì cần tìm — function nào, data flow nào, error nào]
    ```
-3. Gọi Codex `read-only`: đọc file + grep theo plan → trả findings (không fix)
+3. Gọi Codex (read-only task): `/codex:rescue Đọc file + grep theo plan sau, không fix, chỉ báo findings: [path debug file]`
 
-**Exception — Claude tự làm Phase 1 khi:**
+**Exception — Claude tự làm Phase 1 khi (bao gồm bug SYS):**
+- Silent failure (bug type SYS): no error nhưng action không có effect
 - Cần cross-reference đồng thời nhiều nguồn khác loại (DB schema + RLS policy + code logic)
-- Grep đơn thuần không đủ — cần judgment để biết đang đọc cái gì
+- Cần đọc đồng thời Supabase data/state, RLS, React state/data flow, logs, hoặc MCP-only context
+
+⚠️ Trong exception: token discipline tạm suspended cho investigation phase — Claude được đọc code + grep + dùng MCP tools để trace root cause.
 
 **Phase 2 — Fix (Claude phán đoán, Codex thực thi)**
 
 4. Claude đọc findings → xác định root cause → quyết định approach
 5. Append root cause + approach vào `docs/superpowers/debug-[issue].md`
-6. Gọi Codex `workspace-write` fix theo approach đã xác định
+6. Gọi Codex fix: `/codex:rescue Fix theo approach trong [path debug file]`
 7. Review `git diff` sau khi Codex xong
 
 **Fallback nếu Codex fix sai 3 lần:**
 - Claude đọc `git diff` + commit log của 3 lần thử → update `debug-[issue].md`
 - Gọi lại Codex với file đó làm context bổ sung
-- Nếu vẫn fail → Claude tự fix bằng Edit/Write (ngoại lệ token discipline)
+- Nếu vẫn fail → Claude tự fix bằng Edit/Write (ngoại lệ token discipline) → thêm `<!-- claude-override: direct-fix after 3 Codex retries [YYYY-MM-DD] -->` vào đầu file sửa
 
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào
@@ -79,44 +114,49 @@
 
 ## Cách Gọi Codex
 
+**Cơ chế: codex-plugin-cc** (plugin chính thức của OpenAI cho Claude Code)
+
+| Việc | Lệnh |
+|------|------|
+| Delegate task (foreground) | `/codex:rescue <mô tả task>` |
+| Delegate task (background) | `/codex:rescue --background <task>` |
+| Check job đang chạy | `/codex:status` |
+| Lấy kết quả | `/codex:result` |
+| Review code changes | `/codex:review --base main` |
+| Adversarial review | `/codex:adversarial-review --base main` |
+| Hủy job | `/codex:cancel` |
+
+**Khi Claude dispatch qua subagent:** Agent SDK tự dispatch `codex:codex-rescue` subagent — Claude truyền goal + file path + constraints như prompt template dưới đây.
+
+**Background pattern (task dài):**
 ```
-Tool: mcp__codex__codex
-sandbox: "workspace-write"
-approval-policy: "never"
+/codex:rescue --background <task description>
+# ... làm việc khác ...
+/codex:status         # kiểm tra tiến độ
+/codex:result         # lấy output khi xong
 ```
 
-**Template prompt — writing-plans:**
+**Format multi-step task khi viết plan (step → verify):**
 ```
-Spec: docs/superpowers/specs/[file].md
-Constraints: [những gì không được break — DB schema, API contract, existing pattern]
-Goal: tạo technical checklist từ spec + codebase hiện tại
-Output: lưu vào docs/superpowers/specs/[same-date]-[feature]-plan.md (tách khỏi spec)
-
-Format mỗi task:
-## Task: [tên ngắn]
-- Files: [file cần đọc/sửa]
-- Test: [test case cần pass]
-- Depends on: [task khác nếu có, hoặc "none"]
-- Size: S / M / L
+1. [Bước] → verify: [check cụ thể]
+2. [Bước] → verify: [check cụ thể]
+3. [Bước] → verify: [check cụ thể]
 ```
+Mỗi bước có verify riêng → Codex loop độc lập đến khi pass, không cần hỏi lại.
 
 **Template prompt — executing-plans:**
 ```
-Plan: docs/superpowers/specs/[file].md  ← đã được Claude review và approve
+Tasks: [Claude extract ### Task headings + steps từ docs/plan-overview.md]
 Decisions: docs/superpowers/decisions.md  ← đọc trước khi bắt đầu
 Constraints: [copy từ writing-plans prompt]
-Goal: execute theo plan, dùng dispatching-parallel-agents cho task không có dependency
+Goal: execute theo task list, dùng dispatching-parallel-agents cho task không có dependency
+Khi start task: update `**Status:** pending` → `**Status:** in_progress` trong plan-overview.md
+Khi done task: update → `**Status:** done` + `**Commit:** [hash]`
+Khi blocked: update → `**Status:** blocked` + `**Reason:** QA-FAIL: [lý do]`
 Nếu gặp mơ hồ: ghi ASSUMPTION: (giả định) vào commit message
 ```
 
-Nếu Claude đã sửa trực tiếp file plan (fallback): thêm note `Plan đã được Claude chỉnh sửa — follow file, không cần revise thêm.`
-
-Codex tự đọc file để lấy context — không paste code vào prompt.
-
-**Parallel agents — chỉ khi thực sự độc lập:**
-- Được parallel: file không share prop/type/interface với nhau
-- KHÔNG parallel: agent A thêm prop → agent B dùng prop đó (race condition)
-- Có dependency → gộp 1 agent hoặc chạy tuần tự
+Codex tự đọc source file để lấy context — không paste code vào prompt.
 
 ## DB / RLS Pattern
 
@@ -131,14 +171,11 @@ Codex tự đọc file để lấy context — không paste code vào prompt.
 
 **Codex read-only Supabase (tùy chọn, recommended):**
 
-Thêm vào `~/.codex/config.yaml` của project:
-```yaml
-mcpServers:
-  supabase-readonly:
-    command: npx
-    args: ["-y", "@supabase/mcp-server-supabase@latest",
-           "--access-token", "${SUPABASE_ACCESS_TOKEN}",
-           "--read-only"]
+Thêm vào `.codex/config.toml` trong project root:
+```toml
+[mcp_servers.supabase-readonly]
+command = "npx"
+args = ["-y", "@supabase/mcp-server-supabase@latest", "--access-token", "${SUPABASE_ACCESS_TOKEN}", "--read-only"]
 ```
 
 Cho phép Codex tự tra `list_tables`, `execute_sql` (SELECT) → ít ASSUMPTION hơn.
@@ -149,17 +186,23 @@ Write operations (`apply_migration`, INSERT/UPDATE/DELETE) vẫn do Claude thự
 ## Token Discipline — Claude Main Session
 
 **KHÔNG làm:**
-- Đọc toàn bộ file source để lấy context (việc của Codex)
-- Tự grep/trace source khi debug — viết investigation plan rồi giao Codex
+- Đọc toàn bộ file source để lấy context khi Codex có thể tự đọc
+- Tự grep/trace source lan man khi debug — mặc định viết investigation plan rồi giao Codex
 - Paste nội dung file vào Codex prompt
 - Dùng Edit/Write cho file .jsx/.js/.sql
 - Dispatch Claude subagent làm middleman
 
 **CHỈ làm:**
 - Đọc `git log` / `git diff`
-- Viết/sửa file .md (plan, spec, rules)
+- Viết/sửa file .md (plan, spec, rules) + chạy `html-eff` ngay sau để sync HTML
 - Gọi Codex với goal + spec path + constraints
 - Quyết định kiến trúc trước khi giao Codex
+- Đọc/grep source trực tiếp CHỈ KHI có ít nhất 1 trong các signal sau:
+  - Bug type **SYS** (silent failure: no error, 0 rows affected, action không có effect)
+  - Cần cross-reference đồng thời: DB schema + RLS policy + code logic (grep đơn thuần không đủ)
+  - Cần đối chiếu MCP data với code (Supabase state + React data flow + logs)
+  - Codex đã báo `QA-FAIL:` 2+ lần cùng symptom → root cause chưa rõ
+  - Không có signal nào trên → viết investigation plan → giao Codex
 
 **CLAUDE.md project — cấu trúc @include chuẩn:**
 ```markdown
@@ -192,7 +235,11 @@ Thứ tự bắt buộc: template → rules → context. Sai thứ tự → rule
 - Kiểm tra: test pass, không regression
 - Kiểm tra: logic nhất quán với spec — nếu lệch → cập nhật spec ngay
 
-**Security Review — chạy khi commit có `SECURITY-SENSITIVE:` hoặc Claude tự detect:**
+**Security Review — chạy khi:**
+- Commit có tag `SECURITY-SENSITIVE:`, HOẶC
+- Diff động vào file/path match bất kỳ pattern sau (dù Codex không gắn tag):
+  `**/auth/**`, `**/middleware/**`, `**/*policy*`, `**/*rls*`, `**/*migration*`,
+  `**/api/**`, file có `req.body` / `req.params` / `formData` trong thay đổi mới
 
 | Loại lỗ hổng | Kiểm tra gì trong diff |
 |---|---|
@@ -207,15 +254,21 @@ Thứ tự bắt buộc: template → rules → context. Sai thứ tự → rule
 
 Nếu phát hiện lỗ hổng → KHÔNG approve → gọi Codex fix với mô tả lỗ hổng cụ thể.
 
-## Cấu Trúc `docs/superpowers/`
+## Cấu Trúc `docs/`
 
 ```
-docs/superpowers/
-├── specs/
-│   └── YYYY-MM-DD-[feature]-design.md   ← spec + plan (Codex ghi)
-└── decisions.md                          ← quyết định từ ASSUMPTION: (Claude ghi)
+docs/
+├── plan-overview.md                      ← source of truth: task list + tiến độ (Claude maintain)
+├── plan-overview.html                    ← generated từ .md, KHÔNG edit trực tiếp
+└── superpowers/
+    ├── specs/
+    │   ├── YYYY-MM-DD-[feature]-design.md    ← text/hybrid spec (Claude ghi)
+    │   └── YYYY-MM-DD-[feature]-design.html  ← generated visual, KHÔNG edit trực tiếp
+    └── decisions.md                          ← quyết định từ ASSUMPTION: (Claude ghi)
 ```
 
+`plan-overview.md` — Claude append section mới sau mỗi `writing-plans`, Codex update `**Status:**` field sau mỗi task xong.
+Sau mỗi lần edit `.md`: Claude chạy `html-eff -i docs/plan-overview.md -o docs/plan-overview.html` để sync HTML.
 `decisions.md` tích lũy theo thời gian — Codex đọc trước mỗi lần executing-plans để tránh lặp lại câu hỏi đã có đáp án.
 
 ## Đồng Bộ CLAUDE.md ↔ AGENTS.md
@@ -243,6 +296,18 @@ docs/superpowers/
 **⚠️ Local rules KHÔNG được restate global workflow.**  
 `rules/*.md` chỉ chứa những gì template KHÔNG có — DB schema, lệnh test cụ thể, quirk tool, pattern codebase.  
 Nếu thấy mình đang copy workflow từ template vào local rules → đặt sai chỗ, xóa đi.
+
+## UI/UX Design Reference
+
+Khi thiết kế / implement UI component hoặc cần brand style → fetch:
+
+| Nguồn | Raw URL pattern | Số brands |
+|-------|----------------|-----------|
+| **awesome-design-md** | `https://raw.githubusercontent.com/VoltAgent/awesome-design-md/main/design-md/[brand].md` | 73+ |
+| **open-design** | `https://raw.githubusercontent.com/nexu-io/open-design/main/design-systems/[brand]/DESIGN.md` | 150 |
+
+Mỗi file có: color palette, typography, spacing, component styling, design tokens.
+Brands phổ biến: stripe, linear, vercel, notion, airbnb, shopify, claude, openai.
 
 ## Thông Tin Project
 - Tên: [tên project]

@@ -15,6 +15,20 @@
 - Kết luận: tách biệt khỏi phân tích
 - Risk: luôn nêu downside scenario
 
+## Memory Structure
+
+```
+data/
+├── raw/                   ← file/source gốc
+└── processed/             ← dữ liệu đã chuẩn hóa
+models/                    ← spreadsheet/notebook/calculation files
+reports/                   ← báo cáo phân tích
+assumptions.md             ← giả định, nguồn số liệu, ngày cập nhật
+context/decisions.md       ← quyết định tài chính đã chốt
+```
+
+Không overwrite giả định cũ; append thay đổi mới kèm ngày để audit được.
+
 ## Thông Tin Project
 - Tên: [tên project]
 - Mục tiêu: [trading / planning / analysis]

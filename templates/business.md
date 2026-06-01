@@ -72,6 +72,23 @@ Bất kỳ khi nào user confirm quyết định quan trọng → Claude tự ap
 | `Google Sheets MCP` | Đọc/ghi từng ô spreadsheet real-time | Thêm khi cần real-time |
 | `SQLite MCP` | Query structured data khi data lớn | Thêm ở giai đoạn 2+ |
 
+## Memory Structure
+
+```
+context/
+├── business-overview.md   ← mô hình kinh doanh, mục tiêu, constraint
+└── decisions.md           ← quyết định đã chốt
+data/
+├── raw/                   ← file gốc user đưa
+└── processed/             ← markdown/csv đã xử lý
+reports/
+├── weekly/
+└── monthly/
+sop/                       ← quy trình chuẩn
+```
+
+Memory quan trọng phải nằm trong repo/project folder, không nằm trong chat.
+
 ## Thông Tin Project
 - Tên: [tên project]
 - Specialization: [F&B / retail / dịch vụ / khác]

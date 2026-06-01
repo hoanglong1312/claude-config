@@ -1,13 +1,13 @@
-# AGENTS.md — Universal AI Rules
+# AGENTS.md — Code / Multi-Agent AI Rules
 
-*File này được đọc bởi: Claude Code, Codex CLI, Cursor, OpenCode*
+*File này dành cho code project hoặc project có nhiều agent cùng sửa artifact. Non-code project không bắt buộc có `AGENTS.md` trừ khi cần phối hợp nhiều tool.*
 
 ---
 
 ## Project Context
 
 - **Tên**: [tên project]
-- **Type**: [code / research / finance / personal]
+- **Type**: code / multi-agent
 - **Stack**: [tech stack]
 - **Mục tiêu**: [mô tả ngắn]
 
@@ -17,9 +17,9 @@
 
 | Tool | Vai trò |
 |------|---------|
-| **Superpowers** (Claude plugin) | Planning: brainstorming → spec |
-| **Claude Code** | Orchestration + Review: quyết định kiến trúc, review plan + output |
-| **Codex** | Planning chi tiết + Execution + QA: writing-plans, executing-plans, chạy test, commit |
+| **Superpowers** (Claude plugin) | Planning: brainstorming → spec → writing-plans |
+| **Claude Code** | Orchestration + Review: brainstorming, writing-plans (Superpowers), quyết định kiến trúc, review plan + output |
+| **Codex** (`codex:codex-rescue` subagent / `/codex:rescue`) | Execution + QA: executing-plans, TDD, chạy test, commit |
 
 ---
 
@@ -48,24 +48,17 @@
 ### Claude Code — nhận task mới
 1. Check Superpowers skill có apply không
 2. Task phức tạp → `brainstorming` trước → spec
-3. Gọi Codex: `writing-plans` (Codex đọc codebase + spec → technical checklist)
-4. Review plan → approve hoặc feedback cụ thể
-5. Nếu vấn đề → Codex revise, tối đa **2 lần** → vẫn chưa ổn → Claude sửa thẳng file `.md`
-6. Review output thực thi qua `git diff` + commit message
+3. Invoke Superpowers `writing-plans` skill trực tiếp (Claude làm, không giao Codex — Codex không invoke được skill này)
+4. Append plan vào `docs/plan-overview.html` (tạo mới nếu chưa có) → hỏi user xác nhận
+5. User mở `docs/plan-overview.html` → review → confirm "OK, triển khai"
+6. Nếu plan cần chỉnh → Claude sửa thẳng `design.md` hoặc HTML (Claude là chủ plan, không giao Codex revise)
+7. Extract task list từ HTML section → truyền vào Codex prompt dạng text
+8. Review output thực thi qua `git diff` + commit message → update checkbox trong HTML
 
-### Codex — nhận spec từ Claude
-1. Dùng `writing-plans` + đường dẫn spec (`docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`) → đọc codebase + spec → tạo technical checklist → lưu vào `docs/superpowers/specs/YYYY-MM-DD-[feature]-plan.md` (file riêng, không append vào spec)
+### Codex — nhận task list từ Claude
+1. Nhận task list dạng text do Claude extract từ `docs/plan-overview.html` — Claude đã review và user đã confirm. Codex KHÔNG tự tạo plan, KHÔNG đọc HTML trực tiếp.
 
-   **Format bắt buộc mỗi task trong checklist:**
-   ```
-   ## Task: [tên ngắn]
-   - Files: [file cần đọc/sửa]
-   - Test: [test case cần pass]
-   - Depends on: [task khác hoặc "none"]
-   - Size: S / M / L
-   ```
-
-2. Sau khi Claude approve → đọc `docs/superpowers/decisions.md` (nếu có) trước khi bắt đầu → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task **chỉ khi `Depends on: none`** — task có dependency phải chờ task trước commit xong mới bắt đầu
+2. Đọc `docs/superpowers/decisions.md` (nếu có) trước khi bắt đầu → dùng `executing-plans` → dùng `dispatching-parallel-agents` để parallelize task **chỉ khi `Depends on: none`** — task có dependency phải chờ task trước commit xong mới bắt đầu
 
    **Task Size gate — bắt buộc trước executing-plans:**
    - Task `Size: L` → PHẢI chia thành 2-3 sub-task trước khi execute
@@ -93,6 +86,7 @@
 4. Chạy Quality Gate trước khi commit:
    - Kiểm tra tĩnh (static audit): import đúng, prop match, logic nhất quán
    - Kiểm thử toàn trình (E2E test): chạy test suite
+   - Playwright / dev server: Codex được chạy nếu môi trường cho phép. Nếu gặp `EPERM`, lỗi bind port, sandbox, hoặc browser không khởi động được → ghi `QA-FAIL:` với command + lỗi chính, rồi để Claude chạy trực tiếp.
 5. Nếu QA fail → tự fix, tối đa **3 lần thử lại (retry)**
 6. Sau 3 lần vẫn fail → `QA-FAIL:` (kiểm thử thất bại) → báo lên (escalate) Claude
 7. Pass → commit + báo Claude review
@@ -109,14 +103,14 @@
    - [ ] `ENV-REQUIRED:` (nếu có) đã được user set
    - [ ] `SECURITY-SENSITIVE:` (nếu có) đã qua security review — không có lỗ hổng
    - [ ] git diff đã được Claude approve
-   - [ ] User acceptance test pass
+   - [ ] User acceptance test pass; nếu Codex bị sandbox khi chạy Playwright/dev server thì Claude đã chạy trực tiếp
    - [ ] `docs/superpowers/debug-*.md` của feature này đã archive hoặc xóa
 
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào
-2. Đọc file plan trong `docs/superpowers/specs/` → biết còn task nào chưa làm
+2. Đọc `docs/plan-overview.html` → biết còn task nào chưa done (checkbox chưa ✅)
 3. Đọc `docs/superpowers/decisions.md` (nếu có) → nắm các quyết định đã xác nhận
-4. Gọi Codex tiếp từ task còn dở
+4. Extract task list còn lại → gọi Codex tiếp
 
 ### Fallback — Codex không giải quyết được sau 3 lần thử lại (retry)
 
@@ -129,7 +123,7 @@
 1. Claude đọc `git diff` của 3 lần thử
 2. Claude viết analysis vào `docs/superpowers/debug-[issue].md`
 3. Gọi Codex lại với file đó
-4. Nếu vẫn fail → Claude tự fix bằng Edit/Write (ngoại lệ token discipline)
+4. Nếu vẫn fail → Claude tự fix bằng Edit/Write (ngoại lệ token discipline) → thêm `<!-- claude-override: direct-fix after 3 Codex retries [YYYY-MM-DD] -->` vào đầu file sửa
 
 ---
 
@@ -144,6 +138,6 @@
 
 ---
 
-*Cập nhật: 2026-05-21 (rev3)*
+*Cập nhật: 2026-05-25 (rev8: HTML plan overview — Codex nhận task list từ Claude extract, resume đọc HTML thay plan.md)*
 
-<!-- template: 2026-05-21 -->
+<!-- template: 2026-05-22 -->

@@ -1,0 +1,8 @@
+export CODEX_COMPANION_SESSION_ID='40e5d392-4ad7-47ab-a5e4-81aceb31231f'
+export CLAUDE_PLUGIN_DATA='/Users/giinlow./.claude/plugins/data/codex-openai-codex'
+export CODEX_COMPANION_SESSION_ID='40e5d392-4ad7-47ab-a5e4-81aceb31231f'
+export CLAUDE_PLUGIN_DATA='/Users/giinlow./.claude/plugins/data/codex-openai-codex'
+export CODEX_COMPANION_SESSION_ID='40e5d392-4ad7-47ab-a5e4-81aceb31231f'
+export CLAUDE_PLUGIN_DATA='/Users/giinlow./.claude/plugins/data/codex-openai-codex'
+export CODEX_COMPANION_SESSION_ID='40e5d392-4ad7-47ab-a5e4-81aceb31231f'
+export CLAUDE_PLUGIN_DATA='/Users/giinlow./.claude/plugins/data/codex-openai-codex'

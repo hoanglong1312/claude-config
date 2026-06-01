@@ -7,9 +7,17 @@
 - Ký hiệu cố định giữ nguyên, giải thích lần đầu — `ASSUMPTION:` (giả định), `QA-FAIL:` (kiểm thử thất bại).
 
 # Markitdown
-PDF/Word/PPT/Excel/HTML/ảnh có text → bắt buộc chuyển trước khi đọc:
+PDF/Word/PPT/Excel/HTML → bắt buộc chuyển trước khi đọc:
 ```bash
 markitdown [file] > [file].md
+```
+
+**KHÔNG dùng markitdown cho:** ảnh UI/screenshot → gửi thẳng cho Claude (mất visual context nếu convert).
+
+**Dùng markitdown cho ảnh khi:** ảnh chứa text đặc (hóa đơn scan, bảng số, screenshot terminal) → dùng OCR plugin:
+```bash
+markitdown image.png --llm-client openai --llm-model gpt-4o
+# hoặc plugin OCR riêng: pip install markitdown-ocr
 ```
 
 # Superpowers — BẮT BUỘC
@@ -37,6 +45,8 @@ Nếu output có thể là code, file change, plan, hoặc config → PHẢI che
 | Feature cần isolate / song song | `using-git-worktrees` |
 | Spec xong, có 3+ task hoặc động core logic | hỏi: "Feature này cần worktree riêng không?" → `using-git-worktrees` |
 | Spec/plan phức tạp vừa xong (3+ subsystem, core logic mới) | Dispatch Codex review (xem "Codex Review Gate" trong HTML Visual Workflow) |
+| Design / build UI component, landing page, redesign, portfolio | `taste-skill` — nếu brief có brand name cụ thể: fetch `~/.claude/references/repos.md` → lấy URL open-design/awesome-design-md → fetch brand tokens trước khi code |
+| Hỏi về tool/repo/service/domain → tìm trong library | Đọc `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/raw/resources/repos/index.md` (Obsidian repo wiki — source of truth) |
 
 **⚠️ Code project (có `code-project.md`):**
 - Claude main dùng flow trong `code-project.md` thay cho việc tự code/debug full.
@@ -48,25 +58,83 @@ Nếu output có thể là code, file change, plan, hoặc config → PHẢI che
 *Áp dụng khi Claude trực tiếp dùng Edit/Write — không phải khi delegate Codex.*
 
 - **Hỏi trước khi làm**: Nếu mơ hồ hoặc có nhiều cách hiểu → trình bày các hướng, không tự chọn im lặng.
+- **Research trước**: Trước khi viết code mới → tìm existing solution (package, pattern) trước. Prefer adopting proven approach over net-new code.
 - **Minimum code**: Không thêm abstraction, feature, error handling ngoài yêu cầu.
+- **Immutability**: Luôn tạo object mới, không mutate object hiện có — tránh side effect ẩn.
 - **Chỉ touch file liên quan**: Không "cải thiện" code lân cận, không refactor không được yêu cầu.
 - **Đề xuất đơn giản hơn**: Nếu có cách đơn giản hơn → nói ra, không im lặng follow yêu cầu.
+- **Ngưỡng kích thước**: Function < 50 lines. File 200–400 lines thông thường, tối đa 800. Nesting tối đa 4 levels → dùng early return.
+- **Rewrite nếu bloated**: Nếu code có thể viết lại ngắn hơn đáng kể (200 lines → 50) mà không mất chức năng → đề xuất rewrite, không patch thêm.
 - **Self-test trước khi lưu**:
   - "Senior engineer có nói cái này overcomplicated không?" → CÓ → viết lại
   - "Mỗi dòng thay đổi có trace trực tiếp về yêu cầu của user không?" → KHÔNG → xóa
 - **Dead code**: Phát hiện code chết không liên quan → báo user, không tự xóa.
 
+# Goal-Driven Execution
+
+*Trước khi implement: đổi task → success criteria có thể verify.*
+
+**Quy trình:**
+1. **Define done**: Task "add feature X" → "feature X hoạt động khi [test case cụ thể] pass"
+2. **State assumptions**: Nêu rõ assumptions trước khi code — "ASSUMPTION: X là Y" — không đoán im lặng
+3. **Verify, không chỉ run**: Sau implement → chạy verify steps, không chỉ báo "done"
+4. **Loop nếu chưa pass**: Nếu verify fail → debug → fix → verify lại, không báo done sớm
+
+**Ví dụ chuyển đổi:**
+- ❌ "Thêm webhook endpoint" → implement xong báo done
+- ✅ "Webhook endpoint done khi: POST với đúng secret → 201, sai secret → 401, thiếu fields → 400"
+
+# Model Selection — Khi Build AI Features
+
+Dùng khi viết code gọi Claude API hoặc chọn model cho agent:
+
+| Model | Dùng khi | Lý do |
+|---|---|---|
+| `claude-haiku-4-5` | Lightweight agent, gọi thường xuyên, task đơn giản | 3x rẻ hơn Sonnet |
+| `claude-sonnet-4-6` | Main coding work, phần lớn tasks | Best coding model |
+| `claude-opus-4-7` | Architectural decisions, reasoning phức tạp | Deepest reasoning |
+
+# Repo Wiki — Cập Nhật Tự Động
+
+Khi có bất kỳ hành động nào sau đây trong session:
+- Install package/tool mới (`npm install`, `pip install`, `brew install`, thêm MCP server, cài plugin)
+- Clone repo mới về máy
+- Quyết định dùng service/API mới
+
+→ Hỏi user: **"Thêm [tên repo] vào Obsidian repo wiki không?"**
+
+Nếu đồng ý → append vào đúng section trong:
+`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/raw/resources/repos/index.md`
+
+Format dòng mới:
+```
+| [tên] | [URL nếu có] | installed | [tên project / global] | [ghi chú ngắn — lý do chọn, quirk quan trọng] |
+```
+
+Không tự thêm mà không hỏi. Không hỏi cho deps hiển nhiên/transitive (ví dụ: react-dom khi đã có react).
+
 # Obsidian Bridge
-Vault: `~/Library/Mobile Documents/com~apple~CloudDocs/AI/my-brain/`
+Vault: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/`
 
 Cuối session nhắc lưu nếu: nghiên cứu topic mới, fix bug khó, quyết định kiến trúc quan trọng.
-→ `raw/daily/YYYY-MM-DD.md` hoặc `raw/resources/YYYY-MM-DD-[topic].md`
+- Session code/tech → `raw/projects/[tên-project]/YYYY-MM-DD-session.md`
+- Research/article → `raw/resources/[topic]/YYYY-MM-DD-[slug].md`
+- Quyết định cá nhân → `raw/daily/YYYY-MM-DD.md`
 
 # Kết Thúc Session
 Khi user nói "xong" / "tạm dừng" / "mai tiếp":
+
+1. **Tự động viết session note vào Obsidian** (không hỏi):
+   - Detect project từ working directory
+   - Nếu là code/tech project → tạo `raw/projects/[tên-project]/YYYY-MM-DD-session.md`
+   - Nếu là vault my-brain → skip (đã ở trong Obsidian)
+   - Nếu không rõ project → tạo `raw/projects/misc/YYYY-MM-DD-session.md`
+   - Nội dung: đã làm gì, quyết định nào, còn lại gì
+
+2. **Báo tóm tắt:**
 ```
 ✓ Git: [đã commit / chưa]
-? Obsidian: [có muốn lưu X không?]
+✓ Obsidian: lưu → raw/projects/[project]/[date]-session.md
 → Còn lại: [task 1], [task 2]
 ```
 

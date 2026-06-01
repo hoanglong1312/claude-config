@@ -1,13 +1,65 @@
 {
   "env": {
     "MAX_THINKING_TOKENS": "10000",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75",
     "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
   },
   "permissions": {
     "allow": [
-      "Bash(claude mcp *)"
-    ]
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Bash(claude mcp *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git stash*)",
+      "Bash(npm run build*)",
+      "Bash(npm run qa*)",
+      "Bash(npm run test*)",
+      "Bash(npx playwright test*)",
+      "Bash(npx tsc*)",
+      "Bash(ls*)",
+      "Bash(find . *)",
+      "Bash(grep *)",
+      "Bash(rtk *)",
+      "mcp__codegraph__codegraph_search",
+      "mcp__codegraph__codegraph_context",
+      "mcp__codegraph__codegraph_callers",
+      "mcp__codegraph__codegraph_callees",
+      "mcp__codegraph__codegraph_impact",
+      "mcp__codegraph__codegraph_node",
+      "mcp__codegraph__codegraph_status",
+      "Bash(cd *)",
+      "Bash(vercel*)",
+      "Bash(curl *)",
+      "Bash(curl*)",
+      "Bash(sleep *)",
+      "Bash(cat *)",
+      "Bash(npm run dev*)",
+      "Bash(npm run dev *)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__select_page",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__type_text",
+      "mcp__chrome-devtools__emulate",
+      "mcp__chrome-devtools__get_console_message",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__get_network_request",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__wait_for",
+      "mcp__chrome-devtools__close_page"
+    ],
+    "defaultMode": "auto"
   },
   "hooks": {
     "Stop": [
@@ -45,6 +97,12 @@
             "command": "bash \"/Users/giinlow./.claude/hooks/project-check.sh\"",
             "timeout": 5,
             "statusMessage": "Checking project structure..."
+          },
+          {
+            "type": "command",
+            "command": "bash \"/Users/giinlow./.claude/hooks/session-resume.sh\"",
+            "timeout": 5,
+            "statusMessage": "Loading session context..."
           }
         ]
       }
@@ -62,11 +120,23 @@
       }
     ]
   },
+  "statusLine": {
+    "type": "command",
+    "command": "bash \"/Users/giinlow./.claude/hooks/caveman-statusline.sh\""
+  },
   "enabledPlugins": {
     "superpowers@claude-plugins-official": true,
-    "caveman@caveman": true
+    "caveman@caveman": true,
+    "codex@openai-codex": true,
+    "understand-anything@understand-anything": false
   },
   "extraKnownMarketplaces": {
+    "understand-anything": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/Lum1104/Understand-Anything.git"
+      }
+    },
     "superpowers-marketplace": {
       "source": {
         "source": "github",
@@ -78,12 +148,15 @@
         "source": "github",
         "repo": "JuliusBrussee/caveman"
       }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
     }
   },
   "effortLevel": "medium",
   "theme": "dark",
-  "statusLine": {
-    "type": "command",
-    "command": "bash \"/Users/giinlow./.claude/hooks/caveman-statusline.sh\""
-  }
+  "skipAutoPermissionPrompt": true
 }

@@ -219,6 +219,7 @@ Thứ tự bắt buộc: template → rules → context. Sai thứ tự → rule
 - Có dependency nào bị bỏ sót không?
 
 **Khi review output Codex — checklist adversarial:**
+- **Auto-trigger:** Sau mỗi task Codex báo done → Claude tự chạy `git diff` ngay, không đợi user nhắc
 - Đọc `git diff` + commit message (bắt buộc)
 - Grep `ASSUMPTION:` trong commit message ngay — nếu có → append vào `docs/superpowers/decisions.md` TRƯỚC KHI làm bất cứ gì khác (không để sang session sau)
 - Kiểm tra: có `ASSUMPTION:` (giả định) nào cần xác nhận không?
@@ -251,6 +252,9 @@ Thứ tự bắt buộc: template → rules → context. Sai thứ tự → rule
 | Hardcoded secret | Có string literal trông như key/token/password trong code? |
 | Input validation | User input từ `req.body`/`req.params`/`formData` có validate tại API boundary? |
 | Privilege escalation | Endpoint admin có kiểm tra role trước khi xử lý? |
+| CSRF | Form POST/PUT/DELETE có CSRF token hoặc SameSite cookie không? |
+| Rate limiting | Endpoint public/auth mới có rate limit không? |
+| Error leakage | Error message trả về client có expose schema/stack trace/internal path không? |
 
 Nếu phát hiện lỗ hổng → KHÔNG approve → gọi Codex fix với mô tả lỗ hổng cụ thể.
 
@@ -296,6 +300,29 @@ Sau mỗi lần edit `.md`: Claude chạy `html-eff -i docs/plan-overview.md -o 
 **⚠️ Local rules KHÔNG được restate global workflow.**  
 `rules/*.md` chỉ chứa những gì template KHÔNG có — DB schema, lệnh test cụ thể, quirk tool, pattern codebase.  
 Nếu thấy mình đang copy workflow từ template vào local rules → đặt sai chỗ, xóa đi.
+
+## UI Verification — Localhost trước, deploy sau
+
+Với bất kỳ thay đổi UI nào, verify trên localhost trước khi deploy:
+
+1. Chạy dev server: `npm run dev` (background)
+2. Dùng Chrome DevTools MCP navigate `http://localhost:5173` → screenshot → confirm visual đúng
+3. Chỉ deploy khi localhost pass
+
+**Lợi ích:** Không tốn thời gian deploy vòng, không bị PIN gate hoặc auth chặn như production.
+
+## Deploy Fallback — Vercel webhook broken
+
+Nếu `git push origin main` không trigger Vercel auto-deploy sau 2 phút:
+
+```bash
+# Kiểm tra bundle hash
+curl -s <production-url> | grep -o 'assets/index-[^"]*\.js'
+# Nếu hash cũ → dùng CLI
+vercel --prod
+```
+
+Root cause: Vercel-GitHub webhook broken → fix bằng disconnect/reconnect GitHub integration trong Vercel dashboard.
 
 ## UI/UX Design Reference
 

@@ -1,0 +1,6 @@
+export CODEX_COMPANION_SESSION_ID='9b5feda1-2039-4585-8484-11cc9b99a87c'
+export CLAUDE_PLUGIN_DATA='/Users/giinlow./.claude/plugins/data/codex-openai-codex'
+export CODEX_COMPANION_SESSION_ID='9b5feda1-2039-4585-8484-11cc9b99a87c'
+export CLAUDE_PLUGIN_DATA='/Users/giinlow./.claude/plugins/data/codex-openai-codex'
+export CODEX_COMPANION_SESSION_ID='9b5feda1-2039-4585-8484-11cc9b99a87c'
+export CLAUDE_PLUGIN_DATA='/Users/giinlow./.claude/plugins/data/codex-openai-codex'

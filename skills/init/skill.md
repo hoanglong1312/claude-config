@@ -5,22 +5,28 @@ description: Init project mới hoặc mở rộng project hiện tại — scaf
 
 # Project Init / Extend
 
-## Auto-detect
+## Bước 0 — Hỏi loại project (LUÔN LUÔN ĐẦU TIÊN)
 
-Kiểm tra ngay khi skill được invoke:
+> "Project này thuộc loại nào: code / research / finance / personal / business?"
+
+Hỏi trước mọi thứ — loại project quyết định skeleton, template, tools cần check.
+
+---
+
+## Auto-detect (sau khi biết loại)
 
 ```bash
 [ -f "CLAUDE.md" ] || [ -f ".claude/CLAUDE.md" ]
 ```
 
 - Không tìm thấy → chạy **PHẦN 1: Init mới**
-- Tìm thấy → chạy **PHẦN 2: Mở rộng**
+- Tìm thấy → chạy **PHẦN 2: Mở rộng** (vẫn dùng loại project đã biết để kiểm tra gaps đúng)
 
 ---
 
 ## PHẦN 1: Init Mới
 
-### Bước 0 — Audit project có sẵn code
+### Bước 1 — Audit project có sẵn code
 
 Nếu project có `package.json`, `*.py`, `*.go`:
 
@@ -38,13 +44,7 @@ Nếu project có `package.json`, `*.py`, `*.go`:
 
 3. Báo cáo + xác nhận 1 lần → tạo hết.
 
-Nếu project trống → Bước 1.
-
----
-
-### Bước 1 — Hỏi loại project
-
-> "Project này thuộc loại nào: code / research / finance / personal / business?"
+Nếu project trống → Bước 2.
 
 ---
 

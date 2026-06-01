@@ -1,0 +1,2 @@
+export CODEX_COMPANION_SESSION_ID='ee4da7d8-70ac-4a4e-82af-2d8e24ba0972'
+export CLAUDE_PLUGIN_DATA='/Users/giinlow./.claude/plugins/data/codex-openai-codex'

@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Global Overview</title>
+    <style>
+:root {
+    --ivory: #FAF9F5;
+    --slate: #141413;
+    --clay: #D97757;
+    --clay-d: #B85C3E;
+    --oat: #E3DACC;
+    --olive: #788C5D;
+    --rust: #B04A3F;
+    --gray-50: #F0EEE6;
+    --gray-150: #F0EEE6;
+    --gray-200: #D1CFC5;
+    --gray-300: #D1CFC5;
+    --gray-500: #87867F;
+    --gray-700: #3D3D3A;
+    --gray-800: #3D3D3A;
+    --white: #ffffff;
+    --serif: ui-serif, Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background: var(--ivory);
+    color: var(--gray-700);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+}
+
+.layout-reading-column .page {
+    max-width: 65ch;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.layout-wide .page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 48px 32px 120px;
+}
+
+h1, h2, h3 {
+    font-family: var(--serif);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--slate);
+}
+
+h1 {
+    font-size: 2.25rem;
+    letter-spacing: -0.01em;
+    margin-bottom: 0.5em;
+}
+
+h2 {
+    font-size: 1.625rem;
+    letter-spacing: -0.01em;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+h3 {
+    font-size: 1.25rem;
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+}
+
+h4, h5, h6 {
+    font-family: var(--sans);
+    font-weight: 600;
+    color: var(--slate);
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+}
+
+p {
+    margin: 0 0 1em;
+}
+
+ul, ol {
+    margin: 0 0 1em;
+    padding-left: 1.5em;
+}
+
+li {
+    margin-bottom: 0.25em;
+}
+
+strong {
+    font-weight: 600;
+    color: var(--slate);
+}
+
+em {
+    font-style: italic;
+}
+
+a {
+    color: var(--clay);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+a:hover {
+    color: var(--clay-d);
+}
+
+code {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    background: var(--gray-150);
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+pre {
+    font-family: var(--mono);
+    background: var(--slate);
+    color: #E8E6DE;
+    padding: 18px 20px;
+    border-radius: 12px;
+    overflow-x: auto;
+    margin-bottom: 1em;
+}
+
+pre code {
+    background: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+blockquote {
+    border-left: 3px solid var(--clay);
+    padding-left: 1em;
+    margin: 0 0 1em;
+    color: var(--gray-500);
+}
+
+hr {
+    border: none;
+    border-top: 1.5px solid var(--gray-300);
+    margin: 2em 0;
+}
+
+.board-layout {
+    margin: 1.5rem 0;
+}
+
+.board-layout--kanban {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    overflow-x: auto;
+    align-items: start;
+}
+
+.board-layout--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    align-items: start;
+}
+
+.board-layout--slides {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    align-items: start;
+}
+
+.board-column {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 220px;
+    flex: 1;
+    min-height: 160px;
+}
+
+.board-layout--slides .board-column {
+    flex: 0 0 80%;
+    scroll-snap-align: start;
+}
+
+.board-column__header {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 14px 14px 10px;
+    border-bottom: 1.5px solid var(--gray-50);
+    background: var(--white);
+}
+
+.board-column__title {
+    font-family: var(--sans);
+    font-weight: 600;
+    color: var(--slate);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.board-column__count {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gray-500);
+    background: var(--gray-50);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 999px;
+    padding: 1px 8px;
+    min-width: 26px;
+    text-align: center;
+}
+
+.board-column__body {
+    padding: 10px 10px 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-height: 60px;
+}
+
+.board-item {
+    background: var(--white);
+    border: 1.5px solid var(--gray-200);
+    border-radius: 8px;
+    padding: 10px 11px 9px;
+    color: var(--slate);
+    font-size: 13px;
+    line-height: 1.35;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+    cursor: default;
+}
+
+.board-item:hover {
+    border-color: var(--gray-500);
+    box-shadow: 0 1px 3px rgba(20, 20, 19, 0.06);
+}
+
+.board-layout__children {
+    margin-top: 1rem;
+}
+
+.data-grid {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: var(--white);
+    border: 1.5px solid var(--gray-300);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 1.5rem 0;
+    font-size: 0.9375rem;
+}
+
+.data-grid thead {
+    background: var(--gray-100);
+    border-bottom: 1.5px solid var(--gray-300);
+}
+
+.data-grid th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--gray-700);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.data-grid td {
+    padding: 13px 16px;
+    color: var(--slate);
+    border-bottom: 1px solid var(--gray-100);
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.data-grid tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.data-grid tbody tr:hover {
+    background: var(--ivory);
+}
+
+.data-grid__children {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--gray-300);
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    line-height: 1;
+}
+
+.badge--high {
+    background: #F5E2D8;
+    color: var(--rust);
+}
+
+.badge--med,
+.badge--medium {
+    background: var(--oat);
+    color: #7A6A4F;
+}
+
+.badge--low {
+    background: #E8EDE0;
+    color: #5C6F44;
+}
+
+.notice {
+    background: var(--white);
+    border: 1.5px solid var(--gray-300);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 18px 0;
+    border-left: 4px solid var(--gray-500);
+}
+
+.notice__icon {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    font-size: 14px;
+    color: var(--gray-500);
+}
+
+.notice__content {
+    color: var(--slate);
+    line-height: 1.6;
+    font-size: 15px;
+}
+
+.notice__content p {
+    margin: 0 0 0.5em;
+}
+
+.notice__content p:last-child {
+    margin-bottom: 0;
+}
+
+.notice__children {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--gray-300);
+}
+
+.notice--info {
+    border-left-color: var(--clay);
+}
+
+.notice--info .notice__icon {
+    color: var(--clay);
+}
+
+.notice--success {
+    border-left-color: var(--olive);
+}
+
+.notice--success .notice__icon {
+    color: var(--olive);
+}
+
+.notice--danger {
+    border-left-color: var(--rust);
+}
+
+.notice--danger .notice__icon {
+    color: var(--rust);
+}
+
+.notice--warning {
+    border-left-color: var(--clay);
+}
+
+.notice--warning .notice__icon {
+    color: var(--clay);
+}
+
+.notice--sticky-nav {
+    border-left-color: var(--gray-500);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.notice--sticky-nav .notice__icon {
+    color: var(--gray-500);
+}
+
+:root {
+    --ivory: #FAF9F5;
+    --slate: #141413;
+    --clay: #D97757;
+    --clay-d: #B85C3E;
+    --oat: #E3DACC;
+    --olive: #788C5D;
+    --rust: #B04A3F;
+    --gray-50: #F0EEE6;
+    --gray-150: #F0EEE6;
+    --gray-200: #D1CFC5;
+    --gray-300: #D1CFC5;
+    --gray-500: #87867F;
+    --gray-700: #3D3D3A;
+    --gray-800: #3D3D3A;
+    --white: #ffffff;
+    --serif: ui-serif, Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+}
+
+</style>
+</head>
+<body class="layout-wide">
+    
+    <div class="page">
+        <main>
+            <h1>Claude — Global Overview</h1>
+<div class="notice notice--info">
+    
+    <div class="notice__content">Quick reference cho toàn bộ Claude setup. Source of truth: ~/.claude/CLAUDE.md và templates/.
+Cập nhật file này khi thêm skill, template, project, hoặc đổi rule quan trọng.
+</div>
+    
+</div>
+<hr />
+<h1>Superpowers Skills</h1>
+<table class="data-grid">
+    <thead>
+        <tr>
+            <th>Skill</th><th>Khi dùng</th><th>Invoke</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td>brainstorming</td><td>Tạo / design feature mới</td><td>Skill('brainstorming')</td>
+        </tr>
+        
+        <tr>
+            <td>writing-plans</td><td>Có spec, cần plan implement</td><td>Skill('writing-plans')</td>
+        </tr>
+        
+        <tr>
+            <td>test-driven-development</td><td>Bắt đầu code (non-code-project)</td><td>Skill('test-driven-development')</td>
+        </tr>
+        
+        <tr>
+            <td>subagent-driven-development</td><td>2+ task độc lập (non-code-project)</td><td>Skill('subagent-driven-development')</td>
+        </tr>
+        
+        <tr>
+            <td>systematic-debugging</td><td>Bug / lỗi / không hoạt động</td><td>Skill('systematic-debugging')</td>
+        </tr>
+        
+        <tr>
+            <td>requesting-code-review</td><td>Xong implement, muốn kiểm tra</td><td>Skill('requesting-code-review')</td>
+        </tr>
+        
+        <tr>
+            <td>receiving-code-review</td><td>Nhận review feedback</td><td>Skill('receiving-code-review')</td>
+        </tr>
+        
+        <tr>
+            <td>verification-before-completion</td><td>Xong implement, verify trước khi done</td><td>Skill('verification-before-completion')</td>
+        </tr>
+        
+        <tr>
+            <td>finishing-a-development-branch</td><td>Kết thúc branch</td><td>Skill('finishing-a-development-branch')</td>
+        </tr>
+        
+        <tr>
+            <td>using-git-worktrees</td><td>Feature cần isolate / chạy song song</td><td>Skill('using-git-worktrees')</td>
+        </tr>
+        
+        <tr>
+            <td>dispatching-parallel-agents</td><td>Dispatch nhiều agent cùng lúc</td><td>Skill('dispatching-parallel-agents')</td>
+        </tr>
+        
+        <tr>
+            <td>executing-plans</td><td>Chạy plan từng task (inline)</td><td>Skill('executing-plans')</td>
+        </tr>
+        
+        <tr>
+            <td>writing-skills</td><td>Viết skill mới</td><td>Skill('writing-skills')</td>
+        </tr>
+        
+    </tbody>
+</table>
+<hr />
+<h1>Templates</h1>
+<div class="board-layout board-layout--kanban">
+    
+    <div class="board-column">
+        <div class="board-column__header">
+            <div class="board-column__title">Code Project</div>
+            <span class="board-column__count">4</span>
+        </div>
+        <div class="board-column__body">
+            
+            <div class="board-item">File: ~/.claude/templates/code-project.md</div>
+            
+            <div class="board-item">Dùng khi: có codebase, Codex execute</div>
+            
+            <div class="board-item">Flow: brainstorm → spec → plan → Codex → review</div>
+            
+            <div class="board-item">@include vào project CLAUDE.md</div>
+            
+        </div>
+    </div>
+    
+    <div class="board-column">
+        <div class="board-column__header">
+            <div class="board-column__title">Business</div>
+            <span class="board-column__count">3</span>
+        </div>
+        <div class="board-column__body">
+            
+            <div class="board-item">File: ~/.claude/templates/business.md</div>
+            
+            <div class="board-item">Dùng khi: dự án kinh doanh, ops, marketing</div>
+            
+            <div class="board-item">Không có Codex delegation</div>
+            
+        </div>
+    </div>
+    
+    <div class="board-column">
+        <div class="board-column__header">
+            <div class="board-column__title">Research</div>
+            <span class="board-column__count">3</span>
+        </div>
+        <div class="board-column__body">
+            
+            <div class="board-item">File: ~/.claude/templates/research.md</div>
+            
+            <div class="board-item">Dùng khi: nghiên cứu, phân tích, so sánh</div>
+            
+            <div class="board-item">Web search, synthesis, Obsidian output</div>
+            
+        </div>
+    </div>
+    
+    <div class="board-column">
+        <div class="board-column__header">
+            <div class="board-column__title">Finance / Personal</div>
+            <span class="board-column__count">2</span>
+        </div>
+        <div class="board-column__body">
+            
+            <div class="board-item">finance.md: tài chính cá nhân / doanh nghiệp</div>
+            
+            <div class="board-item">personal.md: dự án cá nhân không có code</div>
+            
+        </div>
+    </div>
+    
+</div>
+<hr />
+<h1>HTML Visual Workflow</h1>
+<table class="data-grid">
+    <thead>
+        <tr>
+            <th>Bước</th><th>Ai làm</th><th>Command</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td>Viết .md hybrid</td><td>Claude</td><td>—</td>
+        </tr>
+        
+        <tr>
+            <td>Compile → HTML</td><td>Claude</td><td>html-eff --input file.md --output file.html</td>
+        </tr>
+        
+        <tr>
+            <td>Mở browser</td><td>Claude</td><td>open file.html</td>
+        </tr>
+        
+        <tr>
+            <td>Update task status</td><td>Codex</td><td>Edit **Status:** field trong .md</td>
+        </tr>
+        
+        <tr>
+            <td>Sync HTML sau update</td><td>Claude</td><td>html-eff --input plan-overview.md --output plan-overview.html</td>
+        </tr>
+        
+    </tbody>
+</table>
+<div class="notice notice--warning">
+    
+    <div class="notice__content">html-eff binary: ~/.local/bin/html-eff (cài 1 lần, dùng mọi project)
+Setup nếu chưa có: git clone https://github.com/luisoncpp/html-effectiveness-scripts.git ~/.local/share/html-effectiveness-scripts && cd ~/.local/share/html-effectiveness-scripts && cargo build --release && ln -sf ~/.local/share/html-effectiveness-scripts/target/release/html-effectiveness ~/.local/bin/html-eff
+Theme hiện tại: clay-slate (duy nhất — muốn thêm theme: fork repo + thêm CSS token file)
+</div>
+    
+</div>
+<hr />
+<h1>Global Rules Quick Ref</h1>
+<table class="data-grid">
+    <thead>
+        <tr>
+            <th>Rule</th><th>Nội dung</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td>Ngôn ngữ</td><td>Luôn trả lời Tiếng Việt. Thuật ngữ giải thích lần đầu.</td>
+        </tr>
+        
+        <tr>
+            <td>Markitdown</td><td>PDF/Word/PPT/Excel/HTML → markitdown [file] > [file].md trước khi đọc</td>
+        </tr>
+        
+        <tr>
+            <td>Superpowers</td><td>Classify intent trước mỗi response. Nếu không chắc → assume skill áp dụng.</td>
+        </tr>
+        
+        <tr>
+            <td>Obsidian</td><td>Cuối session nhắc lưu nếu: topic mới, bug khó, quyết định kiến trúc</td>
+        </tr>
+        
+        <tr>
+            <td>Codex Review Gate</td><td>Spec/plan phức tạp (3+ subsystem) → dispatch Codex review trước khi execute</td>
+        </tr>
+        
+        <tr>
+            <td>Token Discipline</td><td>Claude viết .md + chạy html-eff. Codex viết code + update .md status.</td>
+        </tr>
+        
+        <tr>
+            <td>Kết thúc session</td><td>Báo: git status, Obsidian gợi ý, task còn lại</td>
+        </tr>
+        
+        <tr>
+            <td>Sync rules</td><td>User nói 'sync rules' / 'audit rules' → Skill('sync-rules')</td>
+        </tr>
+        
+    </tbody>
+</table>
+<hr />
+<h1>Config — Đặt Rule Ở Đâu</h1>
+<table class="data-grid">
+    <thead>
+        <tr>
+            <th>Rule thuộc loại nào</th><th>Đặt ở đâu</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td>Mọi session, mọi project</td><td>~/.claude/CLAUDE.md</td>
+        </tr>
+        
+        <tr>
+            <td>Mọi session, theo loại project</td><td>~/.claude/templates/[type].md</td>
+        </tr>
+        
+        <tr>
+            <td>Tool config project cụ thể</td><td>[project]/.claude/rules/[name].md</td>
+        </tr>
+        
+        <tr>
+            <td>Chỉ khi init/setup project</td><td>~/.claude/SETUP.md</td>
+        </tr>
+        
+        <tr>
+            <td>Chỉ khi skill invoke</td><td>~/.claude/skills/[skill]/skill.md</td>
+        </tr>
+        
+        <tr>
+            <td>Chỉ Codex đọc</td><td>[project]/AGENTS.md</td>
+        </tr>
+        
+    </tbody>
+</table>
+<hr />
+<h1>Active Projects</h1>
+<div class="board-layout board-layout--kanban">
+    
+    <div class="board-column">
+        <div class="board-column__header">
+            <div class="board-column__title">MMO (Active)</div>
+            <span class="board-column__count">5</span>
+        </div>
+        <div class="board-column__body">
+            
+            <div class="board-item">Path: ~/Documents/MMO</div>
+            
+            <div class="board-item">Stack: Python, FastAPI, Camoufox, SQLite, Node.js, Telegraf</div>
+            
+            <div class="board-item">Goals: AutoHub + Account Factory</div>
+            
+            <div class="board-item">Template: code-project.md</div>
+            
+            <div class="board-item">Plans: docs/plan-overview.html</div>
+            
+        </div>
+    </div>
+    
+    <div class="board-column">
+        <div class="board-column__header">
+            <div class="board-column__title">Spliteasy Boss</div>
+            <span class="board-column__count">2</span>
+        </div>
+        <div class="board-column__body">
+            
+            <div class="board-item">Path: ~/Library/.../Spliteasy-boss</div>
+            
+            <div class="board-item">Template: business.md</div>
+            
+        </div>
+    </div>
+    
+    <div class="board-column">
+        <div class="board-column__header">
+            <div class="board-column__title">Long Cafe</div>
+            <span class="board-column__count">2</span>
+        </div>
+        <div class="board-column__body">
+            
+            <div class="board-item">Path: ~/Library/.../LONG-CAFE</div>
+            
+            <div class="board-item">Template: business.md</div>
+            
+        </div>
+    </div>
+    
+    <div class="board-column">
+        <div class="board-column__header">
+            <div class="board-column__title">my-brain (Obsidian)</div>
+            <span class="board-column__count">3</span>
+        </div>
+        <div class="board-column__body">
+            
+            <div class="board-item">Path: ~/Library/.../my-brain</div>
+            
+            <div class="board-item">Vault: AI knowledge base</div>
+            
+            <div class="board-item">Output target cho mọi session research</div>
+            
+        </div>
+    </div>
+    
+</div>
+<hr />
+<h1>html-eff Component Cheatsheet</h1>
+<table class="data-grid">
+    <thead>
+        <tr>
+            <th>Component</th><th>type field</th><th>Fields chính</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        <tr>
+            <td>Notice/Warning</td><td>notice</td><td>variant: info|warning|error, content: |</td>
+        </tr>
+        
+        <tr>
+            <td>Card</td><td>card</td><td>title, content, tags, elevation, children</td>
+        </tr>
+        
+        <tr>
+            <td>Table</td><td>data-grid</td><td>columns: [], rows: [["val"]]</td>
+        </tr>
+        
+        <tr>
+            <td>Kanban Board</td><td>board-layout</td><td>variant: kanban, columns: [{title, items}]</td>
+        </tr>
+        
+        <tr>
+            <td>Timeline</td><td>timeline</td><td>orientation: vertical, steps: [{timestamp, title, type, description, tags}]</td>
+        </tr>
+        
+        <tr>
+            <td>Code diff</td><td>code-panel</td><td>tabs: [{name, language, diff, added, removed, content}]</td>
+        </tr>
+        
+        <tr>
+            <td>Flowchart</td><td>flowchart</td><td>nodes, edges, details</td>
+        </tr>
+        
+        <tr>
+            <td>Module Map</td><td>module-map</td><td>nodes, edges</td>
+        </tr>
+        
+    </tbody>
+</table>
+
+        </main>
+    </div>
+    
+    <script>
+(function () {
+  'use strict';
+
+  var map = {
+    'High': 'high', 'HIGH': 'high',
+    'Med': 'med', 'MED': 'med',
+    'Medium': 'medium', 'MEDIUM': 'medium',
+    'Low': 'low', 'LOW': 'low'
+  };
+
+  document.querySelectorAll('.data-grid tbody td').forEach(function (td) {
+    var key = td.textContent.trim();
+    var cls = map[key];
+    if (cls && td.innerHTML.trim() === key) {
+      td.innerHTML = '<span class="badge badge--' + cls + '">' + key + '</span>';
+    }
+  });
+})();
+
+</script>
+</body>
+</html>

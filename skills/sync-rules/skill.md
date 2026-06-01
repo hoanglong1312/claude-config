@@ -240,6 +240,7 @@ File rỗng sau cleanup → xóa luôn.
 ```
 [PROJECT — fix ngay]
   ✗ CLAUDE.md: [vấn đề — @include sai template hoặc thiếu]
+  ✗ [memory file/folder]: thiếu theo template project type
   ⚠ CLAUDE.md: "[section]" trùng template → xóa
 ```
 
@@ -253,8 +254,10 @@ Dù không có gap → vẫn liệt kê những gì đã check: `✓ đã check:
 Hỏi "Xử lý hết không?" → sau khi user OK, chỉ chạy bước phù hợp loại:
 
 **Code:** Fix @include → Merge AGENTS.md → Cleanup rules/ → Xóa trùng lặp CLAUDE.md → Content cleanup
-**Business:** Tạo folder thiếu → Fix @include → Xóa trùng lặp CLAUDE.md → Content cleanup
-**Personal/research/finance:** Fix @include → Xóa trùng lặp CLAUDE.md → Content cleanup
+**Business:** Tạo memory structure thiếu → Fix @include → Xóa trùng lặp CLAUDE.md → Content cleanup
+**Research:** Tạo `sources/`, `notes/`, `findings.md`, `open-questions.md`, `context/decisions.md` nếu thiếu → Fix @include → Content cleanup
+**Finance:** Tạo `data/raw/`, `data/processed/`, `models/`, `reports/`, `assumptions.md`, `context/decisions.md` nếu thiếu → Fix @include → Content cleanup
+**Personal:** Tạo `goals.md`, `weekly-review.md`, `notes.md`, `context/decisions.md` nếu thiếu → Fix @include → Content cleanup
 
 **Content cleanup — chạy cuối cùng, sau tất cả fix:**
 

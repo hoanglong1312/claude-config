@@ -27,7 +27,7 @@ touch "$MARKER"
 
 # === Check 1: No CLAUDE.md → needs init ===
 if [ ! -f "$PROJECT_DIR/CLAUDE.md" ]; then
-  echo "PROJECT-INIT-NEEDED: Project chưa có CLAUDE.md. Hỏi user: 'Project này chưa được setup. Muốn init theo khung tiêu chuẩn không?' → nếu có: đọc ~/.claude/SETUP.md"
+  echo "PROJECT-INIT-NEEDED: Project chưa có CLAUDE.md. Hỏi user: 'Project này chưa được setup. Muốn init theo khung tiêu chuẩn không?' → nếu có: invoke Skill('init')"
   exit 0
 fi
 
@@ -46,9 +46,9 @@ fi
 if [ -n "$GAPS" ]; then
   GAP_COUNT=$(echo "$GAPS" | wc -w | tr -d ' ')
   if [ "$GAP_COUNT" -ge 3 ]; then
-    echo "PROJECT-GAPS-DETECTED: Thiếu:$GAPS — Hỏi user: 'Phát hiện project thiếu $GAP_COUNT file chuẩn ($GAPS). Muốn tạo không?' → nếu có: đọc ~/.claude/SETUP.md. Nhiều gap → đề xuất thêm: 'Hoặc chạy sync-rules để audit toàn bộ?'"
+    echo "PROJECT-GAPS-DETECTED: Thiếu:$GAPS — Hỏi user: 'Phát hiện project thiếu $GAP_COUNT file chuẩn ($GAPS). Muốn tạo không?' → nếu có: invoke Skill('init'). Nhiều gap → đề xuất thêm: 'Hoặc chạy sync-rules để audit toàn bộ?'"
   else
-    echo "PROJECT-GAPS-DETECTED: Thiếu:$GAPS — Hỏi user: 'Phát hiện project thiếu một số file chuẩn ($GAPS). Muốn tạo không?' → nếu có: đọc ~/.claude/SETUP.md section tương ứng"
+    echo "PROJECT-GAPS-DETECTED: Thiếu:$GAPS — Hỏi user: 'Phát hiện project thiếu một số file chuẩn ($GAPS). Muốn tạo không?' → nếu có: invoke Skill('init')"
   fi
 fi
 

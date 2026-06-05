@@ -92,6 +92,59 @@ export NINEROUTER_API_KEY=your_key_here
 
 ## 4. Obsidian Vault
 
-`~/Library/Mobile Documents/com~apple~CloudDocs/AI/my-brain/`
+`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/`
 
 Sync qua iCloud — không cần setup thêm nếu đã đăng nhập iCloud.
+
+---
+
+## 5. Rule Architecture
+
+Shared Claude + Codex rules live in one source file:
+
+```text
+~/.claude/templates/shared-agent-rules.md
+```
+
+Load paths:
+
+```text
+~/.claude/CLAUDE.md             # Claude global includes shared rules via @include
+~/.claude/templates/AGENTS.md   # template body only; project AGENTS.md materializes shared rules
+~/.claude/templates/code-project.md  # code workflow only, no shared include to avoid duplicate Claude context
+```
+
+Claude can consume `@include`. Codex should get a rendered/materialized `AGENTS.md` that contains shared rules as real text, unless Codex include expansion has been verified.
+
+Project-specific tool rules go in project root `rules/*.md`, not `.claude/rules/`.
+
+Generated/cache/local files ignored in this repo include `image-cache/`, `paste-cache/`, `session-env/`, `stats-cache.json`, `.last-update-result.json`, `.update.lock`, `settings.local.json`.
+
+---
+
+## 6. Maintenance Checklist
+
+After changing global rules/templates/settings:
+
+```bash
+jq empty ~/.claude/settings.json
+grep -R "@~/.claude/templates/shared-agent-rules.md" ~/.claude/CLAUDE.md ~/.claude/templates/*.md
+git -C ~/.claude status --short
+```
+
+Expected shared rule includes:
+
+```text
+~/.claude/CLAUDE.md
+```
+
+`templates/AGENTS.md` must not rely on `@include`; project `AGENTS.md` should contain a materialized copy of shared rules plus the template body.
+
+Use `init` for all project bootstrap, extension, rules audit/sync, and explicit global maintenance. `sync-rules` has been removed to avoid duplicate workflows.
+
+Suggested commit groups:
+
+1. config safety (`settings.json`, `.gitignore`)
+2. rule architecture (`CLAUDE.md`, templates, shared rules)
+3. skills (`skills/init`, deprecated aliases)
+4. project skeleton changes

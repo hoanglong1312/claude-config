@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "lastComputedDate": "2026-05-29",
+  "lastComputedDate": "2026-06-01",
   "dailyActivity": [
     {
       "date": "2026-04-29",
@@ -73,6 +73,24 @@
       "messageCount": 1611,
       "sessionCount": 3,
       "toolCallCount": 513
+    },
+    {
+      "date": "2026-05-30",
+      "messageCount": 4301,
+      "sessionCount": 9,
+      "toolCallCount": 1092
+    },
+    {
+      "date": "2026-05-31",
+      "messageCount": 1438,
+      "sessionCount": 3,
+      "toolCallCount": 367
+    },
+    {
+      "date": "2026-06-01",
+      "messageCount": 1941,
+      "sessionCount": 7,
+      "toolCallCount": 481
     }
   ],
   "dailyModelTokens": [
@@ -202,24 +220,47 @@
         "claude-sonnet-4-6": 443559,
         "claude-haiku-4-5-20251001": 52506
       }
+    },
+    {
+      "date": "2026-05-30",
+      "tokensByModel": {
+        "claude-sonnet-4-6": 1021083,
+        "claude-haiku-4-5-20251001": 71288
+      }
+    },
+    {
+      "date": "2026-05-31",
+      "tokensByModel": {
+        "claude-sonnet-4-6": 337940,
+        "claude-haiku-4-5-20251001": 22720
+      }
+    },
+    {
+      "date": "2026-06-01",
+      "tokensByModel": {
+        "claude-sonnet-4-6": 836222,
+        "gpt-5.5": 6800028,
+        "gpt-5.5-review": 6678987,
+        "claude-haiku-4-5-20251001": 31707
+      }
     }
   ],
   "modelUsage": {
     "claude-sonnet-4-6": {
-      "inputTokens": 82072,
-      "outputTokens": 11797489,
-      "cacheReadInputTokens": 1038053850,
-      "cacheCreationInputTokens": 55503042,
+      "inputTokens": 96991,
+      "outputTokens": 13977815,
+      "cacheReadInputTokens": 1261355326,
+      "cacheCreationInputTokens": 64229548,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0,
       "maxOutputTokens": 0
     },
     "claude-haiku-4-5-20251001": {
-      "inputTokens": 186323,
-      "outputTokens": 289971,
-      "cacheReadInputTokens": 55212107,
-      "cacheCreationInputTokens": 9097613,
+      "inputTokens": 197182,
+      "outputTokens": 404827,
+      "cacheReadInputTokens": 79442855,
+      "cacheCreationInputTokens": 12739954,
       "webSearchRequests": 0,
       "costUSD": 0,
       "contextWindow": 0,
@@ -234,10 +275,30 @@
       "costUSD": 0,
       "contextWindow": 0,
       "maxOutputTokens": 0
+    },
+    "gpt-5.5": {
+      "inputTokens": 6775672,
+      "outputTokens": 24356,
+      "cacheReadInputTokens": 2142720,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0,
+      "contextWindow": 0,
+      "maxOutputTokens": 0
+    },
+    "gpt-5.5-review": {
+      "inputTokens": 6649731,
+      "outputTokens": 29256,
+      "cacheReadInputTokens": 2031104,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0,
+      "contextWindow": 0,
+      "maxOutputTokens": 0
     }
   },
-  "totalSessions": 26,
-  "totalMessages": 26141,
+  "totalSessions": 45,
+  "totalMessages": 33821,
   "longestSession": {
     "sessionId": "9e84c076-f4c9-442e-a099-8df6d73d37fb",
     "duration": 627020406,
@@ -247,18 +308,21 @@
   "firstSessionDate": "2026-04-29T09:05:16.625Z",
   "hourCounts": {
     "0": 6,
-    "8": 1,
+    "8": 2,
+    "9": 1,
     "10": 2,
-    "11": 2,
+    "11": 6,
     "12": 1,
     "13": 2,
     "14": 3,
-    "15": 1,
-    "16": 1,
+    "15": 3,
+    "16": 2,
+    "17": 5,
+    "18": 1,
     "20": 1,
-    "21": 1,
-    "22": 2,
-    "23": 3
+    "21": 2,
+    "22": 3,
+    "23": 5
   },
   "totalSpeculationTimeSavedMs": 0
 }

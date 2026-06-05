@@ -14,3 +14,12 @@ todos/
 sessions/
 shell-snapshots/
 telemetry/
+image-cache/
+paste-cache/
+session-env/
+stats-cache.json
+.last-update-result.json
+.update.lock
+combined-statusline.sh
+settings.local.json
+.claude/settings.local.json

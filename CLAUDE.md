@@ -1,24 +1,22 @@
 @RTK.md
+@~/.claude/templates/shared-agent-rules.md
 
-# Quy Tắc Ngôn Ngữ
-- Luôn trả lời bằng Tiếng Việt — bất kể user viết tiếng gì.
-- Thuật ngữ tiếng Anh / chuyên ngành: giải thích nghĩa tiếng Việt ở lần xuất hiện **đầu tiên**. Format: `technical term` (nghĩa ngắn). Lặp lại → không giải thích lại.
-- Không dịch: tên lệnh, file path, API name, package name, biến code, model name, tên sản phẩm.
-- Ký hiệu cố định giữ nguyên, giải thích lần đầu — `ASSUMPTION:` (giả định), `QA-FAIL:` (kiểm thử thất bại).
+# Status Line Configuration
 
-# Markitdown
-PDF/Word/PPT/Excel/HTML → bắt buộc chuyển trước khi đọc:
-```bash
-markitdown [file] > [file].md
-```
+Compact status line command is configured in `~/.claude/settings.json`.
 
-**KHÔNG dùng markitdown cho:** ảnh UI/screenshot → gửi thẳng cho Claude (mất visual context nếu convert).
+## Global Rule — Statusline Setup
 
-**Dùng markitdown cho ảnh khi:** ảnh chứa text đặc (hóa đơn scan, bảng số, screenshot terminal) → dùng OCR plugin:
-```bash
-markitdown image.png --llm-client openai --llm-model gpt-4o
-# hoặc plugin OCR riêng: pip install markitdown-ocr
-```
+Khi user yêu cầu setup / sửa / khôi phục statusline Claude Code:
+- Dùng `update-config` skill trước vì đây là cấu hình `settings.json`.
+- Target mặc định: `~/.claude/settings.json` nếu user nói global/statusline chung.
+- Luôn Read file settings hiện tại trước khi Write/Edit; merge, không replace toàn bộ config.
+- Giữ `statusLine.type = "command"` và command hiện tại nếu user chỉ muốn "như hiện tại".
+- Nếu user yêu cầu comprehensive statusline: hiển thị, khi field có sẵn, model, session name, context %, output style, cwd/project, repo/branch/worktree, token usage current/total, rate limits, effort, extended thinking, vim mode, agent, PR state.
+- Command phải parse stdin JSON bằng `jq`, build array parts, bỏ field rỗng, join bằng separator rõ ràng.
+- Sau khi sửa: validate JSON bằng `jq` và báo user cần restart Claude Code hoặc reload `/hooks` nếu UI chưa nhận config.
+
+---
 
 # Superpowers — BẮT BUỘC
 
@@ -53,36 +51,48 @@ Nếu output có thể là code, file change, plan, hoặc config → PHẢI che
 - Codex vẫn phải follow TDD/debug/verification discipline khi thực thi.
 - Claude main vẫn giữ review, architecture, MCP, security, và decision logging.
 
-# Khi Tự Sửa File / Code
+# Quy Tắc Ngôn Ngữ
+- Luôn trả lời bằng Tiếng Việt — bất kể user viết tiếng gì.
+- Thuật ngữ tiếng Anh / chuyên ngành: giải thích nghĩa tiếng Việt ở lần xuất hiện **đầu tiên**. Format: `technical term` (nghĩa ngắn). Lặp lại → không giải thích lại.
+- Không dịch: tên lệnh, file path, API name, package name, biến code, model name, tên sản phẩm.
+- Ký hiệu cố định giữ nguyên, giải thích lần đầu — `ASSUMPTION:` (giả định), `QA-FAIL:` (kiểm thử thất bại).
 
-*Áp dụng khi Claude trực tiếp dùng Edit/Write — không phải khi delegate Codex.*
+# Execution Discipline
 
-- **Hỏi trước khi làm**: Nếu mơ hồ hoặc có nhiều cách hiểu → trình bày các hướng, không tự chọn im lặng.
-- **Research trước**: Trước khi viết code mới → tìm existing solution (package, pattern) trước. Prefer adopting proven approach over net-new code.
-- **Minimum code**: Không thêm abstraction, feature, error handling ngoài yêu cầu.
-- **Immutability**: Luôn tạo object mới, không mutate object hiện có — tránh side effect ẩn.
-- **Chỉ touch file liên quan**: Không "cải thiện" code lân cận, không refactor không được yêu cầu.
-- **Đề xuất đơn giản hơn**: Nếu có cách đơn giản hơn → nói ra, không im lặng follow yêu cầu.
-- **Ngưỡng kích thước**: Function < 50 lines. File 200–400 lines thông thường, tối đa 800. Nesting tối đa 4 levels → dùng early return.
-- **Rewrite nếu bloated**: Nếu code có thể viết lại ngắn hơn đáng kể (200 lines → 50) mà không mất chức năng → đề xuất rewrite, không patch thêm.
-- **Self-test trước khi lưu**:
-  - "Senior engineer có nói cái này overcomplicated không?" → CÓ → viết lại
-  - "Mỗi dòng thay đổi có trace trực tiếp về yêu cầu của user không?" → KHÔNG → xóa
-- **Dead code**: Phát hiện code chết không liên quan → báo user, không tự xóa.
+Áp dụng canonical rules trong `@~/.claude/templates/shared-agent-rules.md`.
 
-# Goal-Driven Execution
+Global additions:
+- Trước khi implement: đổi task thành success criteria có thể verify.
+- Sau implement: chạy verify steps; nếu fail → debug → fix → verify lại.
+- Khi Claude trực tiếp Edit/Write: chỉ touch file liên quan, minimum code, research existing pattern trước, không refactor ngoài scope.
+- Dead code không liên quan: báo user, không tự xóa.
 
-*Trước khi implement: đổi task → success criteria có thể verify.*
+# Khi Đề Xuất Nhiều Phương Án
 
-**Quy trình:**
-1. **Define done**: Task "add feature X" → "feature X hoạt động khi [test case cụ thể] pass"
-2. **State assumptions**: Nêu rõ assumptions trước khi code — "ASSUMPTION: X là Y" — không đoán im lặng
-3. **Verify, không chỉ run**: Sau implement → chạy verify steps, không chỉ báo "done"
-4. **Loop nếu chưa pass**: Nếu verify fail → debug → fix → verify lại, không báo done sớm
+Khi Claude đưa ra 2+ lựa chọn:
+1. Đánh dấu phương án recommend — `✅ Recommended`
+2. Mỗi phương án: ≥1 pros + ≥1 cons
+3. 1 câu lý do recommend
 
-**Ví dụ chuyển đổi:**
-- ❌ "Thêm webhook endpoint" → implement xong báo done
-- ✅ "Webhook endpoint done khi: POST với đúng secret → 201, sai secret → 401, thiếu fields → 400"
+| Phương án | Pros | Cons |
+|---|---|---|
+| **A** ✅ Recommended | ... | ... |
+| B | ... | ... |
+> Recommend A vì [lý do].
+
+# Markitdown
+PDF/Word/PPT/Excel/HTML → bắt buộc chuyển trước khi đọc:
+```bash
+markitdown [file] > [file].md
+```
+
+**KHÔNG dùng markitdown cho:** ảnh UI/screenshot → gửi thẳng cho Claude (mất visual context nếu convert).
+
+**Dùng markitdown cho ảnh khi:** ảnh chứa text đặc (hóa đơn scan, bảng số, screenshot terminal) → dùng OCR plugin:
+```bash
+markitdown image.png --llm-client openai --llm-model gpt-4o
+# hoặc plugin OCR riêng: pip install markitdown-ocr
+```
 
 # Model Selection — Khi Build AI Features
 
@@ -92,7 +102,7 @@ Dùng khi viết code gọi Claude API hoặc chọn model cho agent:
 |---|---|---|
 | `claude-haiku-4-5` | Lightweight agent, gọi thường xuyên, task đơn giản | 3x rẻ hơn Sonnet |
 | `claude-sonnet-4-6` | Main coding work, phần lớn tasks | Best coding model |
-| `claude-opus-4-7` | Architectural decisions, reasoning phức tạp | Deepest reasoning |
+| `claude-opus-4-8` | Architectural decisions, reasoning phức tạp | Deepest reasoning |
 
 # Repo Wiki — Cập Nhật Tự Động
 
@@ -138,99 +148,6 @@ Khi user nói "xong" / "tạm dừng" / "mai tiếp":
 → Còn lại: [task 1], [task 2]
 ```
 
-# Khi Đề Xuất Nhiều Phương Án
-
-Khi Claude đưa ra 2+ lựa chọn:
-1. Đánh dấu phương án recommend — `✅ Recommended`
-2. Mỗi phương án: ≥1 pros + ≥1 cons
-3. 1 câu lý do recommend
-
-| Phương án | Pros | Cons |
-|---|---|---|
-| **A** ✅ Recommended | ... | ... |
-| B | ... | ... |
-> Recommend A vì [lý do].
-
-# HTML Visual Workflow
-
-## Nguyên tắc
-- `.md` = source of truth (spec, plan, status) — git-friendly, diffable
-- `.html` = rendered view, KHÔNG edit trực tiếp — generate từ `.md` bằng `html-eff` CLI
-- Claude viết `.md` content (hybrid Markdown + YAML component blocks) + chạy `html-eff` ngay sau (1 Bash command)
-- Codex: code changes + update `**Status:**` field trong `plan-overview.md` + commit
-
-## Tool Setup (nếu `html-eff` chưa có)
-
-```bash
-git clone https://github.com/luisoncpp/html-effectiveness-scripts.git ~/.local/share/html-effectiveness-scripts
-cd ~/.local/share/html-effectiveness-scripts && cargo build --release
-mkdir -p ~/.local/bin
-ln -sf ~/.local/share/html-effectiveness-scripts/target/release/html-effectiveness ~/.local/bin/html-eff
-# Thêm vào ~/.zshrc nếu chưa có: export PATH="$HOME/.local/bin:$PATH"
-```
-
-Reference gallery (20 demos): https://github.com/ThariqS/html-effectiveness
-
-## Phân Chia File Spec
-
-- `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md` — text spec, Codex đọc khi implement
-- `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.html` — generated visual, KHÔNG edit trực tiếp
-
-Spec đơn giản: plain Markdown. Spec phức tạp: Claude viết hybrid (Markdown + YAML components) → compile.
-
-## Spec Visual (trước writing-plans)
-
-Sau brainstorming/spec xong, Claude hỏi: "Tạo HTML visual spec không?"
-Nếu Có:
-1. Claude viết (hoặc convert) `docs/superpowers/specs/[spec]-design.md` sang hybrid format
-2. Claude chạy: `html-eff -i docs/superpowers/specs/[spec]-design.md -o docs/superpowers/specs/[spec]-design.html`
-   - Nếu html-eff lỗi: báo error ngay, KHÔNG edit .html tay
-3. Claude chạy: `open docs/superpowers/specs/[spec]-design.html`
-4. User review HTML, confirm rồi mới chạy writing-plans
-
-## Codex Review Gate (Optional)
-
-Sau khi Claude viết spec hoặc plan xong — nếu phức tạp (3+ subsystem, core logic mới, user yêu cầu):
-- Dispatch Codex review trước khi tiếp tục
-- Claude fix issues từ Codex report → rồi mới generate HTML / execute plan
-
-Prompt template Codex review spec:
-```
-Review [spec file path]. Check: logical gaps, contradictions, ambiguous requirements, missing error handling. Report: numbered issues, severity (minor/major/blocker), fix. Concise.
-```
-
-Prompt template Codex review plan:
-```
-Review [plan file path]. Check: missing steps, type/method name consistency, placeholder text, wrong commands, untested assumptions. Report: numbered issues, severity, fix. Concise.
-```
-
-## Plan Tracker (sau writing-plans)
-
-Sau `writing-plans` hoàn thành:
-1. Claude hỏi: "Thêm plan này vào HTML overview không?"
-2. Nếu Có: Claude append section vào `docs/plan-overview.md` (hybrid format)
-3. Claude chạy: `html-eff -i docs/plan-overview.md -o docs/plan-overview.html` (nếu lỗi: báo error, giữ .html cũ)
-4. Claude chạy: `open docs/plan-overview.html`
-
-### Format Task trong plan-overview.md
-
-```markdown
-### Task N: [Tên Task]
-
-**Status:** pending
-**Commit:** —
-
-Steps:
-- [ ] Step 1...
-```
-
-Codex update bằng string replace:
-- Start: `**Status:** pending` → `**Status:** in_progress`
-- Done: `**Status:** in_progress` → `**Status:** done` + `**Commit:** [hash]`
-- Blocked: → `**Status:** blocked` + dòng `**Reason:** QA-FAIL: [lý do]`
-
-Codex commit `.md` status cùng code changes, 1 commit per task. Khi dispatch Codex: Claude extract task list từ `.md` → truyền text vào prompt, không truyền HTML.
-
 # Quản Lý Config
 
 ## Đặt Rule Ở Đâu
@@ -239,8 +156,8 @@ Codex commit `.md` status cùng code changes, 1 commit per task. Khi dispatch Co
 |---|---|
 | Hành vi mọi session, mọi project | `~/.claude/CLAUDE.md` |
 | Hành vi mọi session, theo loại project | `~/.claude/templates/[type].md` |
-| Tool config cụ thể của project (MCP, lệnh test, quirk) | `[project]/.claude/rules/[name].md` |
-| Chỉ chạy khi init / setup project | `~/.claude/SETUP.md` |
+| Tool config cụ thể của project (MCP, lệnh test, quirk) | `[project]/rules/[name].md` |
+| Chỉ chạy khi init / setup / sync project | `~/.claude/skills/init/skill.md` |
 | Chỉ chạy khi skill được invoke | `~/.claude/skills/[skill]/skill.md` |
 | Chỉ Codex đọc | `[project]/AGENTS.md` |
 
@@ -252,5 +169,25 @@ README chỉ chứa lệnh cài tools — không thêm rule vào đó.
 
 Project mới hoặc mở rộng → `/init`
 
-## Sync Rules
-User nói "sync rules" hoặc "audit rules" → invoke `Skill("sync-rules")`.
+## Init / Sync Rules
+User nói "init", "sync rules", hoặc "audit rules" → invoke `Skill("init")`. Với sync/audit, chạy phần Audit / Sync Rules.
+
+---
+
+# Settings.json Configuration
+
+File: `~/.claude/settings.json`
+
+Actual statusLine hiện tại là compact command, hiển thị:
+- model compact
+- permission mode
+- 5h / 7d rate limit nếu có
+- context remaining % nếu có
+
+Rule khi sửa statusline:
+- Dùng `update-config` skill trước.
+- Luôn Read `~/.claude/settings.json` trước khi Edit/Write.
+- Merge config, không replace toàn bộ file.
+- Giữ `statusLine.type = "command"`.
+- Validate JSON bằng `jq`.
+- Báo user restart Claude Code hoặc reload `/hooks` nếu UI chưa nhận config.

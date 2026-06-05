@@ -41,8 +41,8 @@
 1. Claude: Superpowers `brainstorming` → spec → lưu `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`
 2. Claude: invoke `writing-plans` skill → đọc codebase + spec → tạo technical checklist → append section mới vào `docs/plan-overview.md` (hybrid) → chạy `html-eff` → compile HTML
 3. Claude self-review plan → approve hoặc revise trực tiếp (optional: dispatch Codex review cho plan phức tạp)
-3.5. User mở `docs/plan-overview.html` → review → confirm trước khi Codex chạy
-4. Gọi Codex: `executing-plans` → Codex nhận task list do Claude extract từ `plan-overview.md`, tự parallelize task độc lập, implement + TDD + commit
+4. User mở `docs/plan-overview.html` → review → confirm trước khi Codex chạy
+5. Gọi Codex: `executing-plans` → Codex nhận task list do Claude extract từ `plan-overview.md`, tự parallelize task độc lập, implement + TDD + commit
 6. Claude review qua `git diff` + commit message
 7. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
 8. **Definition of Done** trước khi bàn giao:
@@ -207,11 +207,13 @@ Write operations (`apply_migration`, INSERT/UPDATE/DELETE) vẫn do Claude thự
 **CLAUDE.md project — cấu trúc @include chuẩn:**
 ```markdown
 @~/.claude/templates/code-project.md
+@rules/supabase.md           ← nếu dùng Supabase
+@rules/testing.md            ← nếu có test framework
 @context/architecture.md
-@.claude/rules/supabase.md   ← nếu dùng Supabase
-@.claude/rules/testing.md    ← nếu có test framework
 ```
 Thứ tự bắt buộc: template → rules → context. Sai thứ tự → rules ghi đè template.
+
+`rules/*.md` nằm ở project root. Không dùng `.claude/rules/` cho project rules mới.
 
 **Khi review plan Codex — checklist:**
 - Plan có cover đủ spec không?
@@ -258,6 +260,94 @@ Thứ tự bắt buộc: template → rules → context. Sai thứ tự → rule
 
 Nếu phát hiện lỗ hổng → KHÔNG approve → gọi Codex fix với mô tả lỗ hổng cụ thể.
 
+# HTML Visual Workflow
+
+## Nguyên tắc
+- `.md` = source of truth (spec, plan, status) — git-friendly, diffable
+- `.html` = rendered view, KHÔNG edit trực tiếp — generate từ `.md` bằng `html-eff` CLI
+- Claude viết `.md` content (hybrid Markdown + YAML component blocks) + chạy `html-eff` ngay sau (1 Bash command)
+- Codex: code changes + update `**Status:**` field trong `plan-overview.md` + commit
+
+## Tool Setup (nếu `html-eff` chưa có)
+
+```bash
+git clone https://github.com/luisoncpp/html-effectiveness-scripts.git ~/.local/share/html-effectiveness-scripts
+cd ~/.local/share/html-effectiveness-scripts && cargo build --release
+mkdir -p ~/.local/bin
+ln -sf ~/.local/share/html-effectiveness-scripts/target/release/html-effectiveness ~/.local/bin/html-eff
+# Thêm vào ~/.zshrc nếu chưa có: export PATH="$HOME/.local/bin:$PATH"
+```
+
+Reference gallery (20 demos): https://github.com/ThariqS/html-effectiveness
+
+## Phân Chia File Spec
+
+- `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md` — text spec, Codex đọc khi implement
+- `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.html` — generated visual, KHÔNG edit trực tiếp
+
+Spec đơn giản: plain Markdown. Spec phức tạp: Claude viết hybrid (Markdown + YAML components) → compile.
+
+## Wireframe → Mockup Process
+
+**Thứ tự cố định khi brainstorm UI/layout:**
+1. **ASCII wireframe trong chat** — chốt structure, layout, zones. Nhanh, sửa tự do trong brainstorm loop.
+2. **HTML mockup** (html-eff hoặc standalone) — chỉ sau khi layout đã được approve.
+
+Không gen HTML mockup trước khi layout ASCII đã confirmed. ASCII wireframe = lo-fi, đủ để chốt structure.
+
+## Spec Visual (trước writing-plans)
+
+Sau brainstorming/spec xong, Claude hỏi: "Tạo HTML visual spec không?"
+Nếu Có:
+1. Claude viết (hoặc convert) `docs/superpowers/specs/[spec]-design.md` sang hybrid format
+2. Claude chạy: `html-eff -i docs/superpowers/specs/[spec]-design.md -o docs/superpowers/specs/[spec]-design.html`
+   - Nếu html-eff lỗi: báo error ngay, KHÔNG edit .html tay
+3. Claude chạy: `open docs/superpowers/specs/[spec]-design.html`
+4. User review HTML, confirm rồi mới chạy writing-plans
+
+## Codex Review Gate (Optional)
+
+Sau khi Claude viết spec hoặc plan xong — nếu phức tạp (3+ subsystem, core logic mới, user yêu cầu):
+- Dispatch Codex review trước khi tiếp tục
+- Claude fix issues từ Codex report → rồi mới generate HTML / execute plan
+
+Prompt template Codex review spec:
+```
+Review [spec file path]. Check: logical gaps, contradictions, ambiguous requirements, missing error handling. Report: numbered issues, severity (minor/major/blocker), fix. Concise.
+```
+
+Prompt template Codex review plan:
+```
+Review [plan file path]. Check: missing steps, type/method name consistency, placeholder text, wrong commands, untested assumptions. Report: numbered issues, severity, fix. Concise.
+```
+
+## Plan Tracker (sau writing-plans)
+
+Sau `writing-plans` hoàn thành:
+1. Claude hỏi: "Thêm plan này vào HTML overview không?"
+2. Nếu Có: Claude append section vào `docs/plan-overview.md` (hybrid format)
+3. Claude chạy: `html-eff -i docs/plan-overview.md -o docs/plan-overview.html` (nếu lỗi: báo error, giữ .html cũ)
+4. Claude chạy: `open docs/plan-overview.html`
+
+### Format Task trong plan-overview.md
+
+```markdown
+### Task N: [Tên Task]
+
+**Status:** pending
+**Commit:** —
+
+Steps:
+- [ ] Step 1...
+```
+
+Codex update bằng string replace:
+- Start: `**Status:** pending` → `**Status:** in_progress`
+- Done: `**Status:** in_progress` → `**Status:** done` + `**Commit:** [hash]`
+- Blocked: → `**Status:** blocked` + dòng `**Reason:** QA-FAIL: [lý do]`
+
+Codex commit `.md` status cùng code changes, 1 commit per task. Khi dispatch Codex: Claude extract task list từ `.md` → truyền text vào prompt, không truyền HTML.
+
 ## Cấu Trúc `docs/`
 
 ```
@@ -288,13 +378,13 @@ Sau mỗi lần edit `.md`: Claude chạy `html-eff -i docs/plan-overview.md -o 
 
 ## Quy Tắc Mở Rộng
 
-**Project-specific rules → `rules/[tool].md` trong project, KHÔNG sửa file global.**
+**Project-specific tool rules → `rules/[tool].md` trong project root, KHÔNG sửa file global.**
 
 | Loại rule | Đặt ở đâu |
 |-----------|-----------|
 | Quirk của tool (EPERM, bind port, timeout) | `rules/[tool].md` trong project |
 | Pattern riêng của codebase | `context/architecture.md` |
-| Convention riêng team | `rules/workflow.md` trong project |
+| Convention riêng team | `CLAUDE.md` → `## Project-Specific Rules` |
 | Rule áp dụng mọi code project | `~/.claude/templates/code-project.md` |
 
 **⚠️ Local rules KHÔNG được restate global workflow.**  

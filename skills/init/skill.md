@@ -250,6 +250,15 @@ Marker bắt buộc trong project `AGENTS.md`:
 
 Khi sync, so sánh marker với source hiện tại; nếu outdated → báo diff và hỏi user trước khi regenerate/merge.
 
+Render command mẫu:
+```bash
+{
+  cat ~/.claude/templates/shared-agent-rules.md
+  printf '\n---\n\n'
+  cat ~/.claude/templates/AGENTS.md
+} > AGENTS.md
+```
+
 **4c. Git repo (CHỈ cho code project):**
 
 ```bash
@@ -429,9 +438,10 @@ Dùng khi user nói: "sync rules", "audit rules", "kiểm tra rules", "project n
 Init skill là entrypoint duy nhất cho init + extend + sync. `sync-rules` đã được remove để tránh drift.
 
 <HARD-GATE>
-**Bước đầu tiên bắt buộc: tạo TodoWrite với 6 tasks sau, TRƯỚC KHI làm bất cứ điều gì khác.**
+**Bước đầu tiên bắt buộc: tạo task list/session todo với 6 tasks sau, TRƯỚC KHI làm bất cứ điều gì khác.**
 
-Nếu không tạo todo → không được tiếp tục.
+Trong Claude Code v2 dùng `TaskCreate`/`TaskUpdate`; môi trường khác dùng todo tool tương đương.
+Nếu không tạo task list → không được tiếp tục.
 
 1. B0: chạy `git -C ~/.claude fetch` — check behind/ahead
 2. B1: detect loại project (code / personal / research / finance / business)

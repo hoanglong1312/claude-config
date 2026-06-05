@@ -19,6 +19,38 @@ Source: ~/.claude/templates/shared-agent-rules.md
 
 ---
 
+## Upstream Claude Context
+
+- Superpowers is Claude-only. Codex does not invoke Superpowers skills directly.
+- Claude may create specs/plans via brainstorming → writing-plans; Codex consumes generated `.md` files.
+- Caveman mode, RTK hooks, statusline, and Claude memory rules are Claude-side behavior. Ignore them for code behavior unless task explicitly mentions them.
+- If Claude is orchestrating, follow task list extracted from `docs/plan-overview.md` and report back for Claude review.
+
+---
+
+## Operating Contract
+
+- Start by reading the current task/spec and relevant project context.
+- Define success criteria before editing.
+- Make minimal scoped changes; do not refactor adjacent code.
+- Run verification before declaring done.
+- Report changed files, exact commands run, and pass/fail results.
+- If blocked, write `QA-FAIL:` with command, error, and attempted fixes.
+
+---
+
+## When Working Without Claude
+
+Use this when user opens Codex directly instead of dispatching through Claude:
+
+1. Read `AGENTS.md` first, then `context/architecture.md` if present.
+2. If no task plan exists, create a short implementation plan before editing.
+3. Use project commands from `rules/*.md`, `package.json`, `pyproject.toml`, `go.mod`, or README.
+4. Keep changes surgical and verify after each meaningful step.
+5. End with summary: files changed, verification run, remaining risks, next step.
+
+---
+
 ## Phân Công Vai Trò
 
 | Tool | Vai trò |
@@ -122,6 +154,6 @@ Source: ~/.claude/templates/shared-agent-rules.md
 
 ---
 
-*Cập nhật: 2026-06-06 (rev10: Codex uses materialized shared rules + `.md` source of truth)*
+*Cập nhật: 2026-06-06 (rev11: direct Codex operating contract + materialized shared rules)*
 
 <!-- template: 2026-06-06 -->

@@ -23,3 +23,5 @@ stats-cache.json
 combined-statusline.sh
 settings.local.json
 .claude/settings.local.json
+settings.json.bak.*
+tasks/

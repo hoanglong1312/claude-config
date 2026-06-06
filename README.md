@@ -59,34 +59,17 @@ Tạo hoặc merge vào `~/.claude/settings.json`:
 
 ---
 
-## 3. Codex — config.toml + 9Router
+## 3. Codex
 
-Tạo hoặc merge vào `~/.codex/config.toml`:
+Codex setup phụ thuộc tài khoản/provider cá nhân. Không lưu API endpoint, API key, hoặc provider riêng trong global README.
 
-```toml
-model = "gpt-5.5"
-model_reasoning_effort = "xhigh"
-model_provider = "9router"
-approval_policy = "on-request"
-
-[features]
-multi_agent = true
-
-[model_providers.9router]
-name = "9Router"
-base_url = "https://r5833ge.abc-tunnel.us/v1"
-wire_api = "responses"
-env_key = "NINEROUTER_API_KEY"
-
-[agents.subagent]
-model = "gpt-5.5"
-```
-
-Set API key vào environment (`~/.zshrc` hoặc `~/.zprofile`):
+Tối thiểu cần:
 
 ```bash
-export NINEROUTER_API_KEY=your_key_here
+npm install -g @openai/codex
 ```
+
+Cấu hình chi tiết đặt ở `~/.codex/config.toml` hoặc tài liệu private riêng.
 
 ---
 

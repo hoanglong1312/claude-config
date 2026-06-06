@@ -76,7 +76,16 @@ Use this when user opens Codex directly instead of dispatching through Claude:
 ### Codex — nhận task list từ Claude
 1. Nhận task list dạng text do Claude extract từ `docs/plan-overview.md`. Codex không tự tạo plan, không đọc HTML trực tiếp.
 2. Đọc `docs/superpowers/decisions.md` nếu có trước khi bắt đầu.
-3. Dùng `executing-plans`; parallelize task chỉ khi `Depends on: none` và không share prop/type/interface.
+3. Với UI task, đọc các handoff artifacts trước khi sửa code:
+   ```text
+   UI_PREVIEW.html
+   UI_SPEC.md
+   UI_STYLE_GUIDE.md
+   UI_ACCEPTANCE_CHECKLIST.md
+   UI_DO_NOT_CHANGE.md
+   ```
+   Nếu thiếu file, mâu thuẫn, hoặc spec không ghi rõ màu/font/sizes/spacing/layout/states/responsive/do-not-change → ghi `ASSUMPTION:` và dừng để Claude/user bổ sung.
+4. Dùng `executing-plans`; parallelize task chỉ khi `Depends on: none` và không share prop/type/interface.
 
    **Task Size gate — bắt buộc trước executing-plans:**
    - Task `Size: L` → chia thành 2-3 sub-task trước khi execute.
@@ -90,7 +99,7 @@ Use this when user opens Codex directly instead of dispatching through Claude:
    ```
    Nếu task B import từ file task A đang sửa → gộp 1 agent, không parallel.
 
-4. Nếu gặp mơ hồ → đọc `docs/superpowers/decisions.md` trước. Nếu chưa có quyết định → ghi `ASSUMPTION:` (giả định) vào commit message.
+5. Nếu gặp mơ hồ → đọc `docs/superpowers/decisions.md` trước. Nếu chưa có quyết định → ghi `ASSUMPTION:` (giả định) vào commit message.
 
    **Signals bắt buộc trong commit message:**
    - `ASSUMPTION:` — giả định cần Claude xác nhận
@@ -98,14 +107,15 @@ Use this when user opens Codex directly instead of dispatching through Claude:
    - `QA-FAIL:` — test fail sau 3 lần retry, cần Claude can thiệp
    - `SECURITY-SENSITIVE:` — bắt buộc nếu commit động vào auth, middleware, policy, rls, migration, permission, role, token, session, password, secret, api route, hoặc input handling (`req.body`, `req.params`, `formData`)
 
-5. Chạy Quality Gate trước khi commit:
+6. Chạy Quality Gate trước khi commit:
    - static audit: import đúng, prop match, logic nhất quán
    - test suite hoặc build phù hợp
    - Playwright/dev server nếu môi trường cho phép
+   - UI task: verify against `UI_ACCEPTANCE_CHECKLIST.md` and `UI_DO_NOT_CHANGE.md`
    - nếu gặp `EPERM`, bind port, sandbox, browser không khởi động → ghi `QA-FAIL:` với command + lỗi chính
-6. Nếu QA fail → tự fix tối đa 3 retry.
-7. Sau 3 retry vẫn fail → `QA-FAIL:` → escalate Claude.
-8. Pass → commit + báo Claude review.
+7. Nếu QA fail → tự fix tối đa 3 retry.
+8. Sau 3 retry vẫn fail → `QA-FAIL:` → escalate Claude.
+9. Pass → commit + báo Claude review.
 
 ### Claude Code — review output Codex
 1. Đọc `git diff` + commit message.

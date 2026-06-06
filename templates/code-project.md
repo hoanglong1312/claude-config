@@ -295,6 +295,40 @@ Spec đơn giản: plain Markdown. Spec phức tạp: Claude viết hybrid (Mark
 
 Không gen HTML mockup trước khi layout ASCII đã confirmed. ASCII wireframe = lo-fi, đủ để chốt structure.
 
+## UI Design Handoff Artifacts
+
+Khi task là design UI mới, redesign, landing page, portfolio, hoặc component có visual direction rõ ràng, Claude/ChatGPT phải tạo đủ artifact trước khi Codex implement:
+
+```text
+UI_PREVIEW.html
+UI_SPEC.md
+UI_STYLE_GUIDE.md
+UI_ACCEPTANCE_CHECKLIST.md
+UI_DO_NOT_CHANGE.md
+```
+
+Nội dung bắt buộc:
+
+| File | Nội dung |
+|---|---|
+| `UI_PREVIEW.html` | Preview visual có layout thật để user xem trước. Generated/rendered artifact; không sửa tay nếu source `.md`/component có thể render lại. |
+| `UI_SPEC.md` | Mục tiêu UI, user flow, layout từng màn hình, states, responsive behavior. |
+| `UI_STYLE_GUIDE.md` | Màu chủ đạo, font, button/card/input sizes, spacing scale, radius, shadows, icon style. |
+| `UI_ACCEPTANCE_CHECKLIST.md` | Checklist để Claude/Codex verify trước khi xong: visual, states, responsive, a11y, no regressions. |
+| `UI_DO_NOT_CHANGE.md` | Những thứ Codex không được tự ý đổi: brand colors, copy đã chốt, layout constraints, component behavior, routes/API/contracts. |
+
+`UI_SPEC.md` phải ghi rõ:
+- Màu chủ đạo.
+- Font.
+- Kích thước button/card/input.
+- Khoảng cách giữa các khối.
+- Layout từng màn hình.
+- Trạng thái loading/error/empty.
+- Responsive.
+- Những thứ Codex không được tự ý đổi.
+
+Codex nhận task UI phải đọc 5 file này trước khi sửa code. Nếu thiếu file hoặc mâu thuẫn, Codex ghi `ASSUMPTION:` và dừng hỏi/đợi Claude cập nhật spec.
+
 ## Spec Visual (trước writing-plans)
 
 Sau brainstorming/spec xong, Claude hỏi: "Tạo HTML visual spec không?"
@@ -304,6 +338,7 @@ Nếu Có:
    - Nếu html-eff lỗi: báo error ngay, KHÔNG edit .html tay
 3. Claude chạy: `open docs/superpowers/specs/[spec]-design.html`
 4. User review HTML, confirm rồi mới chạy writing-plans
+5. Với UI task, sync nội dung đã chốt vào `UI_PREVIEW.html`, `UI_SPEC.md`, `UI_STYLE_GUIDE.md`, `UI_ACCEPTANCE_CHECKLIST.md`, `UI_DO_NOT_CHANGE.md` trước khi giao Codex.
 
 ## Codex Review Gate (Optional)
 
@@ -359,6 +394,13 @@ docs/
     │   ├── YYYY-MM-DD-[feature]-design.md    ← text/hybrid spec (Claude ghi)
     │   └── YYYY-MM-DD-[feature]-design.html  ← generated visual, KHÔNG edit trực tiếp
     └── decisions.md                          ← quyết định từ ASSUMPTION: (Claude ghi)
+
+UI task artifacts (tạo khi task có UI design/handoff):
+├── UI_PREVIEW.html
+├── UI_SPEC.md
+├── UI_STYLE_GUIDE.md
+├── UI_ACCEPTANCE_CHECKLIST.md
+└── UI_DO_NOT_CHANGE.md
 ```
 
 `plan-overview.md` — Claude append section mới sau mỗi `writing-plans`, Codex update `**Status:**` field sau mỗi task xong.

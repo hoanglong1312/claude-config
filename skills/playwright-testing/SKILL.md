@@ -67,6 +67,17 @@ npx playwright test --headed           # show browser (debug)
 npx playwright test --reporter=line    # compact output
 ```
 
+## Retry Loop on Failure
+
+Khi test fail:
+1. Đọc error message → xác định root cause
+2. Fix code → chạy lại test ngay (không cần ScheduleWakeup — Playwright nhanh)
+3. Nếu fail do timing/flaky → `ScheduleWakeup(60s)` rồi retry (tránh false negative)
+4. Sau 3 lần fail liên tiếp → spawn subagent với `--headed` để xem browser (subagent nhận screenshot, trả text summary)
+5. Nếu vẫn fail → escalate lên Claude direct fix với context từ subagent
+
+**Không loop vô hạn:** max 3 retries. Sau đó report failure rõ ràng, không im lặng.
+
 ## Token-Efficient Output
 
 Playwright returns text output — always use `--reporter=line` or `--reporter=dot` to minimize token usage. Avoid `--reporter=html` (generates files, not useful for Claude).

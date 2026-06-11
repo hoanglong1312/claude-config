@@ -145,7 +145,7 @@
 3. Nếu chạy mới, route bằng `Agent`:
    - `subagent_type`: `codex:codex-rescue`
    - **Default: foreground** — prompt bắt đầu bằng `--wait` (Claude chờ, nhận kết quả trực tiếp)
-   - Background chỉ dùng khi task ước tính >10 phút — prompt bắt đầu bằng `--background`, sau đó chạy `/codex:status` để check
+   - Background chỉ dùng khi task ước tính >10 phút — prompt bắt đầu bằng `--background`, sau đó dùng `ScheduleWakeup(270s)` để check lại (không block); nếu chưa xong → `ScheduleWakeup(270s)` tiếp; lặp đến khi done hoặc fail. Filter phải match cả success lẫn failure để tránh loop vô hạn.
    - prompt chỉ gồm goal + file/spec path + constraints + verification.
 
 **Không dùng:**

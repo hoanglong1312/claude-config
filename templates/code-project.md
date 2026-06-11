@@ -483,9 +483,12 @@ Với bất kỳ thay đổi UI nào, verify trên localhost trước khi deploy
 3. Nếu task có user interaction (form submit, click, navigation, auth flow) → invoke `playwright-testing` skill → Claude viết test → chạy → confirm pass
 4. Chỉ deploy khi localhost pass
 
-**DevTools vs Playwright:**
-- DevTools = investigate + visual check (one-shot, dùng khi tìm lỗi)
-- Playwright = verify interaction + regression guard (reusable, dùng sau fix/feature)
+**DevTools vs Playwright — subagent rule:**
+| Tool | Dùng khi | Subagent? |
+|------|----------|-----------|
+| DevTools investigate | Tìm lỗi (DOM, network, console) | ✅ Spawn subagent — output nặng |
+| Playwright verify | Confirm fix pass | ❌ Main context — output là text |
+| Playwright `--headed` debug | Playwright fail, cần xem browser | ✅ Spawn subagent — có screenshot |
 
 **Lợi ích:** Không tốn thời gian deploy vòng, không bị PIN gate hoặc auth chặn như production.
 

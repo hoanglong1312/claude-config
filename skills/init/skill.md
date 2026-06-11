@@ -189,6 +189,29 @@ markitdown --version 2>/dev/null && echo "installed" || echo "missing"
 #   Không → bỏ qua AGENTS.md ở Bước 2
 ```
 
+**3f. Skills per-project type (CHỈ cho code project):**
+
+Detect stack từ deps, recommend skills chưa có trong `~/.claude/skills/` hoặc plugins:
+
+```bash
+# Check deps
+cat package.json 2>/dev/null | grep -E '"dependencies"|"devDependencies"' -A 50
+```
+
+| Phát hiện trong deps | Skill recommend | Install |
+|---|---|---|
+| `react` + `tailwind` | `frontend-design` | `claude skill install frontend-design@anthropics` |
+| `@shadcn/ui` hoặc `shadcn` | `shadcn/ui` | `claude skill install shadcn@shadcn` |
+| `playwright` / `@playwright/test` | `webapp-testing` | `claude skill install webapp-testing@anthropics` |
+| `next` / `nuxt` / `vite` | `web-artifacts-builder` | `claude skill install web-artifacts-builder@anthropics` |
+| `.github/workflows` tồn tại | `ci-cd-pipeline-builder` | `claude skill install ci-cd-pipeline-builder@alirezarezvani` |
+| `@modelcontextprotocol` / `mcp` | `mcp-builder` | `claude skill install mcp-builder@anthropics` |
+
+Nếu detect được match → hỏi 1 lần gộp:
+> "Phát hiện [X, Y]. Cài skills: `frontend-design`, `webapp-testing`? (y/n)"
+
+Chỉ cài khi user confirm. Không cài tự động.
+
 ---
 
 ### Bước 4 — One-time setup (CHỈ cho code project)

@@ -76,6 +76,7 @@
    ```
 3. Codex fix theo root cause đã tìm, chạy verification, commit
 
+
 **Bug M/L — Phase 1 — Investigation (Codex làm, không ăn main context)**
 
 1. Claude đọc `git log` / `git diff` → hiểu symptom
@@ -102,9 +103,11 @@
 7. Review `git diff` sau khi Codex xong
 
 **Fallback nếu Codex fix sai 3 lần:**
-- Claude đọc `git diff` + commit log của 3 lần thử → update `debug-[issue].md`
-- Gọi lại Codex với file đó làm context bổ sung
-- Nếu vẫn fail → Claude tự fix bằng Edit/Write (ngoại lệ token discipline) → thêm `<!-- claude-override: direct-fix after 3 Codex retries [YYYY-MM-DD] -->` vào đầu file sửa
+1. Claude đọc `git diff` + commit log của 3 lần thử → update `debug-[issue].md`
+2. Spawn Explore subagent: đọc files + grep + trace theo suspect list trong debug file → trả summary
+3. Claude đọc summary → xác định root cause → update approach trong `debug-[issue].md`
+4. Gọi lại Codex với file đó làm context bổ sung
+5. Nếu vẫn fail → Claude direct fix bằng Edit/Write → thêm `<!-- claude-override: direct-fix after 3 Codex retries [YYYY-MM-DD] -->` vào đầu file sửa
 
 ### Resume sau khi session bị gián đoạn
 1. Đọc `git log` → biết đang ở task nào
@@ -114,27 +117,33 @@
 
 ## Cách Gọi Codex
 
-**Cơ chế: codex-plugin-cc** (plugin chính thức của OpenAI cho Claude Code)
+**Cơ chế chuẩn trong Claude main:** dùng `Agent` tool với `subagent_type: "codex:codex-rescue"`. Không gọi `Skill("codex:rescue")` để execute task, vì skill đó chỉ là wrapper/hướng dẫn và có thể làm lệch job state.
 
-| Việc | Lệnh |
-|------|------|
-| Delegate task (foreground) | `/codex:rescue <mô tả task>` |
-| Delegate task (background) | `/codex:rescue --background <task>` |
-| Check job đang chạy | `/codex:status` |
-| Lấy kết quả | `/codex:result` |
-| Review code changes | `/codex:review --base main` |
-| Adversarial review | `/codex:adversarial-review --base main` |
-| Hủy job | `/codex:cancel` |
+**Trước mỗi task Codex:**
+1. Chạy helper resume:
+   ```bash
+   node "$HOME/.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/codex-companion.mjs" task-resume-candidate --json
+   ```
+2. Nếu `available: true`, hỏi user tiếp tục thread hay tạo thread mới.
+3. Nếu chạy mới, route bằng `Agent`:
+   - `subagent_type`: `codex:codex-rescue`
+   - **Default: foreground** — prompt bắt đầu bằng `--wait` (Claude chờ, nhận kết quả trực tiếp)
+   - Background chỉ dùng khi task ước tính >10 phút — prompt bắt đầu bằng `--background`, sau đó chạy `/codex:status` để check
+   - prompt chỉ gồm goal + file/spec path + constraints + verification.
 
-**Khi Claude dispatch qua subagent:** Agent SDK tự dispatch `codex:codex-rescue` subagent — Claude truyền goal + file path + constraints như prompt template dưới đây.
+**Không dùng:**
+- `Skill("codex:rescue")` để execute task.
+- `mcp__codex__codex` trừ khi OpenAI credential trực tiếp đã active; project này ưu tiên `codex-plugin-cc` qua 9Router.
+- `/codex:status` trong shell (`! /codex:status` sai); slash command phải chạy trong Claude command layer.
 
-**Background pattern (task dài):**
-```
-/codex:rescue --background <task description>
-# ... làm việc khác ...
-/codex:status         # kiểm tra tiến độ
-/codex:result         # lấy output khi xong
-```
+**Fallback khi Agent route lỗi:**
+1. Nếu subagent trả job ID nhưng `/codex:status` không thấy, coi là dispatch lỗi.
+2. Thử direct companion task bằng Bash một lần:
+   ```bash
+   node "$HOME/.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/codex-companion.mjs" task --wait "<task>"
+   ```
+3. Nếu Codex fail 2+ lần cùng symptom hoặc không tạo diff/commit, Claude được phép direct fix theo fallback, ghi rõ lý do trong response.
+
 
 **Format multi-step task khi viết plan (step → verify):**
 ```
@@ -432,6 +441,20 @@ Sau mỗi lần edit `.md`: Claude chạy `html-eff -i docs/plan-overview.md -o 
 **⚠️ Local rules KHÔNG được restate global workflow.**  
 `rules/*.md` chỉ chứa những gì template KHÔNG có — DB schema, lệnh test cụ thể, quirk tool, pattern codebase.  
 Nếu thấy mình đang copy workflow từ template vào local rules → đặt sai chỗ, xóa đi.
+
+## Frontend Build Tool — Vite (standard)
+
+Mọi frontend project mới dùng Vite. Không dùng Create React App (deprecated), không dùng Webpack trừ khi project cũ đã có.
+
+```bash
+# Tạo project mới
+npm create vite@latest <tên-project> -- --template react-ts
+
+# Templates phổ biến: react-ts, vue-ts, vanilla-ts, svelte-ts
+```
+
+Vite ≠ framework. Layer: React/Vue (framework) → Vite (build tool) → Node (runtime).
+Dev server mặc định: `http://localhost:5173`. Prod build: `npm run build` → `dist/`.
 
 ## UI Verification — Localhost trước, deploy sau
 

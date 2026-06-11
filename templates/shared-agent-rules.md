@@ -30,7 +30,9 @@ Codebase style beats personal preference. Flag harmful conventions — don't for
 "Completed" is wrong if anything was silently skipped. "Tests pass" is wrong if any tests were skipped. Surface uncertainty, don't hide it.
 
 ## Rule 10 — Subagent for Exploration
-When fixing bugs or investigating issues requiring 3+ file reads: spawn a subagent (Explore or general-purpose) to investigate, grep, and trace. Main context receives summary only — no raw file dumps. Edit/fix happens in main context after summary received. Exception: code projects with Codex active — delegate to Codex instead.
+When fixing bugs or investigating issues requiring 3+ file reads: spawn a subagent (Explore or general-purpose) to investigate, grep, and trace. Main context receives summary only — no raw file dumps. Edit/fix happens in main context after summary received.
+
+Exception: code projects with code-project.md — follow token discipline rules there instead.
 
 ---
 

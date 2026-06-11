@@ -14,6 +14,12 @@
 
 ## Codex Delegation Rules
 
+**Khi nào SKIP Codex — Claude tự làm:**
+- Task < 5 phút (1-2 file, change rõ ràng) → Claude dùng Edit/Write trực tiếp
+- Config change, rename, comment/doc update → không cần Codex
+- Task cần MCP tools (Supabase, browser, external API) → Claude làm Phase 1, Codex làm code fix
+- Sau Codex fail 3 lần → Claude direct fix (xem Fallback section)
+
 **Delegate sớm, prompt cấp cao:**
 - Chỉ cần: WHAT cần sửa + file/spec path + constraints ngắn gọn
 - KHÔNG cần: line numbers, exact code, paste source dài
@@ -111,10 +117,19 @@
 5. Nếu vẫn fail → Claude direct fix bằng Edit/Write → thêm `<!-- claude-override: direct-fix after 3 Codex retries [YYYY-MM-DD] -->` vào đầu file sửa
 
 ### Resume sau khi session bị gián đoạn
-1. Đọc `git log` → biết đang ở task nào
-2. Đọc file plan trong `docs/superpowers/specs/` → biết còn task nào chưa làm
-3. Đọc `docs/superpowers/decisions.md` (nếu có) → nắm các quyết định đã xác nhận
-4. Gọi Codex tiếp từ task còn dở
+
+**Nếu Codex đang chạy dở khi interrupt:**
+1. Chạy resume helper trước (xem lệnh ở trên) → check `available: true`
+2. Nếu có thread dở → hỏi user: tiếp tục thread cũ hay bỏ?
+3. Tiếp tục → dùng `SendMessage` với thread ID cũ
+4. Bỏ → ghi nhận task đó là `interrupted` trong plan file trước khi tạo thread mới
+
+**Nếu Claude session bị interrupt (không phải Codex):**
+1. Đọc `git log --oneline -10` → biết commit cuối là task nào
+2. Đọc plan file trong `docs/superpowers/specs/` → xác định task nào `in_progress` chưa commit
+3. Đọc `docs/superpowers/decisions.md` (nếu có) → nắm quyết định đã confirm
+4. Nếu task dở chưa có code → resume từ đầu task đó
+5. Nếu task dở đã có code nhưng chưa commit → đọc `git diff` → quyết định commit hay rollback
 
 ## Cách Gọi Codex
 
@@ -123,7 +138,8 @@
 **Trước mỗi task Codex:**
 1. Chạy helper resume:
    ```bash
-   node "$HOME/.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/codex-companion.mjs" task-resume-candidate --json
+   CODEX_COMPANION=$(ls -d "$HOME/.claude/plugins/cache/openai-codex/codex/"*/scripts/codex-companion.mjs 2>/dev/null | sort -V | tail -1)
+   node "$CODEX_COMPANION" task-resume-candidate --json
    ```
 2. Nếu `available: true`, hỏi user tiếp tục thread hay tạo thread mới.
 3. Nếu chạy mới, route bằng `Agent`:
@@ -141,7 +157,8 @@
 1. Nếu subagent trả job ID nhưng `/codex:status` không thấy, coi là dispatch lỗi.
 2. Thử direct companion task bằng Bash một lần:
    ```bash
-   node "$HOME/.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/codex-companion.mjs" task --wait "<task>"
+   CODEX_COMPANION=$(ls -d "$HOME/.claude/plugins/cache/openai-codex/codex/"*/scripts/codex-companion.mjs 2>/dev/null | sort -V | tail -1)
+   node "$CODEX_COMPANION" task --wait "<task>"
    ```
 3. Nếu Codex fail 2+ lần cùng symptom hoặc không tạo diff/commit, Claude được phép direct fix theo fallback, ghi rõ lý do trong response.
 

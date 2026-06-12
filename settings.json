@@ -197,7 +197,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '[Skills check] Classify intent BEFORE responding.\nEN: fix/build/debug/design/setup/investigate → invoke matching Skill tool first.\nVI: lỗi/bug/không work/crash/sửa → debug → systematic-debugging | xây/tạo/thêm feature → build → brainstorming | tìm hiểu/giải thích/học → investigate | cài đặt/config → setup\n1% chance a skill applies → invoke it.'"
+            "command": "echo 'AUTO-INVOKE RULES (no exceptions): bug/loi/crash/khong work → invoke systematic-debugging BEFORE any fix | fix xong → invoke verify BEFORE saying done | merge/push/PR/xong → invoke code-review | UI/form/nav feature → invoke playwright-testing after implement | nen lam gi/bat dau/feature moi → invoke brainstorming | hieu sau/tai sao/explain → invoke teach | auth/payment/RLS/security → invoke security-review\\nCAVEMAN MODE ACTIVE (full). Drop articles/filler/pleasantries/hedging.'"
           }
         ]
       },

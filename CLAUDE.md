@@ -4,6 +4,22 @@
 
 Trước mỗi response: classify intent. 1% chance skill áp dụng → invoke ngay. Routing → xem `using-superpowers` skill.
 
+# Auto-Invoke Rules — Không Cần User Nhắc
+
+Tự động invoke skill — không đợi user gọi thủ công:
+
+| Trigger | Skill bắt buộc |
+|---|---|
+| User báo bug / lỗi / không work / crash | `systematic-debugging` TRƯỚC KHI đề xuất bất kỳ fix nào |
+| Fix xong bất kỳ thứ gì | `verify` TRƯỚC KHI báo done |
+| User nói "merge" / "push" / "PR" / "xong rồi" | `code-review` |
+| Implement feature có UI / form / navigation | `playwright-testing` sau khi xong |
+| User hỏi "nên làm gì" / "bắt đầu từ đâu" / feature mới | `brainstorming` |
+| User muốn hiểu sâu / "tại sao" / "explain" | `teach` |
+| Auth / payment / RLS / Supabase security | `security-review` |
+
+**KHÔNG invoke khi:** fix 1 dòng rõ ràng, code chưa compile, task đã hoàn toàn rõ ràng.
+
 Hỏi về tool/repo → tìm library: đọc `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/raw/resources/repos/index.md`
 
 **⚠️ Code project (có `code-project.md`):** Claude dùng flow trong `code-project.md` — Codex thực thi TDD/debug. Claude giữ review, architecture, MCP, security.

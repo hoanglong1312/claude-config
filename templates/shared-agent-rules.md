@@ -90,27 +90,9 @@ When fixing bugs or investigating issues requiring 3+ file reads: spawn a subage
 
 Exception: code projects with code-project.md — follow token discipline rules there instead.
 
-## Rule 13 — Clarify Before Write (Raw Data)
+## Rule 13 — Clarify Before Execute
 
-Khi nhận data thô từ user để ghi file (chi phí, số liệu, danh sách, record...) — **hỏi hết trong 1 lần trước khi ghi bất kỳ file nào**.
-
-**Trigger:** user paste data thô + yêu cầu ghi/lưu/import → kiểm tra từng field:
-
-| Field mơ hồ | Ví dụ | Hành động |
-|---|---|---|
-| Ngày thiếu hoặc không rõ năm | "3/5", "hôm qua" | Hỏi ngày đầy đủ |
-| Trạng thái không rõ | "đã xong", "cần check" | Hỏi map sang giá trị nào |
-| Phân loại chưa chắc | "chi phí khác", "misc" | Hỏi category cụ thể |
-| Đơn vị không rõ | "500", "1.2k" | Hỏi đơn vị (VND/USD/nghìn) |
-| Tên trùng hoặc viết tắt | "NVA", "shop HN" | Hỏi full name hoặc confirm |
-
-**Quy trình:**
-1. Phân tích toàn bộ data → liệt kê tất cả field cần làm rõ
-2. Gộp thành **1 câu hỏi duy nhất** — không hỏi nhiều lần
-3. Nhận xác nhận → ghi file
-4. Không ghi rồi mới hỏi — nếu đã ghi thì không được sửa thầm lặng
-
-**Ngoại lệ:** field có giá trị default hợp lý (ví dụ ngày = hôm nay, đơn vị = VND theo context) → áp default + ghi rõ assumption trong 1 lần hỏi, không block.
+Nếu có bất kỳ điều gì mơ hồ trong yêu cầu — hỏi user trong **1 lần duy nhất** trước khi ghi file, chạy code, hoặc thực thi bất kỳ action nào. Không đoán, không ghi rồi mới hỏi.
 
 ---
 

@@ -522,6 +522,12 @@ Với bất kỳ thay đổi UI nào, verify trên localhost trước khi deploy
 | Playwright verify | Confirm fix pass | ❌ Main context — output là text |
 | Playwright `--headed` debug | Playwright fail, cần xem browser | ✅ Spawn subagent — có screenshot |
 
+**Không mở Chrome hay browser mới.** Dùng cmux in-app browser:
+- `⌘⇧L` — mở browser split pane
+- `⌥⌘I` — toggle DevTools
+- `⌥⌘C` — JS Console
+- Agent tương tác CLI: `cmux browser <snapshot|screenshot|click|eval|goto|wait|...>`
+
 **Lợi ích:** Không tốn thời gian deploy vòng, không bị PIN gate hoặc auth chặn như production.
 
 ## Deploy Fallback — Vercel webhook broken

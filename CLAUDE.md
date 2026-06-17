@@ -10,13 +10,13 @@ Tự động invoke skill — không đợi user gọi thủ công:
 
 | Trigger | Skill bắt buộc |
 |---|---|
-| User báo bug / lỗi / không work / crash | `systematic-debugging` TRƯỚC KHI đề xuất bất kỳ fix nào |
-| Fix xong bất kỳ thứ gì | `verify` TRƯỚC KHI báo done |
-| User nói "merge" / "push" / "PR" / "xong rồi" | `code-review` |
+| User báo bug / lỗi / không work / crash | `superpowers:systematic-debugging` TRƯỚC KHI đề xuất bất kỳ fix nào |
+| Fix xong bất kỳ thứ gì | `superpowers:verification-before-completion` TRƯỚC KHI báo done |
+| User nói "merge" / "push" / "PR" / "xong rồi" | `superpowers:requesting-code-review` |
 | Implement feature có UI / form / navigation | `playwright-testing` sau khi xong |
-| User hỏi "nên làm gì" / "bắt đầu từ đâu" / feature mới | `brainstorming` |
+| User hỏi "nên làm gì" / "bắt đầu từ đâu" / feature mới | `superpowers:brainstorming` |
 | User muốn hiểu sâu / "tại sao" / "explain" | `teach` |
-| Auth / payment / RLS / Supabase security | `security-review` |
+| Auth / payment / RLS / Supabase security | `superpowers:systematic-debugging` + kiểm tra manual (security-review chưa có skill) |
 
 **KHÔNG invoke khi:** fix 1 dòng rõ ràng, code chưa compile, task đã hoàn toàn rõ ràng.
 

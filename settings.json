@@ -1,102 +1,54 @@
 {
   "env": {
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "70",
+    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75",
     "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
-    "MAX_THINKING_TOKENS": "10000",
-    "ANTHROPIC_BASE_URL": "http://127.0.0.1:8787"
+    "MAX_THINKING_TOKENS": "10000"
   },
   "permissions": {
     "allow": [
-      "Bash(mkdir -p __TRACKED_VAR__/Pictures/Screenshots __TRACKED_VAR__/Pictures/References __TRACKED_VAR__/Movies/ScreenRecordings __TRACKED_VAR__/Desktop/Inbox __TRACKED_VAR__/Downloads/_To-Review __TRACKED_VAR__/Downloads/_Installers __TRACKED_VAR__/Downloads/_Temp)",
-      "Bash(/usr/bin/find __TRACKED_VAR__/Desktop -maxdepth 1 -type f -name 'Screenshot *.png' -exec mv -n '{}' __TRACKED_VAR__/Pictures/Screenshots/ ';')",
-      "Bash(/usr/bin/find __TRACKED_VAR__/Desktop -maxdepth 1 -type f '\\(' -iname *.jpg -o -iname *.jpeg -o -iname *.png -o -iname *.heic -o -iname *.gif -o -iname *.webp '\\)' -exec mv -n '{}' __TRACKED_VAR__/Pictures/References/ ';')",
-      "Bash(/usr/bin/find __TRACKED_VAR__/Desktop -maxdepth 1 -type f '\\(' -iname *.mov -o -iname *.mp4 -o -iname *.m4v '\\)' -exec mv -n '{}' __TRACKED_VAR__/Movies/ScreenRecordings/ ';')",
-      "Bash(mkdir -p __TRACKED_VAR__/Downloads/_Installers __TRACKED_VAR__/Downloads/_Temp __TRACKED_VAR__/Downloads/_To-Review)",
-      "Bash(/usr/bin/find __TRACKED_VAR__/Downloads -maxdepth 1 -type f '\\(' -iname *.dmg -o -iname *.pkg '\\)' -exec mv -n '{}' __TRACKED_VAR__/Downloads/_Installers/ ';')",
-      "Bash(/usr/bin/find __TRACKED_VAR__/Downloads -maxdepth 1 -type f '\\(' -iname *.tmp -o -iname *.part -o -iname *.crdownload '\\)' -exec mv -n '{}' __TRACKED_VAR__/Downloads/_Temp/ ';')",
-      "Bash(/usr/bin/find __TRACKED_VAR__/Downloads -maxdepth 1 -type f ! -name .* -exec mv -n '{}' __TRACKED_VAR__/Downloads/_To-Review/ ';')",
-      "Bash(mkdir -p '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Installers' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Archives' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Screenshot' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Social' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Tài chính' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Document')",
-      "Bash(/usr/bin/find '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort' -maxdepth 1 -type f '\\(' -iname *.dmg -o -iname *.pkg '\\)' -exec mv -n '{}' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Installers/' ';')",
-      "Bash(/usr/bin/find '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort' -maxdepth 1 -type f '\\(' -iname *.zip -o -iname *.rar -o -iname *.7z '\\)' -exec mv -n '{}' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Archives/' ';')",
-      "Bash(/usr/bin/find '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort' -maxdepth 1 -type f '\\(' -iname *.jpg -o -iname *.jpeg -o -iname *.png -o -iname *.heic -o -iname *.webp -o -iname *.gif '\\)' -exec mv -n '{}' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Screenshot/' ';')",
-      "Bash(/usr/bin/find '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort' -maxdepth 1 -type f '\\(' -iname *.mp4 -o -iname *.mov -o -iname *.m4v -o -iname *.mp3 -o -iname *.wav '\\)' -exec mv -n '{}' '/Users/giinlow./Desktop/Inbox/Desktop - giin’s MacBook Air/Sort/Social/' ';')",
-      "Bash(mkdir -p __TRACKED_VAR__/Downloads/_To-Review/Desktop-Inbox)",
-      "Bash(/usr/bin/find __TRACKED_VAR__/Desktop/Inbox -mindepth 1 -maxdepth 1 ! -name .DS_Store -exec mv -n '{}' __TRACKED_VAR__/Downloads/_To-Review/Desktop-Inbox/ ';')",
-      "Bash(mkdir -p __TRACKED_VAR__/Downloads/_To-Review/Documents-Inbox)",
-      "Bash(/usr/bin/find __TRACKED_VAR__/Documents -maxdepth 1 -type f ! -name .* -exec mv -n '{}' __TRACKED_VAR__/Downloads/_To-Review/Documents-Inbox/ ';')",
-      "Bash([ -e \"$HOME/Documents/$name\" ])",
-      "Bash(mv -n __TRACKED_VAR__/Documents/__TRACKED_VAR__ __TRACKED_VAR__/Downloads/_To-Review/Documents-Inbox/)",
-      "Bash(mkdir -p __TRACKED_VAR__/FileHub/Dev/Projects __TRACKED_VAR__/FileHub/Admin/Identity __TRACKED_VAR__/FileHub/Learning/Books __TRACKED_VAR__/FileHub/Archive/Review-Inbox __TRACKED_VAR__/FileHub/Work/LongCafe __TRACKED_VAR__/FileHub/Media/References)",
-      "Bash(mv -n __TRACKED_VAR__/Downloads/_To-Review/Năm-2022-2023.pdf __TRACKED_VAR__/FileHub/Learning/Books/)",
-      "Bash(mv -n __TRACKED_VAR__/Downloads/_To-Review/Nguyễn-Hoàng-Long.pdf __TRACKED_VAR__/FileHub/Admin/Identity/)",
-      "Bash(mv -n __TRACKED_VAR__/Downloads/_To-Review/gpt_signup_hybrid_clean_run __TRACKED_VAR__/FileHub/Dev/Projects/)",
-      "Bash(mv -n __TRACKED_VAR__/Downloads/_To-Review/Pixel_litex_Edition __TRACKED_VAR__/FileHub/Dev/Projects/)",
-      "Bash(mkdir -p __TRACKED_VAR__/FileHub/Dev/Tools/Installers)",
-      "Bash(mv -n __TRACKED_VAR__/Downloads/_Installers/*.dmg __TRACKED_VAR__/FileHub/Dev/Tools/Installers/)",
-      "Bash(mkdir -p __TRACKED_VAR__/FileHub/Dev/Archives __TRACKED_VAR__/FileHub/Learning/Notes __TRACKED_VAR__/FileHub/Learning/Books __TRACKED_VAR__/FileHub/Media/References __TRACKED_VAR__/FileHub/Media/SocialVideos __TRACKED_VAR__/FileHub/Media/Travel __TRACKED_VAR__/FileHub/Work/LongCafe __TRACKED_VAR__/FileHub/Dev/Tools/Installers __TRACKED_VAR__/FileHub/Dev/Tools)",
-      "Bash(mv -n __TRACKED_VAR__/Archives __TRACKED_VAR__/FileHub/Dev/Archives/Desktop-Sort-Archives)",
-      "Bash(mv -n __TRACKED_VAR__/Document __TRACKED_VAR__/FileHub/Learning/Notes/Desktop-Sort-Document)",
-      "Bash(mv -n '__TRACKED_VAR__/Học tập' __TRACKED_VAR__/FileHub/Learning/Books/Desktop-Sort-HocTap)",
-      "Bash(mv -n __TRACKED_VAR__/Screenshot __TRACKED_VAR__/FileHub/Media/References/Desktop-Sort-Screenshot)",
-      "Bash(mkdir -p __TRACKED_VAR__/FileHub/Admin/Identity __TRACKED_VAR__/FileHub/Admin/Finance __TRACKED_VAR__/FileHub/Admin/Legal __TRACKED_VAR__/FileHub/Work/Construction __TRACKED_VAR__/FileHub/Learning/Notes)",
-      "Bash(mv -n '__TRACKED_VAR__/Giấy Tờ Gia Đình' __TRACKED_VAR__/FileHub/Admin/Identity/Giay-To-Gia-Dinh)",
-      "Bash(mv -n __TRACKED_VAR__/Finance __TRACKED_VAR__/FileHub/Admin/Finance/Documents-Finance)",
-      "Bash(mv -n __TRACKED_VAR__/Personal __TRACKED_VAR__/FileHub/Admin/Identity/Documents-Personal)",
-      "Bash(mv -n __TRACKED_VAR__/Work __TRACKED_VAR__/FileHub/Work/Clients/Documents-Work)",
-      "Bash(mkdir -p __TRACKED_VAR__/FileHub/Media/ScreenRecordings __TRACKED_VAR__/FileHub/Archive/Unknown-Downloads __TRACKED_VAR__/FileHub/Archive/Legacy-Empty)",
-      "Bash(mv -n __TRACKED_VAR__/FileHub/Archive/Review-Inbox/Documents-Inbox/Zoom __TRACKED_VAR__/FileHub/Media/ScreenRecordings/Zoom)",
-      "Bash(mv -n __TRACKED_VAR__/Uncategorized __TRACKED_VAR__/FileHub/Archive/Unknown-Downloads/Desktop-Sort-Uncategorized)",
-      "Bash(mv -n __TRACKED_VAR__/download-2 __TRACKED_VAR__/FileHub/Archive/Unknown-Downloads/download-2)",
-      "Bash(mv -n __TRACKED_VAR__/drive-download-20260131T104443Z-3-001 __TRACKED_VAR__/FileHub/Archive/Unknown-Downloads/drive-download-20260131T104443Z-3-001)",
-      "Bash(mkdir -p __TRACKED_VAR__/FileHub/Dev/Tools/Genlogin __TRACKED_VAR__/FileHub/Archive/Unknown-Downloads/Google-Drive-Lost-And-Found)",
-      "Bash(mv -n '__TRACKED_VAR__/FileHub/Archive/Review-Inbox/Desktop-Inbox/Desktop - giin’s MacBook Air/Tạo Acc Tiktok.genlogin' __TRACKED_VAR__/FileHub/Dev/Tools/Genlogin/)",
-      "Bash(mv -n '__TRACKED_VAR__/FileHub/Archive/Review-Inbox/Desktop-Inbox/Google Drive \\(Not synced\\)/Lost and Found/listCMTInteracted.txt' __TRACKED_VAR__/FileHub/Archive/Unknown-Downloads/Google-Drive-Lost-And-Found/)",
-      "Skill(chom)",
-      "WebSearch",
-      "Bash(command -v mole)",
-      "Bash(brew list *)",
-      "Bash(npm list *)",
-      "Bash(pipx list *)",
-      "Bash(brew uninstall *)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
       "Bash(claude mcp *)",
-      "WebFetch",
-      "Skill(update-config)",
-      "Bash(git *)"
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git stash*)",
+      "Bash(npm run build*)",
+      "Bash(npm run qa*)",
+      "Bash(npm run test*)",
+      "Bash(npx playwright test*)",
+      "Bash(npx tsc*)",
+      "Bash(ls*)",
+      "Bash(find . *)",
+      "Bash(grep *)",
+      "Bash(rtk *)",
+      "mcp__codegraph__codegraph_search",
+      "mcp__codegraph__codegraph_context",
+      "mcp__codegraph__codegraph_callers",
+      "mcp__codegraph__codegraph_callees",
+      "mcp__codegraph__codegraph_impact",
+      "mcp__codegraph__codegraph_node",
+      "mcp__codegraph__codegraph_status",
+      "Bash(cd *)",
+      "Bash(vercel*)",
+      "Bash(curl *)",
+      "Bash(curl*)",
+      "Bash(sleep *)",
+      "Bash(cat *)",
+      "Bash(npm run dev*)",
+      "Bash(npm run dev *)",
+      "mcp__codegraph__codegraph_explore",
+      "mcp__codegraph__codegraph_files",
+      "mcp__codegraph__codegraph_trace"
     ],
-    "additionalDirectories": [
-      "/Users/giinlow./.claude"
-    ]
+    "defaultMode": "auto"
   },
   "hooks": {
-    "Notification": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/AgentPet.app/Contents/MacOS/agentpet\" hook --agent claude"
-          }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"/Users/giinlow./Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/.claude/hooks/PreCompact.sh\""
-          }
-        ]
-      }
-    ],
     "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/AgentPet.app/Contents/MacOS/agentpet\" hook --agent claude"
-          }
-        ]
-      },
       {
         "matcher": "Bash",
         "hooks": [
@@ -107,58 +59,26 @@
         ]
       }
     ],
-    "SessionEnd": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"/Users/giinlow./.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/session-lifecycle-hook.mjs\" SessionEnd",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/AgentPet.app/Contents/MacOS/agentpet\" hook --agent claude"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
-        "matcher": "startup|clear|compact",
         "hooks": [
           {
             "type": "command",
-            "command": "\"/Users/giinlow./.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/hooks/run-hook.cmd\" session-start",
-            "async": false
-          }
-        ]
-      },
-      {
-        "hooks": [
+            "command": "\"/usr/local/bin/node\" \"/Users/giinlow./.claude/hooks/caveman-activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading caveman mode..."
+          },
           {
             "type": "command",
-            "command": "node \"/Users/giinlow./.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/session-lifecycle-hook.mjs\" SessionStart",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "hooks": [
+            "command": "bash \"/Users/giinlow./.claude/hooks/project-check.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking project structure..."
+          },
           {
             "type": "command",
-            "command": "bash \"/Users/giinlow./Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/.claude/hooks/SessionStart.sh\""
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/AgentPet.app/Contents/MacOS/agentpet\" hook --agent claude"
+            "command": "bash \"/Users/giinlow./.claude/hooks/session-resume.sh\"",
+            "timeout": 5,
+            "statusMessage": "Loading session context..."
           }
         ]
       }
@@ -168,26 +88,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"/Users/giinlow./.claude/plugins/cache/openai-codex/codex/1.0.4/scripts/stop-review-gate-hook.mjs\"",
-            "timeout": 900
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/AgentPet.app/Contents/MacOS/agentpet\" hook --agent claude"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/AgentPet.app/Contents/MacOS/agentpet\" hook --agent claude"
+            "command": "afplay /System/Library/Sounds/Ping.aiff 2>/dev/null || true"
           }
         ]
       }
@@ -197,15 +98,9 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo 'AUTO-INVOKE RULES (no exceptions): bug/loi/crash/khong work → invoke systematic-debugging BEFORE any fix | fix xong → invoke verify BEFORE saying done | merge/push/PR/xong → invoke code-review | UI/form/nav feature → invoke playwright-testing after implement | nen lam gi/bat dau/feature moi → invoke brainstorming | hieu sau/tai sao/explain → invoke teach | auth/payment/RLS/security → invoke security-review\\nCAVEMAN MODE ACTIVE (full). Drop articles/filler/pleasantries/hedging.'"
-          }
-        ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/Applications/AgentPet.app/Contents/MacOS/agentpet\" hook --agent claude"
+            "command": "\"/usr/local/bin/node\" \"/Users/giinlow./.claude/hooks/caveman-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking caveman mode..."
           }
         ]
       }
@@ -213,12 +108,13 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash \"/Users/giinlow./.claude/combined-statusline.sh\""
+    "command": "bash \"/Users/giinlow./.claude/hooks/statusline.sh\""
   },
   "enabledPlugins": {
     "caveman@caveman": true,
     "codex@openai-codex": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "understand-anything@understand-anything": false
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -227,7 +123,7 @@
         "repo": "JuliusBrussee/caveman"
       }
     },
-    "codex": {
+    "openai-codex": {
       "source": {
         "source": "github",
         "repo": "openai/codex-plugin-cc"
@@ -238,9 +134,16 @@
         "source": "github",
         "repo": "obra/superpowers-marketplace"
       }
+    },
+    "understand-anything": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/Lum1104/Understand-Anything.git"
+      }
     }
   },
   "effortLevel": "medium",
-  "theme": "auto",
+  "theme": "dark",
+  "skipAutoPermissionPrompt": true,
   "skipDangerousModePermissionPrompt": true
 }

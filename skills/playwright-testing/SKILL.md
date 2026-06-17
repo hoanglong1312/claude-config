@@ -5,15 +5,19 @@ description: Use when fixing UI bugs, adding new UI features, or verifying front
 
 # Playwright Testing
 
-## DevTools vs Playwright — Decision Rule
+## cmux browser vs Playwright — Decision Rule
 
 ```
 Bug reported or feature added?
-├── Need to FIND what's broken → DevTools (investigate)
+├── Need to FIND what's broken → cmux browser (investigate)
 └── Need to VERIFY fix works (now + future) → Playwright (regression)
 ```
 
-**DevTools:** investigation only — network tab, console errors, DOM inspection. One-shot, ephemeral. Claude cannot run DevTools; user runs it and reports findings.
+**cmux browser:** investigation — Claude chạy trực tiếp qua CLI, không mở Chrome mới.
+- DOM/layout: `cmux browser snapshot`
+- Console error / JS eval: `cmux browser eval <js>` hoặc `cmux browser devtools toggle`
+- Click/fill/interact: `cmux browser click/fill/type <selector>`
+- Screenshot: `cmux browser screenshot`
 
 **Playwright:** verification — automated, reusable, runs headlessly via Bash. Claude writes + runs directly.
 
@@ -22,7 +26,7 @@ Bug reported or feature added?
 ### 1. Bug Fix Flow
 ```
 User reports UI bug
-→ [DevTools phase] User inspects + reports: network errors, console logs, broken selector
+→ [cmux browser phase] Claude inspect: snapshot, eval, screenshot
 → Claude fixes code
 → [Playwright phase] Claude writes test → runs → confirms fix
 → Test stays in repo as regression guard
@@ -86,7 +90,7 @@ Playwright returns text output — always use `--reporter=line` or `--reporter=d
 
 - API-only projects (no browser UI)
 - Simple CSS/styling changes (visual regression needs screenshots → expensive)
-- One-time investigation (use DevTools)
+- One-time investigation (dùng `cmux browser snapshot/eval` thay vì Playwright)
 - No dev server running (tests need live URL)
 
 ## Conflict Check — Current Workflow

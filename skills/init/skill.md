@@ -189,6 +189,55 @@ markitdown --version 2>/dev/null && echo "installed" || echo "missing"
 #   Không → bỏ qua AGENTS.md ở Bước 2
 ```
 
+**3g. Project permissions (CHỈ cho code project):**
+
+Detect stack từ deps, map sang permissions cần thiết, hỏi trước khi ghi:
+
+```bash
+cat package.json 2>/dev/null | jq -r '(.dependencies // {}) + (.devDependencies // {}) | keys[]' 2>/dev/null
+```
+
+| Phát hiện | Permissions gợi ý |
+|---|---|
+| `next` / `vite` / `react-scripts` | `Bash(npm run build*)`, `Bash(npm run dev*)`, `Bash(npm run test*)` |
+| `typescript` / `ts-node` | `Bash(npx tsc*)` |
+| `playwright` / `@playwright/test` | `Bash(npx playwright*)` |
+| `vitest` / `jest` | `Bash(npm run test*)` |
+| `supabase-js` / `@supabase/*` | `Bash(npx supabase*)` |
+| `vercel` trong scripts hoặc `.vercel/` tồn tại | `Bash(vercel*)` |
+| `axios` / `node-fetch` / `got` trong code | `Bash(curl*)` |
+| `python` / `pyproject.toml` | `Bash(python*)`, `Bash(pip*)`, `Bash(uv*)` |
+| `docker-compose.yml` / `Dockerfile` | `Bash(docker*)` |
+
+Sau khi detect xong, hiện list gợi ý:
+```
+Project permissions cần thêm vào .claude/settings.json:
+  ✓ Bash(npm run build*)  — từ next/vite
+  ✓ Bash(npm run dev*)    — từ next/vite
+  ✓ Bash(npx tsc*)        — từ typescript
+  ✓ Bash(npx playwright*) — từ playwright
+
+Thêm vào .claude/settings.json không? [y/n/chỉnh sửa]
+```
+
+Chỉ ghi khi user confirm. Format ghi:
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run build*)",
+      "Bash(npm run dev*)",
+      "Bash(npm run test*)"
+    ],
+    "defaultMode": "auto"
+  }
+}
+```
+
+Nếu `.claude/settings.json` đã tồn tại → merge `permissions.allow` array, không replace toàn bộ file. Validate JSON sau khi ghi: `jq empty .claude/settings.json`.
+
+---
+
 **3f. Skills per-project type (CHỈ cho code project):**
 
 Detect stack từ deps, recommend skills chưa có trong `~/.claude/skills/` hoặc plugins:

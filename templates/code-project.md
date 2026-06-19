@@ -84,6 +84,7 @@ npm install -D vitest @vitest/ui
    - [ ] `npm test` pass (unit tests) — nếu project có unit test framework
    - [ ] Tất cả tests pass, không regression
    - [ ] Nếu task có UI interaction → Playwright test pass (invoke `playwright-testing` skill)
+   - [ ] Task phức tạp (3+ subsystem hoặc cross-file): dispatch 1 verifier subagent độc lập đọc lại diff + spec → confirm không có gap (fresh context verifier outperform self-critique)
    - [ ] `ASSUMPTION:` (giả định) đã được xác nhận (validate)
    - [ ] `ENV-REQUIRED:` (nếu có) đã được user set
    - [ ] `SECURITY-SENSITIVE:` (nếu có) đã qua security review — không có lỗ hổng

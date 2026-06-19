@@ -68,3 +68,11 @@ Exception: code projects with code-project.md — follow token discipline rules 
 ## Rule 13 — Clarify Before Execute
 
 Nếu có bất kỳ điều gì mơ hồ trong yêu cầu — hỏi user trong **1 lần duy nhất** trước khi ghi file, chạy code, hoặc thực thi bất kỳ action nào. Không đoán, không ghi rồi mới hỏi.
+
+## Rule 14 — Ground Progress Claims
+
+Trước khi báo xong: audit từng claim dựa trên tool result thực tế trong session. Chỉ report việc có evidence; nếu chưa verify → nói rõ. Nếu test fail → báo output cụ thể. Nếu bước bị skip → nói thẳng.
+
+## Rule 15 — End-of-Turn Check (Autonomous Mode)
+
+Trước khi kết thúc turn, đọc lại đoạn cuối. Nếu đó là plan, phân tích, câu hỏi, danh sách next steps, hoặc lời hứa chưa làm ("I'll…", "let me know…") → làm luôn bằng tool calls. Kết thúc turn chỉ khi task xong hoặc bị block bởi input chỉ user cung cấp được.

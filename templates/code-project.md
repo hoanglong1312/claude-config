@@ -133,6 +133,20 @@ npm install -D vitest @vitest/ui
 
 ⚠️ Trong exception: token discipline tạm suspended cho investigation phase — Claude được đọc code + grep + dùng MCP tools để trace root cause.
 
+**Codegraph — Investigation Fast Path (dùng trước grep/Read):**
+
+Khi Claude tự làm Phase 1 hoặc cần hiểu data flow trước khi viết investigation plan:
+
+| Câu hỏi | Tool |
+|---------|------|
+| Feature/area này liên quan file/function nào? | `codegraph_context` |
+| Data đi từ A đến B qua đâu? | `codegraph_trace` |
+| Symbol X defined/called ở đâu? | `codegraph_search` |
+| Nhiều symbol liên quan cùng lúc | `codegraph_explore` |
+
+Rule: `codegraph_context` → `codegraph_trace` → chỉ Read file nếu codegraph không cover detail cần.
+Index lag ~1s sau file write — không query ngay sau Codex commit.
+
 **Phase 2 — Fix (Claude phán đoán, Codex thực thi)**
 
 4. Claude đọc findings → xác định root cause → quyết định approach
@@ -525,9 +539,7 @@ Với bất kỳ thay đổi UI nào, verify trên localhost trước khi deploy
 
 **Không mở Chrome hay browser mới.** Dùng cmux in-app browser:
 - `⌘⇧L` — mở browser split pane
-- `⌥⌘I` — toggle DevTools
-- `⌥⌘C` — JS Console
-- Agent tương tác CLI: `cmux browser <snapshot|screenshot|click|eval|goto|wait|...>`
+- Agent tương tác CLI: `cmux browser <snapshot|screenshot|click|eval|goto|wait|console list|network requests|...>`
 
 **Lợi ích:** Không tốn thời gian deploy vòng, không bị PIN gate hoặc auth chặn như production.
 

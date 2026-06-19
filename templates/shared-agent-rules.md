@@ -46,7 +46,7 @@ Pick the lightest tool that can confirm the bug:
 | Logic thuần / function / formatter / reducer | Unit test — nhanh nhất, run nhiều lần |
 | React component / interaction / state | Inspect code + `npm run build`, unit test nhỏ nếu cần |
 | UI visual / layout / navigation | `cmux browser snapshot` — đọc accessibility tree, verify bằng mắt |
-| Console error / network / DOM / JS | `cmux browser devtools toggle` hoặc `cmux browser eval <js>` |
+| Console error / network / DOM / JS | `cmux browser console list` / `cmux browser network requests` / `cmux browser eval <js>` |
 | Click, fill, interact | `cmux browser click/fill/type <selector>` |
 | Screenshot | `cmux browser screenshot` |
 | E2E flow quan trọng (login, payment, navigation nhiều màn) | Playwright — chỉ khi flow dễ regression |

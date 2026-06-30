@@ -131,7 +131,7 @@ npm install -D vitest @vitest/ui
 - Cần cross-reference đồng thời nhiều nguồn khác loại (DB schema + RLS policy + code logic)
 - Cần đọc đồng thời Supabase data/state, RLS, React state/data flow, logs, hoặc MCP-only context
 
-⚠️ Trong exception: token discipline tạm suspended cho investigation phase — Claude được đọc code + grep + dùng MCP tools để trace root cause.
+⚠️ Trong exception: token discipline tạm suspended cho investigation phase — Claude dùng GitNexus trước (`query` → `context` → `trace` → `impact`), chỉ grep/Read file khi cần đọc logic bên trong function hoặc tìm string literal mà GitNexus không cover.
 
 **GitNexus — Investigation Fast Path (dùng trước grep/Read):**
 

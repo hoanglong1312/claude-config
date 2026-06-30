@@ -15,10 +15,10 @@
 ## Codex Delegation Rules
 
 **Khi nào SKIP Codex — Claude tự làm:**
-- Task < 5 phút (1-2 file, change rõ ràng) → Claude dùng Edit/Write trực tiếp
-- Config change, rename, comment/doc update → không cần Codex
 - Task cần MCP tools (Supabase, browser, external API) → Claude làm Phase 1, Codex làm code fix
 - Sau Codex fail 3 lần → Claude direct fix (xem Fallback section)
+
+**Mọi code change đều qua Codex** — không exception cho task nhỏ, 1-2 file, hay "< 5 phút". Codex có bash → tự commit → không cần Claude vá thủ công.
 
 **Delegate sớm, prompt cấp cao:**
 - Chỉ cần: WHAT cần sửa + file/spec path + constraints ngắn gọn
@@ -190,8 +190,8 @@ Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
 3. Nếu chạy mới, route bằng `Agent`:
    - `subagent_type`: `codex:codex-rescue`
    - **Default: foreground** — prompt bắt đầu bằng `--wait` (Claude chờ, nhận kết quả trực tiếp)
-   - **⚠️ Agent tool luôn async:** dù có `--wait`, result vẫn trả về ngay với `agentId`. Sau khi dispatch, nếu result có `agentId` → **bắt buộc set `ScheduleWakeup(270s)` ngay trong cùng response đó** — không đợi user nhắc.
-   - Wakeup prompt: `SendMessage` tới agentId hỏi status → nếu xong: `git diff + npm run build + npm test`; nếu chưa xong: `ScheduleWakeup(270s)` tiếp. Loop đến done hoặc fail.
+   - **⚠️ Agent tool luôn async:** dù có `--wait`, result vẫn trả về ngay với `agentId`. Sau khi dispatch, nếu result có `agentId` → **bắt buộc set `ScheduleWakeup(120s)` ngay trong cùng response đó** — không đợi user nhắc.
+   - Wakeup prompt: `SendMessage` tới agentId hỏi status → nếu xong: `git diff + npm run build + npm test`; nếu chưa xong: `ScheduleWakeup(120s)` tiếp. Loop đến done hoặc fail.
    - Background chỉ dùng khi task ước tính >10 phút — prompt bắt đầu bằng `--background`. Cùng wakeup loop như foreground.
    - prompt chỉ gồm goal + file/spec path + constraints + verification.
 

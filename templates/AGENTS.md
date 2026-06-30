@@ -153,25 +153,25 @@ Use this when user opens Codex directly instead of dispatching through Claude:
 
 ---
 
-## Code Intelligence — Codegraph MCP
+## Code Intelligence — GitNexus MCP
 
-Dự án dùng codegraph (MCP `codegraph serve --mcp`) để index toàn bộ codebase. Codex có thể gọi các tools sau trực tiếp.
+Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase. Codex có thể gọi các tools sau trực tiếp.
 
 **Bắt buộc trước khi sửa code:**
 
 | Câu hỏi | Tool | Khi nào dùng |
 |---------|------|-------------|
-| Feature/area liên quan file nào? | `codegraph_context` | Trước khi bắt đầu bất kỳ task nào |
-| Data đi từ A → B qua đâu? | `codegraph_trace` | Trace data flow / debug |
-| Symbol X defined/called ở đâu? | `codegraph_search` | Tìm function/class/variable |
-| Survey nhiều symbol cùng lúc | `codegraph_explore` | Hiểu architecture |
-| Sửa X sẽ ảnh hưởng gì? | `codegraph_impact` | Trước khi sửa function quan trọng |
-| File nào trong thư mục? | `codegraph_files` | Navigate module |
+| Feature/area liên quan file/flow nào? | `query({search_query: "concept"})` | Trước khi bắt đầu bất kỳ task nào |
+| Symbol X là gì, callers/callees? | `context({name: "symbolName"})` | Hiểu function trước khi sửa |
+| Sửa X sẽ ảnh hưởng gì? | `impact({target: "symbolName", direction: "upstream"})` | Trước khi sửa function quan trọng |
+| Trace path từ A → B | `trace({from: "A", to: "B"})` | Debug data flow |
+| Thay đổi này ảnh hưởng symbol nào? | `detect_changes()` | Trước khi commit |
 
 **Quy tắc:**
-- `codegraph_context` TRƯỚC khi đọc file source — tiết kiệm token, cho full picture.
-- `codegraph_trace` thay vì grep khi cần trace call chain qua nhiều file.
-- Index lag ~1s sau khi file write — không query ngay sau khi commit.
+- `query` TRƯỚC khi đọc file source — trả về execution flows, process-grouped, tiết kiệm token.
+- `impact` bắt buộc trước khi sửa bất kỳ function nào — biết blast radius.
+- `detect_changes()` trước commit — verify chỉ sửa đúng scope.
+- Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
 
 ---
 

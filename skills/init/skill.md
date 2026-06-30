@@ -119,7 +119,8 @@ CLAUDE.md:
 ├── AGENTS.md              ← chỉ tạo nếu user dùng Codex (xác nhận ở Bước 3e)
 ├── rules/                 ← project-specific tool/path rules
 ├── .claude/
-│   └── settings.json      ← project Claude Code settings only
+│   ├── settings.json      ← project Claude Code settings only
+│   └── commands/          ← /review /verify /ship (xác nhận ở Bước 3j)
 ├── context/
 │   └── architecture.md
 └── docs/superpowers/
@@ -130,6 +131,7 @@ CLAUDE.md:
 CLAUDE.md:
 ```
 @~/.claude/templates/code-project.md
+@~/.claude/templates/modules/[module].md   ← chỉ module được chọn ở Bước 3h
 @context/architecture.md
 
 ## Thông Tin Project
@@ -141,7 +143,7 @@ CLAUDE.md:
 ## Project-Specific Rules
 ```
 
-Thứ tự @include: `code-project.md` → `context/` (bắt buộc). Rules project-specific @include thêm khi cần.
+Thứ tự @include bắt buộc: `code-project.md` (CORE) → `modules/*` → `rules/*` → `context/`. Rules project-specific @include thêm khi cần.
 
 `.gitignore` tối thiểu:
 ```
@@ -263,6 +265,156 @@ Chỉ cài khi user confirm. Không cài tự động.
 
 ---
 
+**3j. Slash commands chuẩn (CHỈ cho code project):**
+
+Hỏi 1 lần: "Tạo 3 slash commands `/review`, `/verify`, `/ship` không?"
+
+Nếu có → tạo trong `.claude/commands/` (xem template ở Component Templates):
+- `review.md` — dispatch code-reviewer trên diff hiện tại
+- `verify.md` — chạy test suite của project
+- `ship.md` — pre-ship checklist: verify → review → check
+
+Nếu project đã có test runner riêng (pytest / vitest / go test...) → hỏi trước để điền đúng lệnh vào `verify.md`.
+
+---
+
+**3h. Module opt-in cho code-project (CHỈ code project dùng Codex flow):**
+
+`code-project.md` là CORE always-on. Phần optional nằm trong `~/.claude/templates/modules/`. Auto-detect từ deps → đề xuất module, hỏi 1 lần gộp, chỉ `@include` cái được chọn:
+
+| Phát hiện trong deps/repo | Module đề xuất |
+|---|---|
+| `@supabase/*` / migration files | `db-supabase.md` |
+| `next`/`vite`/`react`/`vue` (frontend) | `frontend-web.md` |
+| Có `**/api/**`, `**/auth/**`, route nhận user input | `web-security.md` |
+| Task design UI / landing / redesign (hỏi user) | `ui-design-handoff.md` |
+| User muốn plan/spec render HTML (hỏi user) | `codex-html-workflow.md` |
+
+Hỏi gộp:
+```
+Code project core đã include. Module opt-in (detect từ stack):
+  [x] db-supabase    — phát hiện @supabase
+  [x] frontend-web   — phát hiện vite
+  [ ] web-security   — bật nếu có API/auth
+  [ ] ui-design-handoff
+  [ ] codex-html-workflow
+Include module nào? (mặc định = các dòng [x])
+```
+
+Module được chọn → thêm dòng `@~/.claude/templates/modules/[name].md` vào CLAUDE.md, giữ thứ tự core → modules → rules → context.
+
+---
+
+**3i. Statusline với usage + model (global, mọi loại project):**
+
+Check xem `~/.claude/settings.json` đã có `statusLine` chưa và script nào đang dùng:
+
+```bash
+cat ~/.claude/settings.json | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('statusLine', 'NOT SET'))"
+ls ~/.claude/hooks/statusline.sh 2>/dev/null && echo "exists" || echo "missing"
+```
+
+**Nếu `statusline.sh` tồn tại nhưng settings dùng `caveman-statusline.sh`:**
+→ Switch sang `statusline.sh` — nó đã có model + rate limits bar + caveman badge:
+
+```json
+"statusLine": {
+  "type": "command",
+  "command": "bash \"/Users/<user>/.claude/hooks/statusline.sh\""
+}
+```
+
+**Nếu `statusline.sh` chưa có** → tạo tại `~/.claude/hooks/statusline.sh`:
+
+```bash
+#!/bin/bash
+# Combined statusline: model + rate limits (or context) + caveman badge
+# Receives Claude Code session JSON via stdin
+
+input=$(cat)
+
+bar() {
+  local pct="${1:-0}" width=15 filled empty i out=""
+  filled=$(( pct * width / 100 ))
+  [ $filled -gt $width ] && filled=$width
+  empty=$(( width - filled ))
+  for ((i=0; i<filled; i++)); do out+="█"; done
+  for ((i=0; i<empty; i++)); do out+="░"; done
+  printf '%s' "$out"
+}
+
+fmt_reset() {
+  local ts="$1"
+  [ -z "$ts" ] && return
+  local today reset_date
+  today=$(TZ="Asia/Ho_Chi_Minh" date "+%Y-%m-%d")
+  reset_date=$(TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%Y-%m-%d" 2>/dev/null)
+  if [ "$reset_date" = "$today" ]; then
+    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%-I%p" 2>/dev/null | sed 's/AM/am/; s/PM/pm/'
+  else
+    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%b %-d %-I%p" 2>/dev/null | sed 's/AM/am/; s/PM/pm/'
+  fi
+}
+
+model=$(echo "$input" | jq -r '.model.display_name // empty' 2>/dev/null)
+if [ -z "$model" ]; then
+  model="${CLAUDE_MODEL:-}"
+  [ -n "$model" ] && model=$(printf '%s' "$model" | sed 's/^us\.anthropic\.//' | sed 's/^claude-//')
+fi
+
+five_pct=$(echo "$input" | jq -r '.rate_limits.five_hour.used_percentage // empty' 2>/dev/null)
+seven_pct=$(echo "$input" | jq -r '.rate_limits.seven_day.used_percentage // empty' 2>/dev/null)
+reset_5h=$(echo "$input" | jq -r '.rate_limits.five_hour.resets_at // empty' 2>/dev/null)
+reset_7d=$(echo "$input" | jq -r '.rate_limits.seven_day.resets_at // empty' 2>/dev/null)
+ctx_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty' 2>/dev/null)
+
+out=()
+[ -n "$model" ] && out+=("🤖 $model")
+
+if [ -n "$five_pct" ]; then
+  five_int=$(printf '%.0f' "$five_pct")
+  reset_str=$(fmt_reset "$reset_5h")
+  entry="⏱ $(bar $five_int) ${five_int}%"
+  [ -n "$reset_str" ] && entry+=" → ${reset_str}"
+  out+=("$entry")
+fi
+
+if [ -n "$seven_pct" ]; then
+  seven_int=$(printf '%.0f' "$seven_pct")
+  reset_str=$(fmt_reset "$reset_7d")
+  entry="📅 $(bar $seven_int) ${seven_int}%"
+  [ -n "$reset_str" ] && entry+=" → ${reset_str}"
+  out+=("$entry")
+fi
+
+if [ -z "$five_pct" ] && [ -n "$ctx_pct" ]; then
+  ctx_int=$(printf '%.0f' "$ctx_pct")
+  [ "$ctx_int" -gt 0 ] && out+=("💬 ctx $(bar $ctx_int) ${ctx_int}%")
+fi
+
+FLAG="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.caveman-active"
+[ ! -L "$FLAG" ] && [ -f "$FLAG" ] && {
+  MODE=$(head -c 64 "$FLAG" 2>/dev/null | tr -d '\n\r' | tr -cd 'a-z0-9-')
+  case "$MODE" in
+    off|lite|full|ultra|wenyan-lite|wenyan|wenyan-full|wenyan-ultra|commit|review|compress)
+      if [ -z "$MODE" ] || [ "$MODE" = "full" ]; then out+=("🪨 CAVEMAN")
+      else out+=("🪨 CAVEMAN:$(printf '%s' "$MODE" | tr '[:lower:]' '[:upper:]')")
+      fi ;;
+  esac
+}
+
+[ ${#out[@]} -eq 0 ] && exit 0
+printf '%s' "${out[0]}"
+for ((i=1; i<${#out[@]}; i++)); do printf ' | %s' "${out[i]}"; done
+printf '\n'
+```
+
+Sau khi ghi → `chmod +x ~/.claude/hooks/statusline.sh` → restart Claude Code.
+
+**Timezone:** script dùng `Asia/Ho_Chi_Minh`. Đổi theo timezone user nếu khác.
+
+---
+
 ### Bước 4 — One-time setup (CHỈ cho code project)
 
 **4a. Tạo `docs/superpowers/decisions.md`:**
@@ -349,6 +501,42 @@ Nếu không phải git repo:
 Nếu đã là git repo:
 - Báo branch hiện tại + working tree status.
 - Không commit tự động trừ khi user yêu cầu.
+
+---
+
+**4d. Offer `setup.sh` (opt-in — KHÁC layer với init):**
+
+`init` = AI context layer (CLAUDE.md/AGENTS.md). `setup.sh` = runtime/dev layer (venv, deps, binary, .env) cho human/CI re-run. Hai thứ orthogonal — KHÔNG thay nhau.
+
+Chỉ **đề xuất** tạo `setup.sh` khi stack cần provisioning >1 bước:
+
+| Cần setup.sh | Không cần (đủ với README) |
+|---|---|
+| Python venv + deps + binary download (Camoufox, model...) | `npm install` thuần |
+| Nhiều bước env (.env scaffold, GeoIP, migrate DB) | 1 lệnh install duy nhất |
+| Pin Python/Node version cụ thể | Dùng version mặc định |
+
+Nếu cần → hỏi: *"Stack này nhiều bước setup. Tạo `setup.sh` idempotent (check trước → skip nếu có → fail-fast version) không?"*
+
+Skeleton khi user OK (3 nguyên tắc: `set -euo pipefail` fail-fast, check-before-create idempotent, không leak ra ngoài project dir):
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"; cd "$ROOT_DIR"
+
+# version guard (sửa theo stack)
+command -v node >/dev/null || { echo "ERROR: cần Node" >&2; exit 1; }
+
+# idempotent deps
+[ -d node_modules ] || npm install
+
+# .env scaffold nếu chưa có
+[ -f .env ] || cp .env.example .env 2>/dev/null || true
+
+echo "✓ setup done"
+```
+
+Không ép — project đơn giản bỏ qua bước này.
 
 ---
 
@@ -462,6 +650,62 @@ VERDICT: APPROVE / REQUEST_CHANGES
 - Chỉ đọc diff được cung cấp
 - Không sửa code, chỉ báo cáo
 ```
+
+### `.claude/commands/review.md`
+
+```markdown
+# /review — Code Review
+
+Dispatch `.claude/agents/code-reviewer` để review git diff hiện tại.
+
+## Steps
+
+1. Chạy `git diff HEAD~1..HEAD` để lấy diff commit cuối
+2. Nếu có staged changes chưa commit: `git diff --cached` thay thế
+3. Dispatch agent `code-reviewer` với diff + context task hiện tại
+4. Hiện output APPROVE/REQUEST_CHANGES
+5. Nếu REQUEST_CHANGES → list issues, hỏi user muốn fix gì trước
+```
+
+### `.claude/commands/verify.md`
+
+```markdown
+# /verify — Run All Tests
+
+Chạy toàn bộ test suite và báo cáo kết quả.
+
+## Steps
+
+1. Compile/syntax check trước (adapt theo stack):
+   - Python: `python -m py_compile <core files>`
+   - Node/TS: `npm run build` hoặc `npx tsc --noEmit`
+2. Chạy tests:
+   - Python: `for f in test/check_*.py; do python "$f" && echo "PASS: $f" || echo "FAIL: $f"; done`
+   - Node: `npm test`
+3. Báo cáo: X pass, Y fail
+4. Nếu có FAIL → show output, diagnose root cause
+```
+
+### `.claude/commands/ship.md`
+
+```markdown
+# /ship — Pre-ship Checklist
+
+Kiểm tra trước khi commit/báo done.
+
+## Checklist
+
+1. `/verify` — chạy toàn bộ tests, phải 0 FAIL
+2. `git diff` — Claude review scope, không có thứ ngoài plan
+3. `/review` — dispatch code-reviewer agent
+4. Grep `ASSUMPTION:` trong staged/recent commits → nếu có, xác nhận với user trước
+5. Check migration nếu có DB: version đã tăng chưa?
+6. Báo cáo: ✓ pass / ✗ fail với lý do cụ thể
+
+## Chỉ báo "sẵn sàng commit" khi tất cả ✓
+```
+
+---
 
 ### `rules/api.md` (path-scoped)
 

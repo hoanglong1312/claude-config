@@ -573,3 +573,158 @@ Brands phổ biến: stripe, linear, vercel, notion, airbnb, shopify, claude, op
 - Git repo: [link]
 - Tech stack: [danh sách]
 - Mục tiêu: [mô tả ngắn]
+
+---
+
+## Phase 2: Code Review (Mandatory After Codex Done)
+
+**Auto-trigger after Codex `task` returns DONE:**
+
+```bash
+git diff [base-commit]..HEAD -- [affected files]
+```
+
+### Review Checklist (6 points — no exceptions):
+- [ ] Variables named clearly? (camelCase, no abbreviations)
+- [ ] Logic correct? (null checks, bounds, error paths)
+- [ ] Error handling complete? (try/catch, status codes, messages)
+- [ ] Style matches codebase? (indentation, quotes, line length)
+- [ ] Specification matched exactly? (diff vs. user request)
+- [ ] No dead code, duplicates, or typos?
+
+### Security Checklist (add if task touches auth/API/data):
+- [ ] Auth/token handling safe? (no hardcoded secrets, proper headers)
+- [ ] SQL safe? (parameterized queries, no string concat)
+- [ ] XSS risk? (input sanitized, output escaped)
+- [ ] API endpoints require auth?
+- [ ] Error messages don't leak sensitive info?
+- [ ] Sensitive data not logged?
+
+### Review Loop (Max 3 attempts):
+1. **1st rejection** → Codex fix (syntax/style/simple logic)
+2. **2nd rejection** → Codex + Claude root cause comment (not just "wrong")
+3. **3rd rejection** → Claude direct fix + commit note "reviewed after 3 Codex attempts"
+4. **4th+** → STOP, escalate to user (unsolvable by automation)
+
+### Decision:
+- ✓ **APPROVE** → proceed to Phase 3 (Testing)
+- ❌ **REJECT** → comment findings → giao Codex fix → loop back Phase 2
+
+---
+
+## Phase 3: Testing (Syntax + Playwright for UI + Critical Path)
+
+### Always: Syntax Check
+```bash
+node --check web/static/*.js
+.venv/bin/python -m py_compile web/ db/ codex_auth/
+npm run build  # if build script exists
+```
+
+### Conditional: Playwright UI Test
+**Detect UI task:**
+- File changed: `*.js`, `*.html`, `*.tsx`, `*.css`?
+- **AND** change includes: `addEventListener`, `querySelector`, `fetch()`, `data-` attributes?
+
+If YES → **Claude auto-invokes:**
+```
+@invoke playwright-testing
+Task: [Brief task name]
+Changes: [Specific DOM/handler changes from git diff]
+Test Plan:
+1. Load page
+2. [Test specific user action]
+3. [Verify DOM/API response]
+4. [Check edge case if critical]
+```
+
+**Codex runs test:**
+1. Generate Playwright script from test plan
+2. Launch browser, execute steps
+3. Report PASS/FAIL + screenshot on error
+
+**Claude review test code:**
+- Validate selectors match actual DOM
+- Validate assertions capture correct behavior
+- Confirm test detects regressions
+
+**Decision:**
+- ✓ **PASS** → ready to ship
+- ❌ **FAIL** → Codex debug + fix → Phase 1/2 loop
+
+### Critical Paths: Extra Coverage
+Triggers when:
+- Task = Auth / Payment / RLS / Cross-file refactor
+- Affects 3+ subsystems
+- API contract change / DB schema breaking change
+
+**Claude + Codex jointly:**
+1. Codex write smoke test case (`test/check_*.py`)
+2. Codex run test
+3. Claude review test coverage (3 example flows minimum)
+
+### DB Migration Test (IF schema change detected)
+
+**Detect:** File changed = `db/migrate.py`, `db/schema.py`, `db/*.sql`?
+
+**Codex runs migration tests:**
+```bash
+1. Test forward migration runs (migrate from old → new)
+2. Test data preserved (SELECT COUNT before/after)
+3. Test rollback works (undo migration)
+4. Test backwards compat (old code reads new schema)
+```
+
+**Claude verifies:**
+- All 4 tests pass
+- No data loss
+- Rollback functional (safety net)
+
+**Decision:**
+- ✓ **PASS** → safe to merge
+- ❌ **FAIL** → Codex fix migration or Claude escalate
+
+### Playwright Launch Failure Handling
+
+**If Playwright test fails to start:**
+```
+Error: "browser not found" OR timeout after 30s
+```
+
+**Fallback strategy:**
+1. **Check unit tests exist** → Run instead of Playwright
+2. **No unit tests** → Create manual testing checklist
+   - Document steps in commit message
+   - Mark as "tested manually on [date]"
+3. **Optional:** Escalate to user if critical UI path
+
+**Reasoning:** Some CI/container/headless environments can't run browser. Manual fallback prevents shipping delay.
+
+---
+
+## Updated Definition of Done (3-Phase Checkpoint)
+
+✓ **Phase 1: Execution**
+- Codex committed all tasks
+- Syntax check pass (node --check, py_compile)
+- All commits pushed
+
+✓ **Phase 2: Review**
+- Claude ran `git diff [base]..HEAD`
+- Claude approved against 6-point + security checklist
+- Findings (if any) fixed by Codex ≤3 attempts
+
+✓ **Phase 3: Testing**
+- Syntax verified (build success)
+- UI task → Playwright test PASS + code reviewed
+- Critical path → smoke test PASS
+- DB schema change → migration tests PASS
+- Edge cases documented
+
+**Additional:**
+- `ASSUMPTION:` documented → `docs/superpowers/decisions.md`
+- `ENV-REQUIRED:` set on local machine
+- `SECURITY-SENSITIVE:` Claude security checklist cleared
+- No unrelated refactor in diff
+- User acceptance confirmed
+

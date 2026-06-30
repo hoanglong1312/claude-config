@@ -133,19 +133,19 @@ npm install -D vitest @vitest/ui
 
 ⚠️ Trong exception: token discipline tạm suspended cho investigation phase — Claude được đọc code + grep + dùng MCP tools để trace root cause.
 
-**Codegraph — Investigation Fast Path (dùng trước grep/Read):**
+**GitNexus — Investigation Fast Path (dùng trước grep/Read):**
 
 Khi Claude tự làm Phase 1 hoặc cần hiểu data flow trước khi viết investigation plan:
 
 | Câu hỏi | Tool |
 |---------|------|
-| Feature/area này liên quan file/function nào? | `codegraph_context` |
-| Data đi từ A đến B qua đâu? | `codegraph_trace` |
-| Symbol X defined/called ở đâu? | `codegraph_search` |
-| Nhiều symbol liên quan cùng lúc | `codegraph_explore` |
+| Feature/area này liên quan file/flow nào? | `query({search_query: "concept"})` |
+| Symbol X là gì, callers/callees? | `context({name: "symbolName"})` |
+| Data đi từ A đến B qua đâu? | `trace({from: "A", to: "B"})` |
+| Sửa X ảnh hưởng gì? | `impact({target: "symbolName", direction: "upstream"})` |
 
-Rule: `codegraph_context` → `codegraph_trace` → chỉ Read file nếu codegraph không cover detail cần.
-Index lag ~1s sau file write — không query ngay sau Codex commit.
+Rule: `query` → `context` → chỉ Read file nếu GitNexus không cover detail cần.
+Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
 
 **Phase 2 — Fix (Claude phán đoán, Codex thực thi)**
 

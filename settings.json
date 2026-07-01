@@ -6,6 +6,10 @@
   },
   "permissions": {
     "allow": [
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Bash(claude mcp *)",
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
@@ -13,25 +17,40 @@
       "Bash(git commit*)",
       "Bash(git branch*)",
       "Bash(git stash*)",
-      "Bash(git push*)",
-      "Bash(git pull*)",
-      "Bash(git fetch*)",
+      "Bash(npm run build*)",
+      "Bash(npm run qa*)",
+      "Bash(npm run test*)",
+      "Bash(npx playwright test*)",
+      "Bash(npx tsc*)",
       "Bash(ls*)",
-      "Bash(find*)",
+      "Bash(find . *)",
       "Bash(grep *)",
-      "Bash(cat *)",
       "Bash(rtk *)",
-      "Bash(claude mcp *)",
-      "mcp__codegraph__codegraph_search",
-      "mcp__codegraph__codegraph_context",
-      "mcp__codegraph__codegraph_callers",
-      "mcp__codegraph__codegraph_callees",
-      "mcp__codegraph__codegraph_impact",
-      "mcp__codegraph__codegraph_node",
-      "mcp__codegraph__codegraph_status",
-      "mcp__codegraph__codegraph_explore",
-      "mcp__codegraph__codegraph_files",
-      "mcp__codegraph__codegraph_trace"
+      "Bash(cd *)",
+      "Bash(vercel*)",
+      "Bash(curl *)",
+      "Bash(curl*)",
+      "Bash(sleep *)",
+      "Bash(cat *)",
+      "Bash(npm run dev*)",
+      "Bash(npm run dev *)",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__select_page",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__click",
+      "mcp__chrome-devtools__fill",
+      "mcp__chrome-devtools__type_text",
+      "mcp__chrome-devtools__emulate",
+      "mcp__chrome-devtools__get_console_message",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__get_network_request",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__wait_for",
+      "mcp__chrome-devtools__close_page"
     ],
     "defaultMode": "auto"
   },
@@ -43,6 +62,17 @@
           {
             "type": "command",
             "command": "rtk hook claude"
+          }
+        ]
+      },
+      {
+        "matcher": "Grep|Glob|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+            "timeout": 10,
+            "statusMessage": "Enriching with GitNexus graph context..."
           }
         ]
       }
@@ -92,6 +122,19 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+            "timeout": 10,
+            "statusMessage": "Checking GitNexus index freshness..."
+          }
+        ]
+      }
     ]
   },
   "statusLine": {
@@ -100,9 +143,10 @@
   },
   "enabledPlugins": {
     "caveman@caveman": true,
+    "claude-mem@thedotmack": true,
     "codex@openai-codex": true,
-    "superpowers@claude-plugins-official": true,
-    "understand-anything@understand-anything": false
+    "ponytail@ponytail": true,
+    "superpowers@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "caveman": {
@@ -131,7 +175,7 @@
     }
   },
   "effortLevel": "medium",
+  "skipDangerousModePermissionPrompt": true,
   "theme": "dark",
-  "skipAutoPermissionPrompt": true,
-  "skipDangerousModePermissionPrompt": true
+  "skipAutoPermissionPrompt": true
 }

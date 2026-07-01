@@ -608,10 +608,6 @@ Repo indexed: `[repo-name]` (path: `[repo-path]`)
 2. Nếu `commitsBehind > 0` AND task là debug/impact/architecture → chạy analyze trước
 3. Nếu `commitsBehind > 0` AND task là brainstorm/overview → skip analyze, ok
 
-## Phân công
-
-- Claude: dùng GitNexus để plan, architecture, impact analysis
-- Codex: đọc GitNexus trực tiếp được cho investigation
 ```
 
 ---

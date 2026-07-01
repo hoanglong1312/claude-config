@@ -191,7 +191,11 @@ Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
    - `subagent_type`: `codex:codex-rescue`
    - **Default: foreground** — prompt bắt đầu bằng `--wait` (Claude chờ, nhận kết quả trực tiếp)
    - **⚠️ Agent tool luôn async:** dù có `--wait`, result vẫn trả về ngay với `agentId`. Sau khi dispatch, nếu result có `agentId` → **bắt buộc set `ScheduleWakeup(120s)` ngay trong cùng response đó** — không đợi user nhắc.
-   - Wakeup prompt: `SendMessage` tới agentId hỏi status → nếu xong: `git diff + npm run build + npm test`; nếu chưa xong: `ScheduleWakeup(120s)` tiếp. Loop đến done hoặc fail.
+   - Wakeup prompt: `SendMessage` tới agentId hỏi status → nếu xong:
+     1. `git diff HEAD` — nếu có uncommitted changes (Codex edit nhưng không commit): syntax check → `git add <files> && git commit -m "<task-name> (codex-autocommit)"` → rồi mới review
+     2. `git diff HEAD~1 HEAD` — Claude review committed diff
+     3. `npm run build + npm test` nếu có
+     - Nếu chưa xong: `ScheduleWakeup(120s)` tiếp. Loop đến done hoặc fail.
    - Background chỉ dùng khi task ước tính >10 phút — prompt bắt đầu bằng `--background`. Cùng wakeup loop như foreground.
    - prompt chỉ gồm goal + file/spec path + constraints + verification.
 

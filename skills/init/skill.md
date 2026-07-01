@@ -247,7 +247,13 @@ Nếu project đã có test runner riêng (pytest / vitest / go test...) → đi
 |---|---|
 | `supabase`/`sqlite`/`prisma` trong deps | Copy `~/.claude/templates/commands/db-migrate.md` → `.claude/commands/db-migrate.md` |
 | `vite`/`react`/`vue`/`next` trong deps | Copy `~/.claude/templates/commands/frontend-verify.md` → `.claude/commands/frontend-verify.md` |
-| `.gitnexus/` tồn tại trong project | Tạo `rules/gitnexus.md` + `@rules/gitnexus.md` trong CLAUDE.md + `.codex/config.toml` với `[mcp_servers.gitnexus]` |
+| `.gitnexus/` tồn tại (root hoặc subdir) | Tạo `rules/gitnexus.md` + `@rules/gitnexus.md` trong CLAUDE.md + `.codex/config.toml` với `[mcp_servers.gitnexus]` |
+
+Detect GitNexus (check cả subdir vì repo thường nằm trong `repo/`):
+```bash
+find . -name ".gitnexus" -maxdepth 4 -type d 2>/dev/null | head -1
+# Nếu có → lấy repo name từ `gitnexus list_repos` hoặc đường dẫn folder cha
+```
 
 `.codex/config.toml` cho gitnexus:
 ```toml
@@ -585,6 +591,27 @@ Kiểm tra trước khi commit/báo done.
 6. Báo cáo: ✓ pass / ✗ fail với lý do cụ thể
 
 ## Chỉ báo "sẵn sàng commit" khi tất cả ✓
+```
+
+---
+
+### `rules/gitnexus.md`
+
+```markdown
+# GitNexus Reflex
+
+Repo indexed: `[repo-name]` (path: `[repo-path]`)
+
+## Trước mỗi query/trace/impact/context call
+
+1. `list_repos` → check `staleness.commitsBehind`
+2. Nếu `commitsBehind > 0` AND task là debug/impact/architecture → chạy analyze trước
+3. Nếu `commitsBehind > 0` AND task là brainstorm/overview → skip analyze, ok
+
+## Phân công
+
+- Claude đọc GitNexus → pass findings vào Codex prompt
+- Codex không gọi GitNexus trực tiếp
 ```
 
 ---

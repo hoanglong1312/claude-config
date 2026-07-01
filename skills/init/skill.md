@@ -610,8 +610,8 @@ Repo indexed: `[repo-name]` (path: `[repo-path]`)
 
 ## Phân công
 
-- Claude đọc GitNexus → pass findings vào Codex prompt
-- Codex không gọi GitNexus trực tiếp
+- Claude: dùng GitNexus để plan, architecture, impact analysis
+- Codex: đọc GitNexus trực tiếp được cho investigation
 ```
 
 ---

@@ -55,107 +55,40 @@ Use this when user opens Codex directly instead of dispatching through Claude:
 
 | Tool | Vai trò |
 |------|---------|
-| **Superpowers** (Claude plugin) | Planning: brainstorming → spec → writing-plans |
-| **Claude Code** | Orchestration + Review: brainstorming, writing-plans, quyết định kiến trúc, review plan + output |
-| **Codex** (`codex:codex-rescue` subagent / `/codex:rescue`) | Execution + QA: executing-plans, TDD, chạy test, commit |
+| **Claude Code** | Orchestration + Review: plan, quyết kiến trúc, review output |
+| **Codex** (`codex:codex-rescue`) | Execution + QA: viết code, test, commit |
 
 ---
 
-## Workflow
+## Codex — Workflow
 
-### Claude Code — nhận task mới
-1. Check Superpowers skill có apply không.
-2. Task phức tạp → `brainstorming` trước → spec.
-3. Invoke Superpowers `writing-plans` skill trực tiếp. Codex không invoke skill này.
-4. Append plan vào `docs/plan-overview.md` (source of truth) → compile `docs/plan-overview.html` bằng `html-eff`.
-5. User mở `docs/plan-overview.html` → review → confirm "OK, triển khai".
-6. Nếu plan cần chỉnh → Claude sửa `docs/plan-overview.md` hoặc spec `.md`, rồi compile HTML lại. Không edit `.html` tay.
-7. Extract task list từ `docs/plan-overview.md` → truyền vào Codex prompt dạng text.
-8. Review output thực thi qua `git diff` + commit message → verify status trong `docs/plan-overview.md`.
+1. Nhận task list từ Claude (extract từ `docs/plan-overview.md`). Không tự tạo plan.
+2. Đọc `docs/superpowers/decisions.md` trước khi bắt đầu.
+3. Nếu mơ hồ → ghi `ASSUMPTION:` vào commit message, tiếp tục.
+4. Chạy Quality Gate trước commit: static audit + test suite + build.
+5. QA fail → tự fix tối đa 3 retry → sau đó `QA-FAIL:` + escalate.
+6. Pass → commit + báo Claude review.
 
-### Codex — nhận task list từ Claude
-1. Nhận task list dạng text do Claude extract từ `docs/plan-overview.md`. Codex không tự tạo plan, không đọc HTML trực tiếp.
-2. Đọc `docs/superpowers/decisions.md` nếu có trước khi bắt đầu.
-3. Với UI task, đọc các handoff artifacts trước khi sửa code:
-   ```text
-   UI_PREVIEW.html
-   UI_SPEC.md
-   UI_STYLE_GUIDE.md
-   UI_ACCEPTANCE_CHECKLIST.md
-   UI_DO_NOT_CHANGE.md
-   ```
-   Nếu thiếu file, mâu thuẫn, hoặc spec không ghi rõ màu/font/sizes/spacing/layout/states/responsive/do-not-change → ghi `ASSUMPTION:` và dừng để Claude/user bổ sung.
-4. Dùng `executing-plans`; parallelize task chỉ khi `Depends on: none` và không share prop/type/interface.
+**Commit signals bắt buộc:**
 
-   **Task Size gate — bắt buộc trước executing-plans:**
-   - Task `Size: L` → chia thành 2-3 sub-task trước khi execute.
-   - List sub-task trong plan file → báo Claude approve → mới chạy.
-   - Task `Size: S / M` → execute bình thường.
-
-   **Parallel safety check:**
-   ```bash
-   grep -r "export type\|export interface" [files-in-task-A] 2>/dev/null
-   grep -r "import.*from.*[files-in-task-A]" [files-in-task-B] 2>/dev/null
-   ```
-   Nếu task B import từ file task A đang sửa → gộp 1 agent, không parallel.
-
-5. Nếu gặp mơ hồ → đọc `docs/superpowers/decisions.md` trước. Nếu chưa có quyết định → ghi `ASSUMPTION:` (giả định) vào commit message.
-
-   **Signals bắt buộc trong commit message:**
-   - `ASSUMPTION:` — giả định cần Claude xác nhận
-   - `ENV-REQUIRED: VAR_NAME — [dùng cho gì]` — env var mới cần set trước khi deploy
-   - `QA-FAIL:` — test fail sau 3 lần retry, cần Claude can thiệp
-   - `SECURITY-SENSITIVE:` — bắt buộc nếu commit động vào auth, middleware, policy, rls, migration, permission, role, token, session, password, secret, api route, hoặc input handling (`req.body`, `req.params`, `formData`)
-
-6. Chạy Quality Gate trước khi commit:
-   - static audit: import đúng, prop match, logic nhất quán
-   - test suite hoặc build phù hợp
-   - Playwright/dev server nếu môi trường cho phép
-   - UI task: verify against `UI_ACCEPTANCE_CHECKLIST.md` and `UI_DO_NOT_CHANGE.md`
-   - nếu gặp `EPERM`, bind port, sandbox, browser không khởi động → ghi `QA-FAIL:` với command + lỗi chính
-7. Nếu QA fail → tự fix tối đa 3 retry.
-8. Sau 3 retry vẫn fail → `QA-FAIL:` → escalate Claude.
-9. Pass → commit + báo Claude review.
-
-### Claude Code — review output Codex
-1. Đọc `git diff` + commit message.
-2. Validate `ASSUMPTION:` nếu có → ghi quyết định vào `docs/superpowers/decisions.md`.
-3. Kiểm tra: đúng scope, test pass, không regression, nhất quán với spec.
-4. Nếu commit có `SECURITY-SENSITIVE:` → chạy security review theo checklist trong `CLAUDE.md`.
-5. Nếu có vấn đề → gọi Codex lại với feedback cụ thể.
-6. **Definition of Done** trước khi bàn giao:
-   - [ ] Tất cả tests pass, không regression
-   - [ ] `ASSUMPTION:` đã được xác nhận
-   - [ ] `ENV-REQUIRED:` nếu có đã được user set
-   - [ ] `SECURITY-SENSITIVE:` nếu có đã qua security review
-   - [ ] git diff đã được Claude approve
-   - [ ] User acceptance test pass; nếu Codex bị sandbox khi chạy Playwright/dev server thì Claude đã chạy trực tiếp
-   - [ ] `docs/superpowers/debug-*.md` của feature này đã archive hoặc xóa
-
-### Resume sau khi session bị gián đoạn
-1. Đọc `git log` → biết đang ở task nào.
-2. Đọc `docs/plan-overview.md` → biết task nào chưa done.
-3. Đọc `docs/superpowers/decisions.md` nếu có → nắm quyết định đã xác nhận.
-4. Extract task list còn lại → gọi Codex tiếp.
-
-### Fallback — Codex không giải quyết được sau 3 retry
-
-**Feature flow:**
-1. Claude đọc `git diff` + log `QA-FAIL:`.
-2. Claude viết analysis ngắn vào `docs/superpowers/debug-[feature].md`.
-3. Gọi Codex lại với file đó làm context bổ sung.
-
-**Bug fix flow:**
-1. Claude đọc `git diff` của 3 lần thử.
-2. Claude viết analysis vào `docs/superpowers/debug-[issue].md`.
-3. Gọi Codex lại với file đó.
-4. Nếu vẫn fail → Claude tự fix bằng Edit/Write ngoại lệ token discipline → thêm `<!-- claude-override: direct-fix after 3 Codex retries [YYYY-MM-DD] -->` vào đầu file sửa.
+| Signal | Khi nào |
+|---|---|
+| `ASSUMPTION:` | Giả định cần Claude xác nhận |
+| `ENV-REQUIRED: VAR_NAME` | Env var mới cần set trước deploy |
+| `QA-FAIL:` | Test fail sau 3 retry, cần Claude |
+| `SECURITY-SENSITIVE:` | Động vào auth/middleware/migration/token/session/password/api route/input handling |
 
 ---
 
 ## Code Intelligence — GitNexus MCP
 
-Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase. Codex có thể gọi các tools sau trực tiếp.
+Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase. Codex gọi tools qua MCP được cấu hình trong `.codex/config.toml` (init tự tạo nếu project có gitnexus):
+
+```toml
+[mcp_servers.gitnexus]
+command = "npx"
+args = ["gitnexus", "mcp"]
+```
 
 **Bắt buộc trước khi sửa code:**
 
@@ -170,8 +103,24 @@ Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase
 **Quy tắc:**
 - `query` TRƯỚC khi đọc file source — trả về execution flows, process-grouped, tiết kiệm token.
 - `impact` bắt buộc trước khi sửa bất kỳ function nào — biết blast radius.
-- `detect_changes()` trước commit — verify chỉ sửa đúng scope.
+- `detect_changes()` trước commit — verify chỉ sửa đúng scope (self blast-radius check).
 - Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
+
+## Browser Automation (Codex)
+
+Codex dùng `cmux browser` qua bash cho UI verification và debugging:
+
+```bash
+cmux browser goto http://localhost:5173
+cmux browser snapshot          # đọc accessibility tree
+cmux browser screenshot        # capture visual
+cmux browser console list      # JS errors + logs
+cmux browser eval "<js>"       # execute JS in page
+cmux browser click "<selector>"
+cmux browser fill "<selector>" "<value>"
+```
+
+Dùng `cmux browser` khi: cần verify UI sau code change, debug DOM/console error, confirm layout. Không dùng cho E2E flow phức tạp (→ Playwright).
 
 ---
 
@@ -186,6 +135,6 @@ Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase
 
 ---
 
-*Cập nhật: 2026-06-06 (rev11: direct Codex operating contract + materialized shared rules)*
+*Cập nhật: 2026-07-01 (rev13: trim Claude-side workflow; Codex-only content)*
 
-<!-- template: 2026-06-06 -->
+<!-- template: 2026-07-01 -->

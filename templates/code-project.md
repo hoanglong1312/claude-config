@@ -4,9 +4,9 @@
 
 | Phase | Công cụ | Việc làm |
 |-------|---------|----------|
-| Spec + Planning | Claude main (Superpowers skills) | brainstorming → spec → `writing-plans` → append vào `docs/plan-overview.md` → compile HTML |
+| Spec + Planning | Claude main (Superpowers skills) | brainstorming → spec → `writing-plans` → append vào `docs/plan-overview.md` |
 | Execution + QA | Codex Plugin (`codex:codex-rescue` subagent) | executing-plans, TDD, commit |
-| Orchestration + Review | Claude main | kiến trúc, approve plan, review git diff, code review, update HTML |
+| Orchestration + Review | Claude main | kiến trúc, approve plan, review git diff, code review |
 
 - Claude dùng `writing-plans` skill trực tiếp (Superpowers plugin) — Codex KHÔNG invoke được skill này
 - `subagent-driven-development` của Claude main KHÔNG dùng → Codex thay thế cho execution
@@ -74,9 +74,9 @@ npm install -D vitest @vitest/ui
 
 ### Feature mới
 1. Claude: Superpowers `brainstorming` → spec → lưu `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md`
-2. Claude: invoke `writing-plans` skill → đọc codebase + spec → tạo technical checklist → append section mới vào `docs/plan-overview.md` (hybrid) → chạy `html-eff` → compile HTML
+2. Claude: invoke `writing-plans` skill → đọc codebase + spec → tạo technical checklist → append section mới vào `docs/plan-overview.md`
 3. Claude self-review plan → approve hoặc revise trực tiếp (optional: dispatch Codex review cho plan phức tạp)
-4. User mở `docs/plan-overview.html` → review → confirm trước khi Codex chạy
+4. User review `docs/plan-overview.md` → confirm trước khi Codex chạy
 5. Gọi Codex: `executing-plans` → Codex nhận task list do Claude extract từ `plan-overview.md`, tự parallelize task độc lập, implement + TDD + commit
 6. Claude review qua `git diff` + commit message
 7. Nếu có vấn đề → gọi Codex lại với feedback cụ thể
@@ -268,7 +268,7 @@ Write operations (`apply_migration`, INSERT/UPDATE/DELETE) vẫn do Claude thự
 
 **CHỈ làm:**
 - Đọc `git log` / `git diff`
-- Viết/sửa file .md (plan, spec, rules) + chạy `html-eff` ngay sau để sync HTML
+- Viết/sửa file .md (plan, spec, rules)
 - Gọi Codex với goal + spec path + constraints
 - Quyết định kiến trúc trước khi giao Codex
 - Đọc/grep source trực tiếp CHỈ KHI có ít nhất 1 trong các signal sau:
@@ -334,109 +334,15 @@ Thứ tự bắt buộc: template → rules → context. Sai thứ tự → rule
 
 Nếu phát hiện lỗ hổng → KHÔNG approve → gọi Codex fix với mô tả lỗ hổng cụ thể.
 
-# HTML Visual Workflow
+## Plan Tracking — `docs/`
 
-## Nguyên tắc
-- `.md` = source of truth (spec, plan, status) — git-friendly, diffable
-- `.html` = rendered view, KHÔNG edit trực tiếp — generate từ `.md` bằng `html-eff` CLI
-- Claude viết `.md` content (hybrid Markdown + YAML component blocks) + chạy `html-eff` ngay sau (1 Bash command)
-- Codex: code changes + update `**Status:**` field trong `plan-overview.md` + commit
-
-## Tool Setup (nếu `html-eff` chưa có)
-
-```bash
-git clone https://github.com/luisoncpp/html-effectiveness-scripts.git ~/.local/share/html-effectiveness-scripts
-cd ~/.local/share/html-effectiveness-scripts && cargo build --release
-mkdir -p ~/.local/bin
-ln -sf ~/.local/share/html-effectiveness-scripts/target/release/html-effectiveness ~/.local/bin/html-eff
-# Thêm vào ~/.zshrc nếu chưa có: export PATH="$HOME/.local/bin:$PATH"
 ```
-
-Reference gallery (20 demos): https://github.com/ThariqS/html-effectiveness
-
-## Phân Chia File Spec
-
-- `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.md` — text spec, Codex đọc khi implement
-- `docs/superpowers/specs/YYYY-MM-DD-[feature]-design.html` — generated visual, KHÔNG edit trực tiếp
-
-Spec đơn giản: plain Markdown. Spec phức tạp: Claude viết hybrid (Markdown + YAML components) → compile.
-
-## Wireframe → Mockup Process
-
-**Thứ tự cố định khi brainstorm UI/layout:**
-1. **ASCII wireframe trong chat** — chốt structure, layout, zones. Nhanh, sửa tự do trong brainstorm loop.
-2. **HTML mockup** (html-eff hoặc standalone) — chỉ sau khi layout đã được approve.
-
-Không gen HTML mockup trước khi layout ASCII đã confirmed. ASCII wireframe = lo-fi, đủ để chốt structure.
-
-## UI Design Handoff Artifacts
-
-Khi task là design UI mới, redesign, landing page, portfolio, hoặc component có visual direction rõ ràng, Claude/ChatGPT phải tạo đủ artifact trước khi Codex implement:
-
-```text
-UI_PREVIEW.html
-UI_SPEC.md
-UI_STYLE_GUIDE.md
-UI_ACCEPTANCE_CHECKLIST.md
-UI_DO_NOT_CHANGE.md
+docs/
+├── plan-overview.md                          ← source of truth: task list + tiến độ (Claude maintain)
+└── superpowers/
+    ├── specs/YYYY-MM-DD-[feature]-design.md  ← text spec (Claude ghi)
+    └── decisions.md                          ← quyết định từ ASSUMPTION: (Claude ghi)
 ```
-
-Nội dung bắt buộc:
-
-| File | Nội dung |
-|---|---|
-| `UI_PREVIEW.html` | Preview visual có layout thật để user xem trước. Generated/rendered artifact; không sửa tay nếu source `.md`/component có thể render lại. |
-| `UI_SPEC.md` | Mục tiêu UI, user flow, layout từng màn hình, states, responsive behavior. |
-| `UI_STYLE_GUIDE.md` | Màu chủ đạo, font, button/card/input sizes, spacing scale, radius, shadows, icon style. |
-| `UI_ACCEPTANCE_CHECKLIST.md` | Checklist để Claude/Codex verify trước khi xong: visual, states, responsive, a11y, no regressions. |
-| `UI_DO_NOT_CHANGE.md` | Những thứ Codex không được tự ý đổi: brand colors, copy đã chốt, layout constraints, component behavior, routes/API/contracts. |
-
-`UI_SPEC.md` phải ghi rõ:
-- Màu chủ đạo.
-- Font.
-- Kích thước button/card/input.
-- Khoảng cách giữa các khối.
-- Layout từng màn hình.
-- Trạng thái loading/error/empty.
-- Responsive.
-- Những thứ Codex không được tự ý đổi.
-
-Codex nhận task UI phải đọc 5 file này trước khi sửa code. Nếu thiếu file hoặc mâu thuẫn, Codex ghi `ASSUMPTION:` và dừng hỏi/đợi Claude cập nhật spec.
-
-## Spec Visual (trước writing-plans)
-
-Sau brainstorming/spec xong, Claude hỏi: "Tạo HTML visual spec không?"
-Nếu Có:
-1. Claude viết (hoặc convert) `docs/superpowers/specs/[spec]-design.md` sang hybrid format
-2. Claude chạy: `html-eff -i docs/superpowers/specs/[spec]-design.md -o docs/superpowers/specs/[spec]-design.html`
-   - Nếu html-eff lỗi: báo error ngay, KHÔNG edit .html tay
-3. Claude chạy: `open docs/superpowers/specs/[spec]-design.html`
-4. User review HTML, confirm rồi mới chạy writing-plans
-5. Với UI task, sync nội dung đã chốt vào `UI_PREVIEW.html`, `UI_SPEC.md`, `UI_STYLE_GUIDE.md`, `UI_ACCEPTANCE_CHECKLIST.md`, `UI_DO_NOT_CHANGE.md` trước khi giao Codex.
-
-## Codex Review Gate (Optional)
-
-Sau khi Claude viết spec hoặc plan xong — nếu phức tạp (3+ subsystem, core logic mới, user yêu cầu):
-- Dispatch Codex review trước khi tiếp tục
-- Claude fix issues từ Codex report → rồi mới generate HTML / execute plan
-
-Prompt template Codex review spec:
-```
-Review [spec file path]. Check: logical gaps, contradictions, ambiguous requirements, missing error handling. Report: numbered issues, severity (minor/major/blocker), fix. Concise.
-```
-
-Prompt template Codex review plan:
-```
-Review [plan file path]. Check: missing steps, type/method name consistency, placeholder text, wrong commands, untested assumptions. Report: numbered issues, severity, fix. Concise.
-```
-
-## Plan Tracker (sau writing-plans)
-
-Sau `writing-plans` hoàn thành:
-1. Claude hỏi: "Thêm plan này vào HTML overview không?"
-2. Nếu Có: Claude append section vào `docs/plan-overview.md` (hybrid format)
-3. Claude chạy: `html-eff -i docs/plan-overview.md -o docs/plan-overview.html` (nếu lỗi: báo error, giữ .html cũ)
-4. Claude chạy: `open docs/plan-overview.html`
 
 ### Format Task trong plan-overview.md
 
@@ -453,33 +359,27 @@ Steps:
 Codex update bằng string replace:
 - Start: `**Status:** pending` → `**Status:** in_progress`
 - Done: `**Status:** in_progress` → `**Status:** done` + `**Commit:** [hash]`
-- Blocked: → `**Status:** blocked` + dòng `**Reason:** QA-FAIL: [lý do]`
+- Blocked: → `**Status:** blocked` + `**Reason:** QA-FAIL: [lý do]`
 
-Codex commit `.md` status cùng code changes, 1 commit per task. Khi dispatch Codex: Claude extract task list từ `.md` → truyền text vào prompt, không truyền HTML.
+Codex commit `.md` status cùng code changes, 1 commit per task. Claude extract task list từ `.md` → truyền text vào Codex prompt, không paste HTML.
 
-## Cấu Trúc `docs/`
+`decisions.md` tích lũy — Codex đọc trước mỗi executing-plans để tránh lặp câu hỏi đã có đáp án.
 
+## Codex Review Gate (Optional)
+
+Sau khi Claude viết spec hoặc plan xong — nếu phức tạp (3+ subsystem, core logic mới, user yêu cầu):
+- Dispatch Codex review trước khi execute plan
+- Claude fix issues từ Codex report → rồi mới giao Codex execute
+
+Prompt template Codex review spec:
 ```
-docs/
-├── plan-overview.md                      ← source of truth: task list + tiến độ (Claude maintain)
-├── plan-overview.html                    ← generated từ .md, KHÔNG edit trực tiếp
-└── superpowers/
-    ├── specs/
-    │   ├── YYYY-MM-DD-[feature]-design.md    ← text/hybrid spec (Claude ghi)
-    │   └── YYYY-MM-DD-[feature]-design.html  ← generated visual, KHÔNG edit trực tiếp
-    └── decisions.md                          ← quyết định từ ASSUMPTION: (Claude ghi)
-
-UI task artifacts (tạo khi task có UI design/handoff):
-├── UI_PREVIEW.html
-├── UI_SPEC.md
-├── UI_STYLE_GUIDE.md
-├── UI_ACCEPTANCE_CHECKLIST.md
-└── UI_DO_NOT_CHANGE.md
+Review [spec file path]. Check: logical gaps, contradictions, ambiguous requirements, missing error handling. Report: numbered issues, severity (minor/major/blocker), fix. Concise.
 ```
 
-`plan-overview.md` — Claude append section mới sau mỗi `writing-plans`, Codex update `**Status:**` field sau mỗi task xong.
-Sau mỗi lần edit `.md`: Claude chạy `html-eff -i docs/plan-overview.md -o docs/plan-overview.html` để sync HTML.
-`decisions.md` tích lũy theo thời gian — Codex đọc trước mỗi lần executing-plans để tránh lặp lại câu hỏi đã có đáp án.
+Prompt template Codex review plan:
+```
+Review [plan file path]. Check: missing steps, type/method name consistency, placeholder text, wrong commands, untested assumptions. Report: numbered issues, severity, fix. Concise.
+```
 
 ## Đồng Bộ CLAUDE.md ↔ AGENTS.md
 

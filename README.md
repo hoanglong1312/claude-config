@@ -12,29 +12,23 @@ Portable config for Claude Code and Codex across macOS and Windows.
 
 Claude Code can use includes and plugins. Codex receives plain text in `AGENTS.md`.
 
-## Windows Setup
+## Fresh Machine Setup
 
-Prerequisites:
+No install script — Claude Code itself is the prerequisite to even use this repo, so just clone it and ask Claude Code to set it up:
 
-- Node.js
-- Python + pip
-- Claude Code CLI
-- Codex CLI
-- RTK
-- Markitdown
-
-Install:
-
-```powershell
+```bash
 git clone https://github.com/hoanglong1312/claude-config.git
 cd claude-config
-.\scripts\install-global.ps1
-.\scripts\sync-agent-rules.ps1
+claude
 ```
+
+Then tell Claude: "set up this claude-config repo as my global ~/.claude config, following this README." Claude reads this file and copies `templates/`, `hooks/`, `skills/`, `references/`, `docs/` into `~/.claude/`, merges `settings.json` (preserving existing values, skipping secret-looking env keys), and writes `~/.claude/CLAUDE.md` from `templates/CLAUDE.global.md`.
+
+Prerequisites (ask Claude to check/install as needed): Node.js, Python + pip, Codex CLI, RTK, Markitdown.
 
 Optional plugin setup:
 
-```powershell
+```
 claude plugin marketplace add openai/codex-plugin-cc
 claude plugin marketplace add JuliusBrussee/caveman
 claude plugin marketplace add obra/superpowers-marketplace
@@ -46,21 +40,14 @@ claude plugin install superpowers@superpowers-marketplace
 
 `superpowers@claude-plugins-official` may not exist in every marketplace. Current fallback is `superpowers@superpowers-marketplace` if that marketplace is installed.
 
-## macOS Setup
-
-```bash
-git clone https://github.com/hoanglong1312/claude-config.git
-cd claude-config
-bash scripts/install-global.sh
-bash scripts/sync-agent-rules.sh
-```
+To render `AGENTS.md` from shared rules (Codex-side), run `bash scripts/sync-agent-rules.sh` (or `.ps1` on Windows) after the config is in place.
 
 ## Settings Layers
 
 - `settings.local.example.json`: local config example.
 - `settings.local.json`: private local override, gitignored.
 
-Platform-specific settings (`settings.macos.json`/`settings.windows.json`/`settings.shared.json`) were dropped — single-machine setup doesn't need them. Installer still merges whatever settings files exist and preserves existing user values. It does not copy secret-looking keys such as `ANTHROPIC_*`, `OPENAI_*`, `*_API_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD`, `BASE_URL`, or `*_BASE_URL`.
+Platform-specific settings (`settings.macos.json`/`settings.windows.json`/`settings.shared.json`) were dropped — single-machine setup doesn't need them. When Claude merges `settings.json` during setup, it must preserve existing user values and skip secret-looking keys such as `ANTHROPIC_*`, `OPENAI_*`, `*_API_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD`, `BASE_URL`, or `*_BASE_URL`.
 
 Hook wiring (statusline, SessionStart, etc.) is opt-in — ask via the `init` skill's Global Maintenance phase after install, don't hardcode into a settings file.
 
@@ -70,18 +57,12 @@ Hook wiring (statusline, SessionStart, etc.) is opt-in — ask via the `init` sk
 
 ## Safety
 
-Installers create a timestamped backup under the active Claude config directory before writing. They merge config instead of replacing the whole settings file.
+Setup should back up `~/.claude` (timestamped copy) before writing, and merge `settings.json` instead of replacing it wholesale. Existing hook files (e.g. a personalized `caveman-activate.js`) must not be silently overwritten by this repo's thinner generic versions — check for meaningful differences before copying over an existing file.
 
 ## Verification
 
 ```bash
 jq empty settings.local.example.json
-bash -n scripts/install-global.sh scripts/sync-agent-rules.sh
+bash -n scripts/sync-agent-rules.sh
 node --check hooks/project-check.js hooks/session-resume.js hooks/caveman-activate.js hooks/caveman-mode-tracker.js
-```
-
-Then test install using a temporary config directory before touching live config:
-
-```bash
-CLAUDE_CONFIG_DIR="$(mktemp -d)" bash scripts/install-global.sh
 ```

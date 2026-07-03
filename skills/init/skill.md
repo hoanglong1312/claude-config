@@ -232,9 +232,9 @@ Chỉ cài khi user confirm. Không cài tự động.
 
 **3j. Slash commands chuẩn (CHỈ cho code project):**
 
-Hỏi 1 lần: "Stamp slash commands vào `.claude/commands/` không?"
+Hỏi 1 lần gộp: "Stamp slash commands vào `.claude/commands/` không? (`codex-exec`, `plan-track`, `review`, `verify`, `ship`)"
 
-**Luôn stamp (code project):**
+Chỉ tạo khi user confirm:
 - Copy từ `~/.claude/templates/commands/codex-exec.md` → `.claude/commands/codex-exec.md`
 - Copy từ `~/.claude/templates/commands/plan-track.md` → `.claude/commands/plan-track.md`
 - Tạo `review.md`, `verify.md`, `ship.md` từ Component Templates (bên dưới)
@@ -452,20 +452,7 @@ Báo: "Project đã có: [X]. Muốn thêm gì?" — User nói → tạo tương
 
 Hooks phải đăng ký trong `.claude/settings.json`.
 
-**Máy mới cài lại claude-config:** `init` skill (PHẦN 3/4) chỉ đọc/sửa `~/.claude` đã tồn tại sẵn, KHÔNG bootstrap từ đầu khi `~/.claude` chưa có gì. Máy mới → kéo repo `~/claude-config` về, chạy `bash scripts/install-global.sh` (copy templates/hooks/skills/references/docs vào `~/.claude/`; không còn tự wire hook vào `settings.json` — phần settings platform-split đã bị bỏ vì không cần thiết cho single-machine setup).
-
-**Hook wiring (statusLine/SessionStart/PreToolUse) — hỏi, không auto-apply:**
-Sau khi `install-global.sh` chạy xong (chỉ copy file), nếu máy chưa có `hooks`/`statusLine` trong `settings.json` → hỏi user: "Muốn thêm hook (statusline, GitNexus enrich, caveman mode, session-resume) không?" Nếu có, Read `settings.json` hiện tại, Edit thêm block dùng path tương đối `$HOME` (không hardcode path máy cụ thể), ví dụ:
-```json
-"statusLine": {"type": "command", "command": "bash \"$HOME/.claude/hooks/statusline.sh\""},
-"hooks": {
-  "SessionStart": [{"hooks": [
-    {"type": "command", "command": "bash \"$HOME/.claude/hooks/project-check.sh\""},
-    {"type": "command", "command": "bash \"$HOME/.claude/hooks/session-resume.sh\""}
-  ]}]
-}
-```
-Validate bằng `jq empty ~/.claude/settings.json` sau khi sửa.
+Máy mới cài `~/.claude` từ đầu → xem `~/.claude/README.md` (đọc tay/Claude tổng quát trước khi có skill nào, KHÔNG thuộc phạm vi `init` — `init` chỉ chạy được khi `~/.claude/skills/init/` đã tồn tại, nghĩa là máy không còn "mới" nữa).
 
 **Session-resume hook — 2 bản khác mục đích, không tự ý chọn thay user:**
 - `hooks/session-resume.js` (repo, generic) — đọc `OBSIDIAN_VAULT_PATH` env, không hardcode path, dùng được máy khác.
@@ -970,6 +957,9 @@ Phạm vi:
 - Merge config, không replace toàn bộ settings.
 - Không commit/push nếu user chưa yêu cầu.
 - Sau sửa phải validate phù hợp: `jq` cho JSON, grep/check include policy cho shared rules, report skipped checks.
+
+**Hook wiring (statusLine/SessionStart/PreToolUse) — gợi ý, hỏi trước khi thêm:**
+User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại, hỏi cụ thể muốn hook nào (statusline model+rate-limit, GitNexus enrich, caveman mode activate, session-resume, project-check...), chỉ Edit thêm khi user confirm từng cái — không tự thêm hết. Dùng path tương đối `$HOME` khi viết ví dụ, không hardcode path máy cụ thể. Validate `jq empty ~/.claude/settings.json` sau khi sửa.
 
 Global shared-rules validation:
 ```bash

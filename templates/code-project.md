@@ -30,7 +30,7 @@ Bug / lỗi / không work → **`superpowers:systematic-debugging`** (reproduce 
 → Sau dispatch có `agentId`: **BẮT BUỘC `ScheduleWakeup(120s)` ngay cùng response.**
 ```
 wake → SendMessage hỏi status
-  xong → git diff → review → build/test
+  xong → git diff (so khớp plan/spec) → build/test → UI diff? /frontend-verify → migration diff? verify DB
   chưa → ScheduleWakeup(120s) lại
 loop tới done/fail
 ```

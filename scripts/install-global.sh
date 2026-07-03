@@ -4,7 +4,6 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 STAMP="$(date +%Y%m%d-%H%M%S)"
 BACKUP_DIR="$CLAUDE_DIR/backups/install-$STAMP"
-OS_SETTINGS="$REPO_DIR/settings.macos.json"
 
 is_secret_key() { [[ "$1" =~ ^ANTHROPIC_ || "$1" =~ ^OPENAI_ || "$1" =~ _API_KEY$ || "$1" =~ _TOKEN$ || "$1" =~ _SECRET$ || "$1" =~ _PASSWORD$ || "$1" == BASE_URL || "$1" =~ _BASE_URL$ ]]; }
 
@@ -21,7 +20,7 @@ cp -R "$REPO_DIR/hooks/"* "$CLAUDE_DIR/hooks/"
 [ -d "$REPO_DIR/docs" ] && cp -R "$REPO_DIR/docs/"* "$CLAUDE_DIR/docs/" 2>/dev/null || true
 cp "$REPO_DIR/templates/CLAUDE.global.md" "$CLAUDE_DIR/CLAUDE.md"
 
-python3 - "$CLAUDE_DIR/settings.json" "$REPO_DIR/settings.shared.json" "$OS_SETTINGS" "$REPO_DIR/settings.local.json" <<'PY'
+python3 - "$CLAUDE_DIR/settings.json" "$REPO_DIR/settings.local.json" <<'PY'
 import json, sys, re
 from pathlib import Path
 out=Path(sys.argv[1]); inputs=[Path(p) for p in sys.argv[2:] if Path(p).exists()]

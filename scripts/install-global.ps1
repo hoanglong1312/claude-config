@@ -32,7 +32,7 @@ Copy-Item (Join-Path $RepoDir 'templates/CLAUDE.global.md') (Join-Path $ClaudeDi
 
 $settingsPath = Join-Path $ClaudeDir 'settings.json'
 $base = Read-JsonFile $settingsPath
-foreach ($p in @('settings.shared.json','settings.windows.json','settings.local.json')) { $full=Join-Path $RepoDir $p; if (Test-Path $full) { Merge-Json $base (Read-JsonFile $full) } }
+foreach ($p in @('settings.local.json')) { $full=Join-Path $RepoDir $p; if (Test-Path $full) { Merge-Json $base (Read-JsonFile $full) } }
 ($base | ConvertTo-Json -Depth 50) | Set-Content $settingsPath
 Get-Content $settingsPath -Raw | ConvertFrom-Json | Out-Null
 foreach ($tool in @('node','claude','codex','rtk','markitdown')) { if (Get-Command $tool -ErrorAction SilentlyContinue) { Write-Host "$tool: installed" } else { Write-Host "$tool: missing" } }

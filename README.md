@@ -57,13 +57,12 @@ bash scripts/sync-agent-rules.sh
 
 ## Settings Layers
 
-- `settings.shared.json`: safe portable config.
-- `settings.macos.json`: macOS/Linux hooks and statusline.
-- `settings.windows.json`: Windows hooks and statusline.
 - `settings.local.example.json`: local config example.
 - `settings.local.json`: private local override, gitignored.
 
-Installers merge settings and preserve existing user values. They do not copy secret-looking keys such as `ANTHROPIC_*`, `OPENAI_*`, `*_API_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD`, `BASE_URL`, or `*_BASE_URL`.
+Platform-specific settings (`settings.macos.json`/`settings.windows.json`/`settings.shared.json`) were dropped — single-machine setup doesn't need them. Installer still merges whatever settings files exist and preserves existing user values. It does not copy secret-looking keys such as `ANTHROPIC_*`, `OPENAI_*`, `*_API_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD`, `BASE_URL`, or `*_BASE_URL`.
+
+Hook wiring (statusline, SessionStart, etc.) is opt-in — ask via the `init` skill's Global Maintenance phase after install, don't hardcode into a settings file.
 
 ## Generated Files
 
@@ -76,7 +75,7 @@ Installers create a timestamped backup under the active Claude config directory 
 ## Verification
 
 ```bash
-jq empty settings.shared.json settings.macos.json settings.windows.json settings.local.example.json
+jq empty settings.local.example.json
 bash -n scripts/install-global.sh scripts/sync-agent-rules.sh
 node --check hooks/project-check.js hooks/session-resume.js hooks/caveman-activate.js hooks/caveman-mode-tracker.js
 ```

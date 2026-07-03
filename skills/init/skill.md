@@ -183,6 +183,9 @@ markitdown --version 2>/dev/null && echo "installed" || echo "missing"
 **3d. Caveman mode:**
 > Không detect được tự động. Hỏi 1 lần: "Muốn bật Caveman mode không? Claude trả lời ngắn hơn. Bật: `/caveman full`. Tắt: `stop caveman`."
 
+**3d2. Ponytail mode:**
+> Không detect được tự động. Hỏi 1 lần: "Muốn bật Ponytail mode không? Claude ưu tiên giải pháp đơn giản nhất (YAGNI, stdlib trước, ít code nhất). Bật: `/ponytail full`. Tắt: `stop ponytail`."
+
 **3e. Codex plugin (CHỈ hỏi nếu là code project):**
 ```bash
 # Claude Code: /plugin list → tìm codex@openai-codex

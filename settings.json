@@ -1,122 +1,22 @@
 {
-  "effortLevel": "medium",
-  "enabledPlugins": {
-    "caveman@caveman": true,
-    "codex@openai-codex": true,
-    "superpowers@claude-plugins-official": true,
-    "understand-anything@understand-anything": false,
-    "warp@claude-code-warp": true
-  },
   "env": {
-    "ANTHROPIC_BASE_URL": "https://r5833ge.abc-tunnel.us",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "my-combo",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL_NAME": "my-combo",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "my-combo",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL_NAME": "my-combo",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "cx/gpt-5.5",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL_NAME": "cx/gpt-5.5",
-    "ANTHROPIC_MODEL": "cx/gpt-5.5",
     "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75",
     "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
     "MAX_THINKING_TOKENS": "10000"
   },
-  "extraKnownMarketplaces": {
-    "caveman": {
-      "source": {
-        "repo": "JuliusBrussee/caveman",
-        "source": "github"
-      }
-    },
-    "claude-code-warp": {
-      "source": {
-        "repo": "warpdotdev/claude-code-warp",
-        "source": "github"
-      }
-    },
-    "openai-codex": {
-      "source": {
-        "repo": "openai/codex-plugin-cc",
-        "source": "github"
-      }
-    },
-    "superpowers-marketplace": {
-      "source": {
-        "repo": "obra/superpowers-marketplace",
-        "source": "github"
-      }
-    },
-    "understand-anything": {
-      "source": {
-        "source": "git",
-        "url": "https://github.com/Lum1104/Understand-Anything.git"
-      }
-    }
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "hooks": [
-          {
-            "command": "rtk hook claude",
-            "type": "command"
-          }
-        ],
-        "matcher": "Bash"
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "command": "\"/usr/local/bin/node\" \"/Users/giinlow./.claude/hooks/caveman-activate.js\"",
-            "statusMessage": "Loading caveman mode...",
-            "timeout": 5,
-            "type": "command"
-          },
-          {
-            "command": "bash \"/Users/giinlow./.claude/hooks/project-check.sh\"",
-            "statusMessage": "Checking project structure...",
-            "timeout": 5,
-            "type": "command"
-          },
-          {
-            "command": "bash \"/Users/giinlow./.claude/hooks/session-resume.sh\"",
-            "statusMessage": "Loading session context...",
-            "timeout": 5,
-            "type": "command"
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "command": "afplay /System/Library/Sounds/Ping.aiff 2>/dev/null || true",
-            "type": "command"
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "command": "\"/usr/local/bin/node\" \"/Users/giinlow./.claude/hooks/caveman-mode-tracker.js\"",
-            "statusMessage": "Tracking caveman mode...",
-            "timeout": 5,
-            "type": "command"
-          }
-        ]
-      }
-    ]
-  },
   "permissions": {
     "allow": [
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
       "Bash(claude mcp *)",
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git branch*)",
+      "Bash(git stash*)",
       "Bash(npm run build*)",
       "Bash(npm run qa*)",
       "Bash(npm run test*)",
@@ -126,13 +26,10 @@
       "Bash(find . *)",
       "Bash(grep *)",
       "Bash(rtk *)",
-      "mcp__codegraph__codegraph_search",
-      "mcp__codegraph__codegraph_context",
-      "mcp__codegraph__codegraph_callers",
-      "mcp__codegraph__codegraph_callees",
-      "mcp__codegraph__codegraph_impact",
-      "mcp__codegraph__codegraph_node",
-      "mcp__codegraph__codegraph_status",
+      "Bash(cd *)",
+      "Bash(vercel*)",
+      "Bash(curl *)",
+      "Bash(curl*)",
       "Bash(sleep *)",
       "Bash(cat *)",
       "Bash(npm run dev*)",
@@ -155,15 +52,130 @@
       "mcp__chrome-devtools__wait_for",
       "mcp__chrome-devtools__close_page"
     ],
-    "defaultMode": "acceptEdits"
+    "defaultMode": "auto"
   },
-  "skipAutoPermissionPrompt": true,
-  "skipDangerousModePermissionPrompt": false,
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rtk hook claude"
+          }
+        ]
+      },
+      {
+        "matcher": "Grep|Glob|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+            "timeout": 10,
+            "statusMessage": "Enriching with GitNexus graph context..."
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/usr/local/bin/node\" \"/Users/giinlow./.claude/hooks/caveman-activate.js\"",
+            "timeout": 5,
+            "statusMessage": "Loading caveman mode..."
+          },
+          {
+            "type": "command",
+            "command": "bash \"/Users/giinlow./.claude/hooks/project-check.sh\"",
+            "timeout": 5,
+            "statusMessage": "Checking project structure..."
+          },
+          {
+            "type": "command",
+            "command": "bash \"/Users/giinlow./.claude/hooks/session-resume.sh\"",
+            "timeout": 5,
+            "statusMessage": "Loading session context..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Ping.aiff 2>/dev/null || true"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"/usr/local/bin/node\" \"/Users/giinlow./.claude/hooks/caveman-mode-tracker.js\"",
+            "timeout": 5,
+            "statusMessage": "Tracking caveman mode..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+            "timeout": 10,
+            "statusMessage": "Checking GitNexus index freshness..."
+          }
+        ]
+      }
+    ]
+  },
   "statusLine": {
     "type": "command",
-    "command": "input=$(cat); model=$(printf '%s' \"$input\" | jq -r '.model.display_name // .model.name // empty'); perm=$(printf '%s' \"$input\" | jq -r '.permissionMode // .permissions.mode // .permissions.defaultMode // empty'); rem=$(printf '%s' \"$input\" | jq -r '.context_window.remaining_percentage // empty'); five=$(printf '%s' \"$input\" | jq -r '.rate_limits.five_hour.used_percentage // empty'); seven=$(printf '%s' \"$input\" | jq -r '.rate_limits.seven_day.used_percentage // empty'); compact_model=$(printf '%s' \"$model\" | sed 's/Claude //; s/Opus /opus-/; s/Sonnet /sonnet-/; s/Haiku /haiku-/; s/ /-/g; s/\\.//g' | tr '[:upper:]' '[:lower:]'); [ -z \"$compact_model\" ] && compact_model=\"$model\"; out=(); [ -n \"$compact_model\" ] && out+=(\"🤖 $compact_model\"); case \"$perm\" in *bypass*|bypassPermissions) out+=(\"▸▸ bypass permissions on\") ;; auto) out+=(\"⚡ auto\") ;; plan) out+=(\"📝 plan\") ;; acceptEdits) out+=(\"✎ accept edits\") ;; *) [ -n \"$perm\" ] && out+=(\"$perm\") ;; esac; [ -n \"$five\" ] && out+=(\"⚡ 5h ${five}%\"); [ -n \"$seven\" ] && out+=(\"📅 7d ${seven}%\"); [ -n \"$rem\" ] && out+=(\"💬 ctx ${rem}%\"); (IFS=' · '; printf '%s\\n' \"${out[*]}\")",
-    "padding": 0,
-    "refreshInterval": 5
+    "command": "bash \"/Users/giinlow./.claude/hooks/statusline.sh\""
   },
-  "theme": "dark"
+  "enabledPlugins": {
+    "caveman@caveman": true,
+    "claude-mem@thedotmack": true,
+    "codex@openai-codex": true,
+    "ponytail@ponytail": true,
+    "superpowers@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "openai-codex": {
+      "source": {
+        "source": "github",
+        "repo": "openai/codex-plugin-cc"
+      }
+    },
+    "superpowers-marketplace": {
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers-marketplace"
+      }
+    },
+    "understand-anything": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/Lum1104/Understand-Anything.git"
+      }
+    }
+  },
+  "effortLevel": "medium",
+  "skipDangerousModePermissionPrompt": true,
+  "theme": "dark",
+  "skipAutoPermissionPrompt": true
 }

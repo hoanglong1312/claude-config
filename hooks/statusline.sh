@@ -23,9 +23,9 @@ fmt_reset() {
   today=$(TZ="Asia/Ho_Chi_Minh" date "+%Y-%m-%d")
   reset_date=$(TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%Y-%m-%d" 2>/dev/null)
   if [ "$reset_date" = "$today" ]; then
-    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%-I:%M%p" 2>/dev/null | sed 's/AM/am/; s/PM/pm/'
+    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%H:%M" 2>/dev/null
   else
-    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%-d/%-m %-I:%M%p" 2>/dev/null | sed 's/AM/am/; s/PM/pm/'
+    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%-d/%-m %H:%M" 2>/dev/null
   fi
 }
 

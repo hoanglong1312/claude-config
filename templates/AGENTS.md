@@ -105,6 +105,7 @@ args = ["gitnexus", "mcp"]
 - `impact` bắt buộc trước khi sửa bất kỳ function nào — biết blast radius.
 - `detect_changes()` trước commit — verify chỉ sửa đúng scope (self blast-radius check).
 - Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
+- Chưa có `.gitnexus/` (chưa từng index)? Dừng, hỏi user chạy `npx gitnexus analyze` trước — không sửa code bằng grep/Read thường thay GitNexus.
 
 ## Browser Automation (Codex)
 

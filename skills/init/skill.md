@@ -180,6 +180,14 @@ markitdown --version 2>/dev/null && echo "installed" || echo "missing"
 #               → pip install markitdown
 ```
 
+**3c2. Camoufox (CHỈ khi module `browser-automation.md` được chọn ở 3h):**
+```bash
+python3 -c "import camoufox" 2>/dev/null && echo "installed" || echo "missing"
+# Nếu missing → hỏi: "Muốn cài Camoufox không?"
+#               → pip install camoufox[geoip] && camoufox fetch
+```
+Camoufox cần 2 bước (package + tải binary Firefox patch riêng qua `camoufox fetch`) — check package không đủ, nếu `import camoufox` OK nhưng chưa chạy `camoufox fetch` thì browser vẫn fail lúc launch. Báo user chạy `camoufox fetch` nếu launch lỗi thiếu binary.
+
 **3d. Caveman mode:**
 > Không detect được tự động. Hỏi 1 lần: "Muốn bật Caveman mode không? Claude trả lời ngắn hơn. Bật: `/caveman full`. Tắt: `stop caveman`."
 
@@ -968,6 +976,20 @@ Phạm vi:
 
 **Hook wiring (statusLine/SessionStart/PreToolUse) — gợi ý, hỏi trước khi thêm:**
 User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại, hỏi cụ thể muốn hook nào (statusline model+rate-limit, GitNexus enrich, caveman mode activate, session-resume, project-check...), chỉ Edit thêm khi user confirm từng cái — không tự thêm hết. Dùng path tương đối `$HOME` khi viết ví dụ, không hardcode path máy cụ thể. Validate `jq empty ~/.claude/settings.json` sau khi sửa.
+
+**Personal tuning checklist (fresh machine / sync sang máy khác):**
+
+`settings.json` được git-track trong repo này nên clone máy mới sẽ có sẵn — NHƯNG nếu máy mới đã có `settings.json` riêng từ trước, bước merge (README "Fresh Machine Setup") sẽ giữ giá trị cũ và bỏ qua giá trị bên dưới. Khi làm Global Maintenance/fresh-machine-setup, đọc `settings.json` hiện tại và confirm từng dòng còn thiếu/khác:
+
+| Key | Giá trị chủ đích | Lý do |
+|---|---|---|
+| `autoCompactWindow` | `150000` | Fixed-token auto-compact thay vì %, tránh phình context khi model có context window lớn (1M) |
+| `env.CLAUDE_CODE_SUBAGENT_MODEL` | `"haiku"` | Subagent việc nhẹ/lặp lại dùng model rẻ, tiết kiệm token |
+| `env.MAX_THINKING_TOKENS` | `"10000"` | Giới hạn thinking budget mặc định |
+| `skipDangerousModePermissionPrompt` | `true` | Đã chấp nhận dialog bypass-permissions, không hỏi lại |
+| `skipAutoPermissionPrompt` | `true` | Đã chấp nhận dialog auto-mode, không hỏi lại |
+
+Thiếu key nào → hỏi user 1 lần gộp có muốn set theo giá trị trên không, merge vào `env`/root của `settings.json` (không replace toàn file). Nếu user đã tự chỉnh giá trị khác trên máy hiện tại → báo giá trị khác nhau, hỏi giữ máy hiện tại hay đồng bộ theo bảng trên, không tự ý ghi đè.
 
 Global shared-rules validation:
 ```bash

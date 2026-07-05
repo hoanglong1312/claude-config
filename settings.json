@@ -1,9 +1,9 @@
 {
   "env": {
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75",
     "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
     "MAX_THINKING_TOKENS": "10000"
   },
+  "autoCompactWindow": 150000,
   "permissions": {
     "allow": [
       "Read(*)",
@@ -162,12 +162,6 @@
       "source": {
         "source": "github",
         "repo": "obra/superpowers-marketplace"
-      }
-    },
-    "understand-anything": {
-      "source": {
-        "source": "git",
-        "url": "https://github.com/Lum1104/Understand-Anything.git"
       }
     },
     "caveman": {

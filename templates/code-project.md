@@ -54,6 +54,8 @@ Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 
 **GitNexus-first:** project có index → `query→context→trace` TRƯỚC grep/Read (xem `rules/gitnexus.md`).
 
+Chưa có `.gitnexus/` → dừng, hỏi user index trước (`npx gitnexus analyze`), không tự ý bỏ qua GitNexus-first bằng grep/Read thường.
+
 ## Definition of Done
 
 Trước khi báo "xong"/commit → chạy **`/ship`** (verify + review + diff scope + ASSUMPTION + migration version). Fail-loud: chưa qua /ship = chưa done.

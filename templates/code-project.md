@@ -72,6 +72,8 @@ Codex commit có `ASSUMPTION:` → Claude quyết + append `docs/superpowers/dec
 
 Feature mới / execute plan nhiều task → `docs/plan-overview.md` (task + status). Format + workflow → **`/plan-track`**.
 
+`TaskCreate`/`TaskUpdate` nội bộ Claude không persist ra ngoài session — Codex không đọc được. Việc nhiều bước có khả năng cần Codex làm tiếp khi Claude hết quota/session ngắt giữa chừng → mirror status sang `docs/plan-overview.md` song song với `TaskCreate`/`TaskUpdate`, không chỉ dùng task nội bộ.
+
 ## Pointer — command / skill on-demand
 
 | Cần | Dùng |

@@ -75,17 +75,32 @@
             "statusMessage": "Enriching with GitNexus graph context..."
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 '/Users/giinlow./.claude/hooks/gitnexus/commit-gate.py'",
+            "timeout": 10,
+            "statusMessage": "Checking GitNexus detect_changes gate before commit..."
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__gitnexus__detect_changes",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 '/Users/giinlow./.claude/hooks/gitnexus/touch-detect-changes.py'",
+            "timeout": 5
+          }
+        ]
       }
     ],
     "SessionStart": [
       {
         "hooks": [
-          {
-            "type": "command",
-            "command": "\"/usr/local/bin/node\" \"/Users/giinlow./.claude/hooks/caveman-activate.js\"",
-            "timeout": 5,
-            "statusMessage": "Loading caveman mode..."
-          },
           {
             "type": "command",
             "command": "bash \"/Users/giinlow./.claude/hooks/project-check.sh\"",
@@ -111,18 +126,6 @@
         ]
       }
     ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"/usr/local/bin/node\" \"/Users/giinlow./.claude/hooks/caveman-mode-tracker.js\"",
-            "timeout": 5,
-            "statusMessage": "Tracking caveman mode..."
-          }
-        ]
-      }
-    ],
     "PostToolUse": [
       {
         "matcher": "Bash",
@@ -142,19 +145,13 @@
     "command": "bash \"/Users/giinlow./.claude/hooks/statusline.sh\""
   },
   "enabledPlugins": {
-    "caveman@caveman": true,
     "claude-mem@thedotmack": true,
     "codex@openai-codex": true,
     "ponytail@ponytail": true,
-    "superpowers@claude-plugins-official": true
+    "superpowers@claude-plugins-official": true,
+    "caveman@caveman": true
   },
   "extraKnownMarketplaces": {
-    "caveman": {
-      "source": {
-        "source": "github",
-        "repo": "JuliusBrussee/caveman"
-      }
-    },
     "openai-codex": {
       "source": {
         "source": "github",
@@ -171,6 +168,12 @@
       "source": {
         "source": "git",
         "url": "https://github.com/Lum1104/Understand-Anything.git"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
       }
     }
   },

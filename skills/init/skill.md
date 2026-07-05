@@ -183,6 +183,9 @@ markitdown --version 2>/dev/null && echo "installed" || echo "missing"
 **3d. Caveman mode:**
 > Không detect được tự động. Hỏi 1 lần: "Muốn bật Caveman mode không? Claude trả lời ngắn hơn. Bật: `/caveman full`. Tắt: `stop caveman`."
 
+**3d2. Ponytail mode:**
+> Không detect được tự động. Hỏi 1 lần: "Muốn bật Ponytail mode không? Claude ưu tiên giải pháp đơn giản nhất (YAGNI, stdlib trước, ít code nhất). Bật: `/ponytail full`. Tắt: `stop ponytail`."
+
 **3e. Codex plugin (CHỈ hỏi nếu là code project):**
 ```bash
 # Claude Code: /plugin list → tìm codex@openai-codex
@@ -232,9 +235,9 @@ Chỉ cài khi user confirm. Không cài tự động.
 
 **3j. Slash commands chuẩn (CHỈ cho code project):**
 
-Hỏi 1 lần: "Stamp slash commands vào `.claude/commands/` không?"
+Hỏi 1 lần gộp: "Stamp slash commands vào `.claude/commands/` không? (`codex-exec`, `plan-track`, `review`, `verify`, `ship`)"
 
-**Luôn stamp (code project):**
+Chỉ tạo khi user confirm:
 - Copy từ `~/.claude/templates/commands/codex-exec.md` → `.claude/commands/codex-exec.md`
 - Copy từ `~/.claude/templates/commands/plan-track.md` → `.claude/commands/plan-track.md`
 - Tạo `review.md`, `verify.md`, `ship.md` từ Component Templates (bên dưới)
@@ -451,6 +454,12 @@ Báo: "Project đã có: [X]. Muốn thêm gì?" — User nói → tạo tương
 | PreCompact | Lưu git status trước context compact | `.claude/hooks/PreCompact.sh` |
 
 Hooks phải đăng ký trong `.claude/settings.json`.
+
+Máy mới cài `~/.claude` từ đầu → xem `~/.claude/README.md` (đọc tay/Claude tổng quát trước khi có skill nào, KHÔNG thuộc phạm vi `init` — `init` chỉ chạy được khi `~/.claude/skills/init/` đã tồn tại, nghĩa là máy không còn "mới" nữa).
+
+**Session-resume hook — 2 bản khác mục đích, không tự ý chọn thay user:**
+- `hooks/session-resume.js` (repo, generic) — đọc `OBSIDIAN_VAULT_PATH` env, không hardcode path, dùng được máy khác.
+- `hooks/session-resume.sh` (personal, nếu user đã tự viết) — có thể hardcode path Obsidian vault riêng, làm nhiều hơn (in nội dung session note gần nhất). Không đẩy bản hardcode lên repo chung; không ghi đè bản personal bằng bản generic nếu user đã có sẵn.
 
 **Các component khác** (tạo khi project thực sự cần):
 
@@ -951,6 +960,9 @@ Phạm vi:
 - Merge config, không replace toàn bộ settings.
 - Không commit/push nếu user chưa yêu cầu.
 - Sau sửa phải validate phù hợp: `jq` cho JSON, grep/check include policy cho shared rules, report skipped checks.
+
+**Hook wiring (statusLine/SessionStart/PreToolUse) — gợi ý, hỏi trước khi thêm:**
+User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại, hỏi cụ thể muốn hook nào (statusline model+rate-limit, GitNexus enrich, caveman mode activate, session-resume, project-check...), chỉ Edit thêm khi user confirm từng cái — không tự thêm hết. Dùng path tương đối `$HOME` khi viết ví dụ, không hardcode path máy cụ thể. Validate `jq empty ~/.claude/settings.json` sau khi sửa.
 
 Global shared-rules validation:
 ```bash

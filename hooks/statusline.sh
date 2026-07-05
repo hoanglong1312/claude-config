@@ -7,7 +7,7 @@ input=$(cat)
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
 bar() {
-  local pct="${1:-0}" width=15 filled empty i out=""
+  local pct="${1:-0}" width=8 filled empty i out=""
   filled=$(( pct * width / 100 ))
   [ $filled -gt $width ] && filled=$width
   empty=$(( width - filled ))
@@ -23,9 +23,9 @@ fmt_reset() {
   today=$(TZ="Asia/Ho_Chi_Minh" date "+%Y-%m-%d")
   reset_date=$(TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%Y-%m-%d" 2>/dev/null)
   if [ "$reset_date" = "$today" ]; then
-    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%-I%p" 2>/dev/null | sed 's/AM/am/; s/PM/pm/'
+    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%-I:%M%p" 2>/dev/null | sed 's/AM/am/; s/PM/pm/'
   else
-    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%b %-d %-I%p" 2>/dev/null | sed 's/AM/am/; s/PM/pm/'
+    TZ="Asia/Ho_Chi_Minh" date -r "$ts" "+%-d/%-m %-I:%M%p" 2>/dev/null | sed 's/AM/am/; s/PM/pm/'
   fi
 }
 
@@ -50,6 +50,7 @@ ctx_pct=$(echo "$input" | jq -r '.context_window.used_percentage // empty' 2>/de
 # ── Build output ─────────────────────────────────────────────────────────────
 
 out=()
+out2=()
 
 [ -n "$model" ] && out+=("🤖 $model")
 
@@ -69,8 +70,7 @@ if [ -n "$seven_pct" ]; then
   out+=("$entry")
 fi
 
-# Show context window if no rate limits available
-if [ -z "$five_pct" ] && [ -n "$ctx_pct" ]; then
+if [ -n "$ctx_pct" ]; then
   ctx_int=$(printf '%.0f' "$ctx_pct")
   [ "$ctx_int" -gt 0 ] && out+=("💬 ctx $(bar $ctx_int) ${ctx_int}%")
 fi
@@ -84,15 +84,35 @@ FLAG="${CLAUDE_CONFIG_DIR:-$HOME/.claude}/.caveman-active"
   case "$MODE" in
     off|lite|full|ultra|wenyan-lite|wenyan|wenyan-full|wenyan-ultra|commit|review|compress)
       if [ -z "$MODE" ] || [ "$MODE" = "full" ]; then
-        out+=("🪨 CAVEMAN")
+        out2+=("🪨 CAVEMAN")
       else
-        out+=("🪨 CAVEMAN:$(printf '%s' "$MODE" | tr '[:lower:]' '[:upper:]')")
+        out2+=("🪨 CAVEMAN:$(printf '%s' "$MODE" | tr '[:lower:]' '[:upper:]')")
       fi
       ;;
   esac
 }
 
-[ ${#out[@]} -eq 0 ] && exit 0
-printf '%s' "${out[0]}"
-for ((i=1; i<${#out[@]}; i++)); do printf ' | %s' "${out[i]}"; done
-printf '\n'
+# ── Git branch + cwd ─────────────────────────────────────────────────────────
+
+cwd=$(pwd)
+dirname_short=$(basename "$cwd")
+out2+=("📁 $dirname_short")
+
+if git -C "$cwd" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  branch=$(git -C "$cwd" rev-parse --abbrev-ref HEAD 2>/dev/null)
+  dirty=""
+  [ -n "$(git -C "$cwd" status --porcelain 2>/dev/null)" ] && dirty="*"
+  [ -n "$branch" ] && out2+=("🌿 ${branch}${dirty}")
+fi
+
+if [ ${#out[@]} -gt 0 ]; then
+  printf '%s' "${out[0]}"
+  for ((i=1; i<${#out[@]}; i++)); do printf ' | %s' "${out[i]}"; done
+  printf '\n'
+fi
+
+if [ ${#out2[@]} -gt 0 ]; then
+  printf '%s' "${out2[0]}"
+  for ((i=1; i<${#out2[@]}; i++)); do printf ' | %s' "${out2[i]}"; done
+  printf '\n'
+fi

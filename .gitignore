@@ -25,3 +25,9 @@ settings.local.json
 .claude/settings.local.json
 settings.json.bak.*
 tasks/
+data/
+.agents/
+github/
+.usage-cache.txt
+.ponytail-active
+templates/*.bak-*

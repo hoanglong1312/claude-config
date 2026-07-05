@@ -7,12 +7,13 @@ import os
 import subprocess
 import sys
 
-json.load(sys.stdin)  # tool_input not needed — repo root comes from cwd
+data = json.load(sys.stdin)  # tool_input not needed — repo root comes from cwd
+payload_cwd = data.get("cwd") or os.getcwd()
 
 try:
     root = subprocess.run(
         ["git", "rev-parse", "--show-toplevel"],
-        capture_output=True, text=True, timeout=5,
+        capture_output=True, text=True, timeout=5, cwd=payload_cwd,
     ).stdout.strip()
 except Exception:
     sys.exit(0)

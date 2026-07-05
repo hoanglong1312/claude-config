@@ -1,133 +1,68 @@
-# Claude Code Global Config — Setup Guide
+# Portable Global Agent Config
 
-Đọc khi setup máy mới. KHÔNG load tự động.
+Portable config for Claude Code and Codex across macOS and Windows.
 
----
+## Architecture
 
-## 1. Cài Tools
+- `templates/shared-agent-rules.md`: shared portable agent behavior.
+- `templates/shared-workflows/`: curated workflow checklists adapted from current Superpowers/Caveman/RTK discipline.
+- `templates/CLAUDE.global.md`: Claude Code wrapper with plugin-specific mechanisms.
+- `templates/AGENTS.md`: Codex appendix.
+- `AGENTS.md`: generated materialized Codex rules.
 
-```bash
-# Superpowers plugin (trong Claude Code)
-/plugin install superpowers@claude-plugins-official
+Claude Code can use includes and plugins. Codex receives plain text in `AGENTS.md`.
 
-# Codex plugin (thay thế MCP Codex cũ)
-/plugin install codex@openai-codex
+## Fresh Machine Setup
 
-# Caveman mode
-/plugin install caveman@caveman
-
-# RTK — token optimizer
-curl -fsSL https://rtk.dev/install.sh | sh
-
-# Markitdown — chuyển file sang .md
-pip install markitdown
-
-# Codex CLI
-npm install -g @openai/codex
-```
-
----
-
-## 2. Claude Code — settings.json
-
-Tạo hoặc merge vào `~/.claude/settings.json`:
-
-```json
-{
-  "effortLevel": "medium",
-  "theme": "dark",
-  "env": {
-    "MAX_THINKING_TOKENS": "10000",
-    "CLAUDE_AUTOCOMPACT_PCT_OVERRIDE": "75",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku"
-  },
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true,
-    "caveman@caveman": true,
-    "codex@openai-codex": true
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [{ "type": "command", "command": "rtk hook claude" }]
-      }
-    ]
-  }
-}
-```
-
----
-
-## 3. Codex
-
-Codex setup phụ thuộc tài khoản/provider cá nhân. Không lưu API endpoint, API key, hoặc provider riêng trong global README.
-
-Tối thiểu cần:
+No install script — Claude Code itself is the prerequisite to even use this repo, so just clone it and ask Claude Code to set it up:
 
 ```bash
-npm install -g @openai/codex
+git clone https://github.com/hoanglong1312/claude-config.git
+cd claude-config
+claude
 ```
 
-Cấu hình chi tiết đặt ở `~/.codex/config.toml` hoặc tài liệu private riêng.
+Then tell Claude: "set up this claude-config repo as my global ~/.claude config, following this README." Claude reads this file and copies `templates/`, `hooks/`, `skills/`, `references/`, `docs/` into `~/.claude/`, merges `settings.json` (preserving existing values, skipping secret-looking env keys), and writes `~/.claude/CLAUDE.md` from `templates/CLAUDE.global.md`.
 
----
+Prerequisites (ask Claude to check/install as needed): Node.js, Python + pip, Codex CLI, RTK, Markitdown.
 
-## 4. Obsidian Vault
+Optional plugin setup:
 
-`~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/`
-
-Sync qua iCloud — không cần setup thêm nếu đã đăng nhập iCloud.
-
----
-
-## 5. Rule Architecture
-
-Shared Claude + Codex rules live in one source file:
-
-```text
-~/.claude/templates/shared-agent-rules.md
+```
+claude plugin marketplace add openai/codex-plugin-cc
+claude plugin marketplace add JuliusBrussee/caveman
+claude plugin marketplace add obra/superpowers-marketplace
+claude plugin marketplace update
+claude plugin install codex@openai-codex
+claude plugin install caveman@caveman
+claude plugin install superpowers@superpowers-marketplace
 ```
 
-Load paths:
+`superpowers@claude-plugins-official` may not exist in every marketplace. Current fallback is `superpowers@superpowers-marketplace` if that marketplace is installed.
 
-```text
-~/.claude/CLAUDE.md             # Claude global includes shared rules via @include
-~/.claude/templates/AGENTS.md   # template body only; project AGENTS.md materializes shared rules
-~/.claude/templates/code-project.md  # code workflow only, no shared include to avoid duplicate Claude context
-```
+To render `AGENTS.md` from shared rules (Codex-side), run `bash scripts/sync-agent-rules.sh` (or `.ps1` on Windows) after the config is in place.
 
-Claude can consume `@include`. Codex should get a rendered/materialized `AGENTS.md` that contains shared rules as real text, unless Codex include expansion has been verified.
+## Settings Layers
 
-Project-specific tool rules go in project root `rules/*.md`, not `.claude/rules/`.
+- `settings.local.example.json`: local config example.
+- `settings.local.json`: private local override, gitignored.
 
-Generated/cache/local files ignored in this repo include `image-cache/`, `paste-cache/`, `session-env/`, `stats-cache.json`, `.last-update-result.json`, `.update.lock`, `settings.local.json`.
+Platform-specific settings (`settings.macos.json`/`settings.windows.json`/`settings.shared.json`) were dropped — single-machine setup doesn't need them. When Claude merges `settings.json` during setup, it must preserve existing user values and skip secret-looking keys such as `ANTHROPIC_*`, `OPENAI_*`, `*_API_KEY`, `*_TOKEN`, `*_SECRET`, `*_PASSWORD`, `BASE_URL`, or `*_BASE_URL`.
 
----
+Hook wiring (statusline, SessionStart, etc.) is opt-in — ask via the `init` skill's Global Maintenance phase after install, don't hardcode into a settings file.
 
-## 6. Maintenance Checklist
+## Generated Files
 
-After changing global rules/templates/settings:
+`AGENTS.md` is generated from shared rules, shared workflows, and the Codex appendix. Edit project-specific Codex notes inside the project notes block only.
+
+## Safety
+
+Setup should back up `~/.claude` (timestamped copy) before writing, and merge `settings.json` instead of replacing it wholesale. Existing hook files (e.g. a personalized `caveman-activate.js`) must not be silently overwritten by this repo's thinner generic versions — check for meaningful differences before copying over an existing file.
+
+## Verification
 
 ```bash
-jq empty ~/.claude/settings.json
-grep -R "@~/.claude/templates/shared-agent-rules.md" ~/.claude/CLAUDE.md ~/.claude/templates/*.md
-git -C ~/.claude status --short
+jq empty settings.local.example.json
+bash -n scripts/sync-agent-rules.sh
+node --check hooks/project-check.js hooks/session-resume.js hooks/caveman-activate.js hooks/caveman-mode-tracker.js
 ```
-
-Expected shared rule includes:
-
-```text
-~/.claude/CLAUDE.md
-```
-
-`templates/AGENTS.md` must not rely on `@include`; project `AGENTS.md` should contain a materialized copy of shared rules plus the template body.
-
-Use `init` for all project bootstrap, extension, rules audit/sync, and explicit global maintenance. `sync-rules` has been removed to avoid duplicate workflows.
-
-Suggested commit groups:
-
-1. config safety (`settings.json`, `.gitignore`)
-2. rule architecture (`CLAUDE.md`, templates, shared rules)
-3. skills (`skills/init`, deprecated aliases)
-4. project skeleton changes

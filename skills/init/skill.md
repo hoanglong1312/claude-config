@@ -251,11 +251,14 @@ Nếu project đã có test runner riêng (pytest / vitest / go test...) → đi
 | `supabase`/`sqlite`/`prisma` trong deps | Copy `~/.claude/templates/commands/db-migrate.md` → `.claude/commands/db-migrate.md` |
 | `vite`/`react`/`vue`/`next` trong deps | Copy `~/.claude/templates/commands/frontend-verify.md` → `.claude/commands/frontend-verify.md` |
 | `.gitnexus/` tồn tại (root hoặc subdir) | Tạo `rules/gitnexus.md` + `@rules/gitnexus.md` trong CLAUDE.md + `.codex/config.toml` với `[mcp_servers.gitnexus]` |
+| `.gitnexus/` CHƯA tồn tại nhưng là git repo thật (có commit) | Hỏi: "Project chưa index GitNexus (impact-analysis/blast-radius trước khi edit). Cài luôn không?" → nếu đồng ý: chạy `npx gitnexus analyze` (hoặc `gitnexus setup` nếu global CLI có), rồi làm tiếp bước trên như đã có `.gitnexus/` |
 
 Detect GitNexus (check cả subdir vì repo thường nằm trong `repo/`):
 ```bash
 find . -name ".gitnexus" -maxdepth 4 -type d 2>/dev/null | head -1
 # Nếu có → lấy repo name từ `gitnexus list_repos` hoặc đường dẫn folder cha
+# Nếu KHÔNG có: git rev-parse --is-inside-work-tree 2>/dev/null && git log -1 --oneline 2>/dev/null
+# → có output nghĩa là git repo thật có commit, hỏi cài GitNexus mới (xem row trên)
 ```
 
 `.codex/config.toml` cho gitnexus:
@@ -278,6 +281,7 @@ Auto-detect từ deps (hỏi gộp 1 lần):
 | `@supabase/*` / migration files | `db-supabase.md` |
 | `next`/`vite`/`react`/`vue` (frontend) | `frontend-web.md` |
 | Có `**/api/**`, `**/auth/**`, route nhận user input | `web-security.md` |
+| `playwright`/`camoufox`/`puppeteer` trong deps, hoặc file dùng `page.goto`/`browser.launch` | `browser-automation.md` |
 
 Manual opt-in (không auto-detect, chỉ thêm khi user yêu cầu):
 - `ui-design-handoff.md` — task design UI/landing/redesign
@@ -286,9 +290,10 @@ Manual opt-in (không auto-detect, chỉ thêm khi user yêu cầu):
 Hỏi gộp:
 ```
 Code project core đã include. Module opt-in (detect từ stack):
-  [x] db-supabase    — phát hiện @supabase
-  [x] frontend-web   — phát hiện vite
-  [ ] web-security   — bật nếu có API/auth
+  [x] db-supabase        — phát hiện @supabase
+  [x] frontend-web       — phát hiện vite
+  [ ] web-security       — bật nếu có API/auth
+  [x] browser-automation — phát hiện playwright/camoufox/puppeteer
 Include module nào? (mặc định = các dòng [x])
 ```
 

@@ -1,179 +1,179 @@
 {
-  "env": {
-    "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
-    "MAX_THINKING_TOKENS": "10000",
-    "DISABLE_AUTOUPDATER": "1"
-  },
-  "autoCompactWindow": 150000,
-  "permissions": {
-    "allow": [
-      "Read(*)",
-      "Edit(*)",
-      "Write(*)",
-      "Bash(claude mcp *)",
-      "Bash(git status*)",
-      "Bash(git diff*)",
-      "Bash(git log*)",
-      "Bash(git add*)",
-      "Bash(git commit*)",
-      "Bash(git branch*)",
-      "Bash(git stash*)",
-      "Bash(npm run build*)",
-      "Bash(npm run qa*)",
-      "Bash(npm run test*)",
-      "Bash(npx playwright test*)",
-      "Bash(npx tsc*)",
-      "Bash(ls*)",
-      "Bash(find . *)",
-      "Bash(grep *)",
-      "Bash(rtk *)",
-      "Bash(cd *)",
-      "Bash(vercel*)",
-      "Bash(curl *)",
-      "Bash(curl*)",
-      "Bash(sleep *)",
-      "Bash(cat *)",
-      "Bash(npm run dev*)",
-      "Bash(npm run dev *)",
-      "mcp__chrome-devtools__new_page",
-      "mcp__chrome-devtools__list_pages",
-      "mcp__chrome-devtools__select_page",
-      "mcp__chrome-devtools__navigate_page",
-      "mcp__chrome-devtools__take_screenshot",
-      "mcp__chrome-devtools__take_snapshot",
-      "mcp__chrome-devtools__evaluate_script",
-      "mcp__chrome-devtools__click",
-      "mcp__chrome-devtools__fill",
-      "mcp__chrome-devtools__type_text",
-      "mcp__chrome-devtools__emulate",
-      "mcp__chrome-devtools__get_console_message",
-      "mcp__chrome-devtools__list_console_messages",
-      "mcp__chrome-devtools__get_network_request",
-      "mcp__chrome-devtools__list_network_requests",
-      "mcp__chrome-devtools__wait_for",
-      "mcp__chrome-devtools__close_page"
-    ],
-    "defaultMode": "auto"
-  },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "rtk hook claude"
-          }
-        ]
-      },
-      {
-        "matcher": "Grep|Glob|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
-            "timeout": 10,
-            "statusMessage": "Enriching with GitNexus graph context..."
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 '/Users/giinlow./.claude/hooks/gitnexus/commit-gate.py'",
-            "timeout": 10,
-            "statusMessage": "Checking GitNexus detect_changes gate before commit..."
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__gitnexus__detect_changes",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 '/Users/giinlow./.claude/hooks/gitnexus/touch-detect-changes.py'",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"/Users/giinlow./.claude/hooks/project-check.sh\"",
-            "timeout": 5,
-            "statusMessage": "Checking project structure..."
-          },
-          {
-            "type": "command",
-            "command": "bash \"/Users/giinlow./.claude/hooks/session-resume.sh\"",
-            "timeout": 5,
-            "statusMessage": "Loading session context..."
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "afplay /System/Library/Sounds/Ping.aiff 2>/dev/null || true"
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
-            "timeout": 10,
-            "statusMessage": "Checking GitNexus index freshness..."
-          }
-        ]
-      }
-    ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash \"/Users/giinlow./.claude/hooks/statusline.sh\""
-  },
-  "enabledPlugins": {
-    "claude-mem@thedotmack": true,
-    "codex@openai-codex": true,
-    "ponytail@ponytail": true,
-    "superpowers@claude-plugins-official": true,
-    "caveman@caveman": true
-  },
-  "extraKnownMarketplaces": {
-    "openai-codex": {
-      "source": {
-        "source": "github",
-        "repo": "openai/codex-plugin-cc"
-      }
+    "env": {
+        "CLAUDE_CODE_SUBAGENT_MODEL": "haiku",
+        "MAX_THINKING_TOKENS": "10000",
+        "DISABLE_AUTOUPDATER": "1"
     },
-    "superpowers-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "obra/superpowers-marketplace"
-      }
+    "permissions": {
+        "allow": [
+            "Read(*)",
+            "Edit(*)",
+            "Write(*)",
+            "Bash(claude mcp *)",
+            "Bash(git status*)",
+            "Bash(git diff*)",
+            "Bash(git log*)",
+            "Bash(git add*)",
+            "Bash(git commit*)",
+            "Bash(git branch*)",
+            "Bash(git stash*)",
+            "Bash(npm run build*)",
+            "Bash(npm run qa*)",
+            "Bash(npm run test*)",
+            "Bash(npx playwright test*)",
+            "Bash(npx tsc*)",
+            "Bash(ls*)",
+            "Bash(find . *)",
+            "Bash(grep *)",
+            "Bash(rtk *)",
+            "Bash(cd *)",
+            "Bash(vercel*)",
+            "Bash(curl *)",
+            "Bash(curl*)",
+            "Bash(sleep *)",
+            "Bash(cat *)",
+            "Bash(npm run dev*)",
+            "Bash(npm run dev *)",
+            "mcp__chrome-devtools__new_page",
+            "mcp__chrome-devtools__list_pages",
+            "mcp__chrome-devtools__select_page",
+            "mcp__chrome-devtools__navigate_page",
+            "mcp__chrome-devtools__take_screenshot",
+            "mcp__chrome-devtools__take_snapshot",
+            "mcp__chrome-devtools__evaluate_script",
+            "mcp__chrome-devtools__click",
+            "mcp__chrome-devtools__fill",
+            "mcp__chrome-devtools__type_text",
+            "mcp__chrome-devtools__emulate",
+            "mcp__chrome-devtools__get_console_message",
+            "mcp__chrome-devtools__list_console_messages",
+            "mcp__chrome-devtools__get_network_request",
+            "mcp__chrome-devtools__list_network_requests",
+            "mcp__chrome-devtools__wait_for",
+            "mcp__chrome-devtools__close_page"
+        ],
+        "defaultMode": "auto"
     },
-    "caveman": {
-      "source": {
-        "source": "github",
-        "repo": "JuliusBrussee/caveman"
-      }
-    }
-  },
-  "effortLevel": "medium",
-  "skipDangerousModePermissionPrompt": true,
-  "theme": "dark",
-  "skipAutoPermissionPrompt": true
+    "hooks": {
+        "PreToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "rtk hook claude"
+                    }
+                ]
+            },
+            {
+                "matcher": "Grep|Glob|Bash|Edit|Write",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+                        "timeout": 10,
+                        "statusMessage": "Enriching with GitNexus graph context..."
+                    }
+                ]
+            },
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python3 '/Users/giinlow./.claude/hooks/gitnexus/commit-gate.py'",
+                        "timeout": 10,
+                        "statusMessage": "Checking GitNexus detect_changes gate before commit..."
+                    }
+                ]
+            },
+            {
+                "matcher": "mcp__gitnexus__detect_changes",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "python3 '/Users/giinlow./.claude/hooks/gitnexus/touch-detect-changes.py'",
+                        "timeout": 5
+                    }
+                ]
+            }
+        ],
+        "SessionStart": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "bash \"/Users/giinlow./.claude/hooks/project-check.sh\"",
+                        "timeout": 5,
+                        "statusMessage": "Checking project structure..."
+                    },
+                    {
+                        "type": "command",
+                        "command": "bash \"/Users/giinlow./.claude/hooks/session-resume.sh\"",
+                        "timeout": 5,
+                        "statusMessage": "Loading session context..."
+                    }
+                ]
+            }
+        ],
+        "Stop": [
+            {
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "afplay /System/Library/Sounds/Ping.aiff 2>/dev/null || true"
+                    }
+                ]
+            }
+        ],
+        "PostToolUse": [
+            {
+                "matcher": "Bash",
+                "hooks": [
+                    {
+                        "type": "command",
+                        "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+                        "timeout": 10,
+                        "statusMessage": "Checking GitNexus index freshness..."
+                    }
+                ]
+            }
+        ]
+    },
+    "statusLine": {
+        "type": "command",
+        "command": "bash \"/Users/giinlow./.claude/hooks/statusline.sh\""
+    },
+    "enabledPlugins": {
+        "claude-mem@thedotmack": true,
+        "codex@openai-codex": true,
+        "ponytail@ponytail": true,
+        "superpowers@claude-plugins-official": true,
+        "caveman@caveman": true
+    },
+    "extraKnownMarketplaces": {
+        "openai-codex": {
+            "source": {
+                "source": "github",
+                "repo": "openai/codex-plugin-cc"
+            }
+        },
+        "superpowers-marketplace": {
+            "source": {
+                "source": "github",
+                "repo": "obra/superpowers-marketplace"
+            }
+        },
+        "caveman": {
+            "source": {
+                "source": "github",
+                "repo": "JuliusBrussee/caveman"
+            }
+        }
+    },
+    "effortLevel": "medium",
+    "autoCompactWindow": 300000,
+    "skipDangerousModePermissionPrompt": true,
+    "theme": "dark",
+    "skipAutoPermissionPrompt": true
 }

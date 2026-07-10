@@ -57,6 +57,10 @@ if [ "$REPO_DIR" != "$CLAUDE_DIR" ]; then
   mkdir -p "$CLAUDE_DIR/templates/shared-workflows"
   cp "$REPO_DIR/templates/shared-agent-rules.md" "$CLAUDE_DIR/templates/shared-agent-rules.md"
   cp "$REPO_DIR/templates/shared-workflows/"*.md "$CLAUDE_DIR/templates/shared-workflows/"
+else
+  # repo IS ~/.claude: keep CLAUDE.global.md template mirroring the live CLAUDE.md
+  # so fresh-machine setup never gets a stale global config
+  [ -f "$CLAUDE_DIR/CLAUDE.md" ] && cp "$CLAUDE_DIR/CLAUDE.md" "$REPO_DIR/templates/CLAUDE.global.md"
 fi
 render_agents "$PROJECT_DIR/AGENTS.md"
 echo "Synced shared rules to $CLAUDE_DIR and rendered $PROJECT_DIR/AGENTS.md"

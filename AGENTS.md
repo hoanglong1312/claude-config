@@ -1,7 +1,7 @@
 <!-- BEGIN GENERATED AGENT RULES -->
 <!-- generated-from: templates/shared-agent-rules.md + templates/shared-workflows/*.md + templates/AGENTS.md -->
 <!-- generated-date: 2026-07-11 -->
-<!-- shared-rules-sha256: bb20e99bc0138ff4378a331589f04a04fe3a60f41c8831723c35fb1c7b69ca4d -->
+<!-- shared-rules-sha256: f7432a6c632351ddad10ca839f7bcaa56834f37efcee71edbc9b92179633d266 -->
 <!-- workflows-sha256: 1a9844d58bf3897a4f482d2b419df4266ec07e568b1e51f887ed8bd9e3044527 -->
 <!-- template-sha256: a152f831c78a47accdc00926b3c0b6ca849c571ed8ca05e94a146081bd6faf61 -->
 
@@ -58,14 +58,16 @@ Pick the lightest tool that can confirm the bug:
 | Screenshot | `cmux browser screenshot` |
 | E2E flow quan trọng (login, payment, navigation nhiều màn) | Playwright — chỉ khi flow dễ regression |
 
+`cmux browser` chỉ khi cmux available (`command -v cmux`) — không có → dùng Playwright hoặc browser tool sẵn có của môi trường. Không assume optional tool tồn tại.
+
 Default với React/Vite project:
 ```
-Đọc file liên quan → sửa scoped → npm run build → cmux browser verify → commit file cụ thể
+Đọc file liên quan → sửa scoped → npm run build → browser verify (cmux nếu có) → commit file cụ thể
 ```
 
 ## Rule 11 — claude-teams cho Multi-Agent
 
-Dùng `cmux claude-teams` thay `claude` khi có 2+ việc độc lập chạy song song được (fix A + fix B, feature + test).
+Khi có cmux: dùng `cmux claude-teams` thay `claude` khi có 2+ việc độc lập chạy song song được (fix A + fix B, feature + test). Không có cmux → dispatch subagent song song bình thường.
 
 ## Rule 12 — Subagent for Exploration
 When fixing bugs or investigating issues requiring 3+ file reads: spawn a subagent (Explore or general-purpose) to investigate, grep, and trace. Main context receives summary only — no raw file dumps. Edit/fix happens in main context after summary received.
@@ -74,7 +76,7 @@ Exception: code projects with code-project.md — follow token discipline rules 
 
 ## Rule 13 — Clarify Before Execute
 
-Nếu có bất kỳ điều gì mơ hồ trong yêu cầu — hỏi user trong **1 lần duy nhất** trước khi ghi file, chạy code, hoặc thực thi bất kỳ action nào. Không đoán, không ghi rồi mới hỏi.
+Mơ hồ **làm đổi outcome** (kiến trúc, xoá/ghi đè data, scope, hành vi user thấy) → hỏi user trong **1 lần duy nhất** gộp mọi câu hỏi, trước khi thực thi. Mơ hồ nhỏ không đổi outcome → nêu assumption rõ ràng rồi làm tiếp, không dừng chờ.
 
 ## Rule 14 — Ground Progress Claims
 

@@ -248,7 +248,7 @@ Hỏi 1 lần gộp: "Stamp slash commands vào `.claude/commands/` không? (`co
 Chỉ tạo khi user confirm:
 - Copy từ `~/.claude/templates/commands/codex-exec.md` → `.claude/commands/codex-exec.md`
 - Copy từ `~/.claude/templates/commands/plan-track.md` → `.claude/commands/plan-track.md`
-- Tạo `review.md`, `verify.md`, `ship.md` từ Component Templates (bên dưới)
+- Copy `review.md`, `verify.md`, `ship.md` từ `~/.claude/templates/commands/` (+ thêm `.claude/.security-reviewed` vào .gitignore project)
 
 Nếu project đã có test runner riêng (pytest / vitest / go test...) → điền đúng lệnh vào `verify.md`.
 
@@ -561,59 +561,11 @@ VERDICT: APPROVE / REQUEST_CHANGES
 - Không sửa code, chỉ báo cáo
 ```
 
-### `.claude/commands/review.md`
+### `.claude/commands/review.md` · `verify.md` · `ship.md`
 
-```markdown
-# /review — Code Review
+Copy nguyên văn từ `~/.claude/templates/commands/` (cùng chỗ với `codex-exec.md`, `db-migrate.md`, `frontend-verify.md`, `plan-track.md`) — không maintain bản inline ở đây.
 
-Dispatch `.claude/agents/code-reviewer` để review git diff hiện tại.
-
-## Steps
-
-1. Chạy `git diff HEAD~1..HEAD` để lấy diff commit cuối
-2. Nếu có staged changes chưa commit: `git diff --cached` thay thế
-3. Dispatch agent `code-reviewer` với diff + context task hiện tại
-4. Hiện output APPROVE/REQUEST_CHANGES
-5. Nếu REQUEST_CHANGES → list issues, hỏi user muốn fix gì trước
-```
-
-### `.claude/commands/verify.md`
-
-```markdown
-# /verify — Run All Tests
-
-Chạy toàn bộ test suite và báo cáo kết quả.
-
-## Steps
-
-1. Compile/syntax check trước (adapt theo stack):
-   - Python: `python -m py_compile <core files>`
-   - Node/TS: `npm run build` hoặc `npx tsc --noEmit`
-2. Chạy tests:
-   - Python: `for f in test/check_*.py; do python "$f" && echo "PASS: $f" || echo "FAIL: $f"; done`
-   - Node: `npm test`
-3. Báo cáo: X pass, Y fail
-4. Nếu có FAIL → show output, diagnose root cause
-```
-
-### `.claude/commands/ship.md`
-
-```markdown
-# /ship — Pre-ship Checklist
-
-Kiểm tra trước khi commit/báo done.
-
-## Checklist
-
-1. `/verify` — chạy toàn bộ tests, phải 0 FAIL
-2. `git diff` — Claude review scope, không có thứ ngoài plan
-3. `/review` — dispatch code-reviewer agent
-4. Grep `ASSUMPTION:` trong staged/recent commits → nếu có, xác nhận với user trước
-5. Check migration nếu có DB: version đã tăng chưa?
-6. Báo cáo: ✓ pass / ✗ fail với lý do cụ thể
-
-## Chỉ báo "sẵn sàng commit" khi tất cả ✓
-```
+Lưu ý khi stamp: `review.md` bước cuối touch `.claude/.security-reviewed` (mở security-gate hook global). Thêm `.claude/.security-reviewed` vào `.gitignore` của project khi stamp.
 
 ---
 
@@ -989,7 +941,7 @@ User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại
 | `env.DISABLE_AUTOUPDATER` | `"1"` | Chặn bundled claude (cmux) tự update fail — nhớ chạy `claude update` thủ công định kỳ |
 | `skipDangerousModePermissionPrompt` | `true` | Đã chấp nhận dialog bypass-permissions, không hỏi lại |
 | `skipAutoPermissionPrompt` | `true` | Đã chấp nhận dialog auto-mode, không hỏi lại |
-| `hooks.UserPromptSubmit` → `hooks/rules-digest.sh` | wired | Inject rule digest mỗi prompt chống context decay (gates + skill routing + model tiering). Path trong settings.json là absolute — máy mới phải sửa lại home path |
+| `hooks.UserPromptSubmit` → `hooks/rules-digest.sh` | wired | Inject rule digest mỗi prompt chống context decay (gates + skill routing + model tiering). Hook paths dùng `$HOME` — portable, không cần sửa khi sang máy mới |
 
 Thiếu key nào → hỏi user 1 lần gộp có muốn set theo giá trị trên không, merge vào `env`/root của `settings.json` (không replace toàn file). Nếu user đã tự chỉnh giá trị khác trên máy hiện tại → báo giá trị khác nhau, hỏi giữ máy hiện tại hay đồng bộ theo bảng trên, không tự ý ghi đè.
 

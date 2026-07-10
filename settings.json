@@ -55,7 +55,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+            "command": "node \"$HOME/.claude/hooks/gitnexus/gitnexus-hook.cjs\"",
             "timeout": 10,
             "statusMessage": "Enriching with GitNexus graph context..."
           }
@@ -66,9 +66,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 '/Users/giinlow./.claude/hooks/gitnexus/commit-gate.py'",
+            "command": "python3 \"$HOME/.claude/hooks/gitnexus/commit-gate.py\"",
             "timeout": 10,
             "statusMessage": "Checking GitNexus detect_changes gate before commit..."
+          },
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/security-gate.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking security-review gate before commit..."
           }
         ]
       },
@@ -77,7 +83,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 '/Users/giinlow./.claude/hooks/gitnexus/touch-detect-changes.py'",
+            "command": "python3 \"$HOME/.claude/hooks/gitnexus/touch-detect-changes.py\"",
             "timeout": 5
           }
         ]
@@ -88,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"/Users/giinlow./.claude/hooks/rules-digest.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/rules-digest.sh\"",
             "timeout": 5
           }
         ]
@@ -99,13 +105,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"/Users/giinlow./.claude/hooks/project-check.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/project-check.sh\"",
             "timeout": 5,
             "statusMessage": "Checking project structure..."
           },
           {
             "type": "command",
-            "command": "bash \"/Users/giinlow./.claude/hooks/session-resume.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/session-resume.sh\"",
             "timeout": 5,
             "statusMessage": "Loading session context..."
           }
@@ -128,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node '/Users/giinlow./.claude/hooks/gitnexus/gitnexus-hook.cjs'",
+            "command": "node \"$HOME/.claude/hooks/gitnexus/gitnexus-hook.cjs\"",
             "timeout": 10,
             "statusMessage": "Checking GitNexus index freshness..."
           }
@@ -138,7 +144,7 @@
   },
   "statusLine": {
     "type": "command",
-    "command": "bash \"/Users/giinlow./.claude/hooks/statusline.sh\""
+    "command": "bash \"$HOME/.claude/hooks/statusline.sh\""
   },
   "enabledPlugins": {
     "claude-mem@thedotmack": true,

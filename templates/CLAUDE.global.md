@@ -1,43 +1,93 @@
 @~/.claude/templates/shared-agent-rules.md
-@~/.claude/templates/shared-workflows/intent-routing.md
-@~/.claude/templates/shared-workflows/planning.md
-@~/.claude/templates/shared-workflows/debugging.md
-@~/.claude/templates/shared-workflows/tdd.md
-@~/.claude/templates/shared-workflows/verification.md
-@~/.claude/templates/shared-workflows/review.md
-@~/.claude/templates/shared-workflows/response-style.md
-@~/.claude/templates/shared-workflows/tool-output-discipline.md
 
-# Claude Code Only
+# Superpowers — BẮT BUỘC
 
-## Superpowers
-- Before each response, classify user intent.
-- If a matching Superpowers skill exists, invoke it with the `Skill` tool before answering or acting.
-- Use `superpowers:brainstorming` for feature/design shaping.
-- Use `superpowers:writing-plans` for implementation plans.
-- Use `superpowers:systematic-debugging` for bugs, failing tests, or unexpected behavior.
-- Use `superpowers:test-driven-development` for code implementation when practical.
-- Use `superpowers:verification-before-completion` before reporting implementation done.
-- Use `superpowers:requesting-code-review` or project review tools after large changes.
+Trước mỗi response: classify intent. 1% chance skill áp dụng → invoke ngay. Routing → xem `using-superpowers` skill.
 
-## Caveman
-- If Caveman mode is active, follow its terse response style.
-- Keep technical content exact even when terse.
+# Auto-Invoke Rules — Không Cần User Nhắc
 
-## RTK
-- Use `rtk gain`, `rtk gain --history`, and `rtk discover` directly for RTK meta commands.
-- Use `rtk proxy <cmd>` when debugging RTK hook behavior.
-- `rtk find` may not support compound predicates/actions; use system `find` for complex queries.
+Tự động invoke skill — không đợi user gọi thủ công:
 
-## Statusline and Settings
-- For statusline or `settings.json` changes, use the `update-config` skill first.
-- Read current settings before editing.
-- Merge settings; do not replace the whole file.
-- Preserve `statusLine.type = "command"` unless explicitly asked otherwise.
-- Validate JSON after edits.
-- If UI does not update, restart Claude Code or reload `/hooks`.
+| Trigger | Skill bắt buộc |
+|---|---|
+| User báo bug / lỗi / không work / crash | `superpowers:systematic-debugging` TRƯỚC KHI đề xuất bất kỳ fix nào |
+| Fix xong bất kỳ thứ gì | `superpowers:verification-before-completion` TRƯỚC KHI báo done |
+| User nói "merge" / "push" / "PR" / "xong rồi" | `superpowers:requesting-code-review` |
+| Implement feature có UI / form / navigation | `playwright-testing` sau khi xong |
+| User hỏi "nên làm gì" / "bắt đầu từ đâu" / feature mới | `superpowers:brainstorming` |
+| User muốn hiểu sâu / "tại sao" / "explain" | `teach` |
+| Auth / payment / RLS / Supabase security | `superpowers:systematic-debugging` + kiểm tra manual (security-review chưa có skill) |
 
-## Local Paths and Private Workflow
-- Do not hardcode private machine paths in public config.
-- Use environment variables for local paths such as `OBSIDIAN_VAULT_PATH`.
-- If an optional local path/env is missing, skip silently when safe.
+**KHÔNG invoke khi:** fix 1 dòng rõ ràng, code chưa compile, task đã hoàn toàn rõ ràng.
+
+Hỏi về tool/repo → tìm library: đọc `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/raw/resources/repos/index.md`
+
+**⚠️ Code project (có `code-project.md`):** Claude dùng flow trong `code-project.md` — Codex thực thi TDD/debug. Claude giữ review, architecture, MCP, security.
+
+# Quy Tắc Ngôn Ngữ
+
+- Luôn trả lời Tiếng Việt.
+- Thuật ngữ tiếng Anh: giải thích lần đầu. Format: `technical term` (nghĩa ngắn). Lặp lại → không giải thích lại.
+- Không dịch: tên lệnh, file path, API name, package name, model name, tên sản phẩm.
+
+# Giải Thích Code — Behavior Flow
+
+Khi giải thích bất kỳ luồng code nào (fix bug, explain feature, trace data, review change), luôn kèm mô tả bằng ngôn ngữ đơn giản — không dùng tên hàm, chỉ dùng từ mô tả hành vi người dùng thấy:
+
+```
+→ Khi [action người dùng làm]
+   1. [Cái gì] xảy ra
+   2. [Data/state] đi đâu / được lưu ở đâu
+   3. [Kết quả] người dùng thấy / nhận được
+```
+
+Nếu có trước/sau (bug fix, refactor): ❌ hành vi sai trước đó, ✅ hành vi đúng sau fix. Luôn kèm theo, không đợi user hỏi.
+
+# Model Selection — Khi Build AI Features
+
+| Model | Dùng khi |
+|---|---|
+| `claude-haiku-4-5` | Lightweight agent, gọi thường xuyên, task đơn giản |
+| `claude-sonnet-4-6` | Main coding work, phần lớn tasks |
+| `claude-opus-4-8` | Architectural decisions, reasoning phức tạp |
+
+# RTK — Token Proxy
+
+Mọi Bash command tự động đi qua `rtk` hook (settings.json) — không cần làm gì thêm.
+
+Meta commands (dùng trực tiếp):
+- `rtk gain` — xem token savings analytics
+- `rtk gain --history` — lịch sử command + savings
+- `rtk discover` — phân tích Claude history tìm missed opportunities
+- `rtk proxy <cmd>` — bypass RTK (debug)
+
+`rtk find` không support `-exec`, `-o`, `\(…\)` → dùng `/usr/bin/find` thay thế.
+
+# Markitdown
+
+PDF/Word/PPT/Excel/HTML → `markitdown [file] > [file].md` trước khi đọc. Không dùng cho ảnh UI/screenshot.
+
+# Repo Wiki
+
+Khi install package/tool mới, clone repo, dùng service/API mới → hỏi: **"Thêm [tên] vào Obsidian repo wiki không?"**
+File: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/raw/resources/repos/index.md`
+Format: `| [tên] | [URL] | installed | [project/global] | [ghi chú ngắn] |`
+
+# Kết Thúc Session
+
+Khi user nói "xong" / "tạm dừng" / "mai tiếp":
+
+1. Tự viết session note vào Obsidian (không hỏi):
+   - Vault: `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/`
+   - Code/tech → `raw/projects/[tên-project]/YYYY-MM-DD-session.md`
+   - Vault my-brain → skip. Không rõ → `raw/projects/misc/YYYY-MM-DD-session.md`
+   - Nội dung: đã làm gì, quyết định nào, còn lại gì
+
+2. Báo tóm tắt:
+```
+✓ Git: [đã commit / chưa]
+✓ Obsidian: lưu → raw/projects/[project]/[date]-session.md
+→ Còn lại: [task 1], [task 2]
+```
+
+@RTK.md

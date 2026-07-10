@@ -62,7 +62,7 @@ Trước khi báo "xong"/commit → chạy **`/ship`** (verify + review + diff s
 
 ## Security trigger
 
-Diff đụng `**/auth/**` · `**/middleware/**` · `**/api/**` · `**/*migration*` · `**/*rls*` · file có `req.body`/`req.params`/`formData` mới → chạy **`/review`** (security checklist). Enforce bằng hook, không đợi nhớ.
+Diff đụng `**/auth/**` · `**/middleware/**` · `**/api/**` · `**/*migration*` · `**/*rls*` → chạy **`/review`** (security checklist). Enforce bằng hook thật: `~/.claude/hooks/security-gate.py` chặn `git commit` khi staged diff đụng path nhạy cảm mà `.claude/.security-reviewed` chưa được /review touch trong 30 phút.
 
 ## ASSUMPTION / decisions
 

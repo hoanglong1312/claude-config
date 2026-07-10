@@ -983,11 +983,13 @@ User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại
 
 | Key | Giá trị chủ đích | Lý do |
 |---|---|---|
-| `autoCompactWindow` | `150000` | Fixed-token auto-compact thay vì %, tránh phình context khi model có context window lớn (1M) |
+| `autoCompactWindow` | `300000` | Fixed-token auto-compact thay vì %, tránh phình context khi model có context window lớn (1M) |
 | `env.CLAUDE_CODE_SUBAGENT_MODEL` | `"haiku"` | Subagent việc nhẹ/lặp lại dùng model rẻ, tiết kiệm token |
 | `env.MAX_THINKING_TOKENS` | `"10000"` | Giới hạn thinking budget mặc định |
+| `env.DISABLE_AUTOUPDATER` | `"1"` | Chặn bundled claude (cmux) tự update fail — nhớ chạy `claude update` thủ công định kỳ |
 | `skipDangerousModePermissionPrompt` | `true` | Đã chấp nhận dialog bypass-permissions, không hỏi lại |
 | `skipAutoPermissionPrompt` | `true` | Đã chấp nhận dialog auto-mode, không hỏi lại |
+| `hooks.UserPromptSubmit` → `hooks/rules-digest.sh` | wired | Inject rule digest mỗi prompt chống context decay (gates + skill routing + model tiering). Path trong settings.json là absolute — máy mới phải sửa lại home path |
 
 Thiếu key nào → hỏi user 1 lần gộp có muốn set theo giá trị trên không, merge vào `env`/root của `settings.json` (không replace toàn file). Nếu user đã tự chỉnh giá trị khác trên máy hiện tại → báo giá trị khác nhau, hỏi giữ máy hiện tại hay đồng bộ theo bảng trên, không tự ý ghi đè.
 

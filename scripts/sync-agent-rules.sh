@@ -53,8 +53,10 @@ PY
   } > "$out"
 }
 
-mkdir -p "$CLAUDE_DIR/templates/shared-workflows"
-cp "$REPO_DIR/templates/shared-agent-rules.md" "$CLAUDE_DIR/templates/shared-agent-rules.md"
-cp "$REPO_DIR/templates/shared-workflows/"*.md "$CLAUDE_DIR/templates/shared-workflows/"
+if [ "$REPO_DIR" != "$CLAUDE_DIR" ]; then
+  mkdir -p "$CLAUDE_DIR/templates/shared-workflows"
+  cp "$REPO_DIR/templates/shared-agent-rules.md" "$CLAUDE_DIR/templates/shared-agent-rules.md"
+  cp "$REPO_DIR/templates/shared-workflows/"*.md "$CLAUDE_DIR/templates/shared-workflows/"
+fi
 render_agents "$PROJECT_DIR/AGENTS.md"
 echo "Synced shared rules to $CLAUDE_DIR and rendered $PROJECT_DIR/AGENTS.md"

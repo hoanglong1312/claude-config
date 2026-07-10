@@ -31,3 +31,5 @@ github/
 .usage-cache.txt
 .ponytail-active
 templates/*.bak-*
+remote-settings.json
+settings.json.bak

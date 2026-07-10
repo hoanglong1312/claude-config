@@ -1,47 +1,88 @@
 <!-- BEGIN GENERATED AGENT RULES -->
 <!-- generated-from: templates/shared-agent-rules.md + templates/shared-workflows/*.md + templates/AGENTS.md -->
-<!-- generated-date: 2026-06-06 -->
-<!-- shared-rules-sha256: ac9a2d771372fb29dfb1612343e57f2b510f80e25cc388d30252fc1ac3d15667 -->
-<!-- workflows-sha256: 5651a693e5f54029a6405d3aeb608d8b7ce5a9fcdebf68d91f697d7d17360f06 -->
-<!-- template-sha256: b101fe6ba5797b4e21de69602afc3450c2ce84d045172d6e7690bf1be24f1535 -->
+<!-- generated-date: 2026-07-11 -->
+<!-- shared-rules-sha256: bb20e99bc0138ff4378a331589f04a04fe3a60f41c8831723c35fb1c7b69ca4d -->
+<!-- workflows-sha256: 1a9844d58bf3897a4f482d2b419df4266ec07e568b1e51f887ed8bd9e3044527 -->
+<!-- template-sha256: a152f831c78a47accdc00926b3c0b6ca849c571ed8ca05e94a146081bd6faf61 -->
 
-# Shared Agent Rules
+# Shared Agent Rules — Claude + Codex
 
-These rules apply to any agent using this repo unless tool-specific instructions override them.
+Apply every task unless overridden by project instructions or direct user request.
 
-## Language
-- Reply in Vietnamese unless the user asks for another language.
-- Explain uncommon technical terms briefly on first use.
-- Keep command names, file paths, API names, package names, variables, model IDs, and product names unchanged.
+## Rule 1 — Think Before Coding
+State assumptions explicitly. Ask rather than guess. Push back when simpler approach exists. Stop when confused — name what's unclear.
 
-## Context Discipline
-- Read the minimum context needed before acting.
-- If the user provides a file, path, symbol, stack trace, or scope, start there instead of exploring the whole repo.
-- Search for existing patterns before adding new ones.
-- Do not paste long output; summarize decisions, files touched, checks run, and remaining risk.
+**Anti-rationalization:**
 
-## Worktree Safety
-- Assume the worktree may contain user changes.
-- Do not revert changes you did not create.
-- Do not run destructive git commands unless the user explicitly asks.
-- Do not commit or push unless the user explicitly asks.
+| Bào chữa | Thực tế |
+|---|---|
+| "Tôi biết bug rồi, fix luôn" | Reproduce trước — 30% đoán sai |
+| "Test này chắc wrong" | Verify trước khi skip |
+| "Refactor nhỏ, thêm vào luôn" | Refactor + feature = review + debug đều khó hơn |
 
-## Implementation
-- Prefer existing project patterns, framework APIs, and helpers.
-- Keep changes scoped to the task.
-- Do not refactor unrelated code.
-- Add abstractions only when they reduce real complexity or match existing patterns.
-- For structured data, prefer parsers or APIs over ad-hoc string manipulation.
+## Rule 2 — Simplicity First
+Minimum code that solves the problem. No speculative features. No abstractions for single-use code.
 
-## Verification
-- Code logic: run scoped unit or integration tests when available.
-- UI/user flow: verify with browser or screenshots when available.
-- Build/deploy config: run build, lint, or dry-run checks when available.
-- If verification cannot run, state why and name residual risk.
+## Rule 3 — Surgical Changes
+Touch only what you must. Don't improve adjacent code. Don't refactor what's not broken. Match existing style. Dead code unrelated to task: report to user, don't delete.
 
-## Review
-- After large changes or executor/sub-agent changes, review across correctness, readability, architecture, security, and performance.
-- Put blockers before summary.
+## Rule 4 — Goal-Driven Execution
+Define "done" before starting. Verify against it. Loop until verified.
+
+## Rule 5 — Surface Conflicts
+Two patterns contradict → pick one (more recent / more tested / more local), explain why, flag the other. Don't blend.
+
+## Rule 6 — Read Before Write
+Before adding code: read exports, immediate callers, shared utilities. "Looks orthogonal" is dangerous.
+
+## Rule 7 — Checkpoint After Significant Steps
+After each major step: summarize what's done, what's verified, what remains. Don't continue from a state you can't describe.
+
+## Rule 8 — Match Conventions
+Codebase style beats personal preference. Flag harmful conventions — don't fork silently.
+
+## Rule 9 — Fail Loud
+"Completed" is wrong if anything was silently skipped. "Tests pass" is wrong if any tests were skipped. Surface uncertainty, don't hide it.
+
+## Rule 10 — Debug Tier Selection
+
+Pick the lightest tool that can confirm the bug:
+
+| Bug loại | Tool |
+|---|---|
+| Logic thuần / function / formatter / reducer | Unit test — nhanh nhất, run nhiều lần |
+| React component / interaction / state | Inspect code + `npm run build`, unit test nhỏ nếu cần |
+| UI visual / layout / navigation | `cmux browser snapshot` — đọc accessibility tree, verify bằng mắt |
+| Console error / network / DOM / JS | `cmux browser console list` / `cmux browser network requests` / `cmux browser eval <js>` |
+| Click, fill, interact | `cmux browser click/fill/type <selector>` |
+| Screenshot | `cmux browser screenshot` |
+| E2E flow quan trọng (login, payment, navigation nhiều màn) | Playwright — chỉ khi flow dễ regression |
+
+Default với React/Vite project:
+```
+Đọc file liên quan → sửa scoped → npm run build → cmux browser verify → commit file cụ thể
+```
+
+## Rule 11 — claude-teams cho Multi-Agent
+
+Dùng `cmux claude-teams` thay `claude` khi có 2+ việc độc lập chạy song song được (fix A + fix B, feature + test).
+
+## Rule 12 — Subagent for Exploration
+When fixing bugs or investigating issues requiring 3+ file reads: spawn a subagent (Explore or general-purpose) to investigate, grep, and trace. Main context receives summary only — no raw file dumps. Edit/fix happens in main context after summary received.
+
+Exception: code projects with code-project.md — follow token discipline rules there instead.
+
+## Rule 13 — Clarify Before Execute
+
+Nếu có bất kỳ điều gì mơ hồ trong yêu cầu — hỏi user trong **1 lần duy nhất** trước khi ghi file, chạy code, hoặc thực thi bất kỳ action nào. Không đoán, không ghi rồi mới hỏi.
+
+## Rule 14 — Ground Progress Claims
+
+Trước khi báo xong: audit từng claim dựa trên tool result thực tế trong session. Chỉ report việc có evidence; nếu chưa verify → nói rõ. Nếu test fail → báo output cụ thể. Nếu bước bị skip → nói thẳng.
+
+## Rule 15 — End-of-Turn Check (Autonomous Mode)
+
+Trước khi kết thúc turn, đọc lại đoạn cuối. Nếu đó là plan, phân tích, câu hỏi, danh sách next steps, hoặc lời hứa chưa làm ("I'll…", "let me know…") → làm luôn bằng tool calls. Kết thúc turn chỉ khi task xong hoặc bị block bởi input chỉ user cung cấp được.
 
 ---
 
@@ -158,17 +199,147 @@ Use tools to reduce noise.
 
 ---
 
-# Codex Only
+# AGENTS.md — Code / Multi-Agent AI Rules
 
-Codex reads this file as materialized text.
+<!--
+Generated project AGENTS.md must materialize shared rules above this template body.
+Do not rely on @include for Codex unless Codex include expansion is verified.
+Source: ~/.claude/templates/shared-agent-rules.md
+-->
 
-- Do not rely on Claude include directives in `AGENTS.md`.
-- If shared rules mention a Claude Code skill or plugin, follow the equivalent checklist in this file instead of invoking that tool.
-- For non-trivial work, plan before editing.
-- For bugs, follow the debugging workflow before fixing.
-- After code or config changes, review the diff and run relevant verification.
-- Preserve user changes. Do not commit or push unless the user asks.
-- Optional tools such as RTK may be used only when available.
+*File này dành cho code project hoặc project có nhiều agent cùng sửa artifact. Non-code project không bắt buộc có `AGENTS.md` trừ khi cần phối hợp nhiều tool.*
+
+---
+
+## Project Context
+
+- **Tên**: [tên project]
+- **Type**: code / multi-agent
+- **Stack**: [tech stack]
+- **Mục tiêu**: [mô tả ngắn]
+
+---
+
+## Upstream Claude Context
+
+- Superpowers is Claude-only. Codex does not invoke Superpowers skills directly.
+- Claude may create specs/plans via brainstorming → writing-plans; Codex consumes generated `.md` files.
+- Caveman mode, RTK hooks, statusline, and Claude memory rules are Claude-side behavior. Ignore them for code behavior unless task explicitly mentions them.
+- If Claude is orchestrating, follow task list extracted from `docs/plan-overview.md` and report back for Claude review.
+
+---
+
+## Operating Contract
+
+- Start by reading the current task/spec and relevant project context.
+- Define success criteria before editing.
+- Make minimal scoped changes; do not refactor adjacent code.
+- Run verification before declaring done.
+- Report changed files, exact commands run, and pass/fail results.
+- If blocked, write `QA-FAIL:` with command, error, and attempted fixes.
+
+---
+
+## When Working Without Claude
+
+Use this when user opens Codex directly instead of dispatching through Claude:
+
+1. Read `AGENTS.md` first, then `context/architecture.md` if present.
+2. If no task plan exists, create a short implementation plan before editing.
+3. Use project commands from `rules/*.md`, `package.json`, `pyproject.toml`, `go.mod`, or README.
+4. Keep changes surgical and verify after each meaningful step.
+5. End with summary: files changed, verification run, remaining risks, next step.
+
+---
+
+## Phân Công Vai Trò
+
+| Tool | Vai trò |
+|------|---------|
+| **Claude Code** | Orchestration + Review: plan, quyết kiến trúc, review output |
+| **Codex** (`codex:codex-rescue`) | Execution + QA: viết code, test, commit |
+
+---
+
+## Codex — Workflow
+
+1. Nhận task list từ Claude (extract từ `docs/plan-overview.md`). Không tự tạo plan.
+2. Đọc `docs/superpowers/decisions.md` trước khi bắt đầu.
+3. Nếu mơ hồ → ghi `ASSUMPTION:` vào commit message, tiếp tục.
+4. Chạy Quality Gate trước commit: static audit + test suite + build.
+5. QA fail → tự fix tối đa 3 retry → sau đó `QA-FAIL:` + escalate.
+6. Pass → commit + báo Claude review.
+
+**Commit signals bắt buộc:**
+
+| Signal | Khi nào |
+|---|---|
+| `ASSUMPTION:` | Giả định cần Claude xác nhận |
+| `ENV-REQUIRED: VAR_NAME` | Env var mới cần set trước deploy |
+| `QA-FAIL:` | Test fail sau 3 retry, cần Claude |
+| `SECURITY-SENSITIVE:` | Động vào auth/middleware/migration/token/session/password/api route/input handling |
+
+---
+
+## Code Intelligence — GitNexus MCP
+
+Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase. Codex gọi tools qua MCP được cấu hình trong `.codex/config.toml` (init tự tạo nếu project có gitnexus):
+
+```toml
+[mcp_servers.gitnexus]
+command = "npx"
+args = ["gitnexus", "mcp"]
+```
+
+**Bắt buộc trước khi sửa code:**
+
+| Câu hỏi | Tool | Khi nào dùng |
+|---------|------|-------------|
+| Feature/area liên quan file/flow nào? | `query({search_query: "concept"})` | Trước khi bắt đầu bất kỳ task nào |
+| Symbol X là gì, callers/callees? | `context({name: "symbolName"})` | Hiểu function trước khi sửa |
+| Sửa X sẽ ảnh hưởng gì? | `impact({target: "symbolName", direction: "upstream"})` | Trước khi sửa function quan trọng |
+| Trace path từ A → B | `trace({from: "A", to: "B"})` | Debug data flow |
+| Thay đổi này ảnh hưởng symbol nào? | `detect_changes()` | Trước khi commit |
+
+**Quy tắc:**
+- `query` TRƯỚC khi đọc file source — trả về execution flows, process-grouped, tiết kiệm token.
+- `impact` bắt buộc trước khi sửa bất kỳ function nào — biết blast radius.
+- `detect_changes()` trước commit — verify chỉ sửa đúng scope (self blast-radius check).
+- Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
+- Chưa có `.gitnexus/` (chưa từng index)? Dừng, hỏi user chạy `npx gitnexus analyze` trước — không sửa code bằng grep/Read thường thay GitNexus.
+
+## Browser Automation (Codex)
+
+Codex dùng `cmux browser` qua bash cho UI verification và debugging:
+
+```bash
+cmux browser goto http://localhost:5173
+cmux browser snapshot          # đọc accessibility tree
+cmux browser screenshot        # capture visual
+cmux browser console list      # JS errors + logs
+cmux browser eval "<js>"       # execute JS in page
+cmux browser click "<selector>"
+cmux browser fill "<selector>" "<value>"
+```
+
+Dùng `cmux browser` khi: cần verify UI sau code change, debug DOM/console error, confirm layout. Không dùng cho E2E flow phức tạp (→ Playwright).
+
+---
+
+## Do NOT
+
+- Push code chưa pass tests.
+- Retry QA quá 3 lần mà không escalate.
+- Tự thêm dependencies không có trong plan. Ghi `ASSUMPTION:` và báo Claude approve trước.
+- Bỏ qua code review khi có code review skill.
+- Thêm project-specific rules vào file này. Đặt vào `rules/[tool].md` trong project.
+- Âm thầm lệch spec. Nếu implementation cần lệch → ghi `ASSUMPTION:` → dừng → báo Claude cập nhật spec trước.
+
+---
+
+*Cập nhật: 2026-07-01 (rev13: trim Claude-side workflow; Codex-only content)*
+
+<!-- template: 2026-07-01 -->
 
 <!-- END GENERATED AGENT RULES -->
 

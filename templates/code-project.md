@@ -58,7 +58,7 @@ Chưa có `.gitnexus/` → dừng, hỏi user index trước (`npx gitnexus anal
 
 ## Definition of Done
 
-Trước khi báo "xong"/commit → chạy **`/ship`** (verify + review + diff scope + ASSUMPTION + migration version). Fail-loud: chưa qua /ship = chưa done.
+Trước khi báo "xong"/commit → chạy **`/ship`** (verify + review + diff scope + ASSUMPTION + migration version + quiz-gate). Fail-loud: chưa qua /ship = chưa done.
 
 ## Security trigger
 
@@ -67,6 +67,12 @@ Diff đụng `**/auth/**` · `**/middleware/**` · `**/api/**` · `**/*migration
 ## ASSUMPTION / decisions
 
 Codex commit có `ASSUMPTION:` → Claude quyết + append `docs/superpowers/decisions.md` NGAY (không để session sau). Codex đọc file này trước mỗi executing-plans.
+
+## Blindspot scout (trước plan)
+
+Task đụng vùng code chưa quen / feature mới nhiều file → TRƯỚC khi viết plan, scout tìm unknown unknowns: GitNexus `query/context` + `git log` vùng liên quan + docs/architecture.md. Output = **unknown map** ngắn (3-5 dòng: đã biết gì, chưa biết gì, rủi ro ở đâu) đặt đầu plan. Unknown chỉ user trả lời được → gộp vào câu hỏi CLARIFY, không đoán. Task nhỏ vùng quen → skip, không cần ghi.
+
+Khác Plan cross-review bên dưới: scout chạy TRƯỚC plan (định hình plan), cross-review chạy SAU plan (bắt lỗi plan). Không thay nhau.
 
 ## Plan cross-review (trước execute)
 

@@ -15,7 +15,9 @@ Source: ~/.claude/templates/shared-agent-rules.md
 - **Tên**: [tên project]
 - **Type**: code / multi-agent
 - **Stack**: [tech stack]
-- **Mục tiêu**: [mô tả ngắn]
+- **Lý do / đầu ra**: [tạo ra gì, phục vụ ai]
+- **Mục tiêu**: [kết quả — khi nào coi là thành công]
+- **Không làm**: [scope loại trừ, nếu có]
 
 ---
 

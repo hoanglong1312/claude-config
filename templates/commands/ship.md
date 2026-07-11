@@ -10,6 +10,7 @@ Kiểm tra trước khi commit/báo done.
 4. Grep `ASSUMPTION:` trong staged/recent commits → nếu có, xác nhận với user trước
 5. Check migration nếu có DB: version đã tăng chưa?
 6. Diff có file/module/bảng DB mới → update map trong `context/architecture.md` + status trong `docs/plan-overview.md`
-7. Báo cáo: ✓ pass / ✗ fail với lý do cụ thể
+7. **Quiz-gate (người là gate):** diff đụng vùng code user chưa quen HOẶC >100 dòng → quiz user 2-3 câu về change (nó làm gì, tại sao cách này, hỏng thì hỏng ở đâu) qua AskUserQuestion. User trả lời sai/không chắc → giải thích lại (behavior flow đơn giản) rồi quiz lại. Không hiểu thì chưa merge. Diff nhỏ + vùng quen → skip, ghi rõ skip.
+8. Báo cáo: ✓ pass / ✗ fail với lý do cụ thể
 
 ## Chỉ báo "sẵn sàng commit" khi tất cả ✓

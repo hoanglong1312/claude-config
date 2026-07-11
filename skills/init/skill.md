@@ -138,7 +138,9 @@ CLAUDE.md:
 - Tên: [điền]
 - Git repo: [điền hoặc N/A]
 - Tech stack: [điền]
-- Mục tiêu: [điền]
+- Lý do / đầu ra: [tạo ra gì, phục vụ ai]
+- Mục tiêu: [kết quả — khi nào coi là thành công]
+- Không làm: [scope loại trừ, nếu có từ phỏng vấn]
 
 ## Project-Specific Rules
 ```
@@ -328,16 +330,19 @@ mkdir -p docs/superpowers/specs
 touch docs/superpowers/decisions.md
 ```
 
-**4b. Điền thông tin project:**
+**4b. Phỏng vấn + điền thông tin project:**
 
 Auto-detect trước, hỏi chỉ khi không detect được:
 
 ```
 1. "Tên project là gì?"
-2. "Mục tiêu chính? (1-2 câu)"
-3. "Tech stack?" → detect từ package.json / requirements.txt / go.mod trước
-4. "Git remote URL?" (tùy chọn)
+2. "Lý do / đầu ra: project này tạo ra gì, phục vụ ai?" (1-2 câu)
+3. "Mục tiêu chính — khi nào coi là thành công?" (1-2 câu)
+4. "Tech stack?" → detect từ package.json / requirements.txt / go.mod trước
+5. "Git remote URL?" (tùy chọn)
 ```
+
+Sau câu cố định, **phỏng vấn mở**: hỏi thêm những gì còn thiếu để hiểu đúng project (constraint, user cuối, scope không làm) — tối đa 8 câu tổng, gộp bằng AskUserQuestion nếu có, dừng ngay khi đủ. Đáp án ghi vào `## Thông Tin Project`, viết explicit cho model kém sắc bén hơn đọc — không assume context ngoài file.
 
 Với project có sẵn code: đọc deps → auto-fill stack; đọc README nếu có → gợi ý mục tiêu → hỏi user confirm.
 
@@ -349,7 +354,9 @@ Với project có sẵn code: đọc deps → auto-fill stack; đọc README n�
 - Tên: [điền]
 - Git repo: [điền hoặc N/A]
 - Tech stack: [điền]
-- Mục tiêu: [điền]
+- Lý do / đầu ra: [tạo ra gì, phục vụ ai]
+- Mục tiêu: [kết quả — khi nào coi là thành công]
+- Không làm: [scope loại trừ, nếu có từ phỏng vấn]
 ```
 
 **AGENTS.md** — CHỈ nếu user dùng Codex. Render/materialize từ shared rules + template body; không để `@include` vì Codex có thể không expand.
@@ -366,7 +373,9 @@ Section `## Project Context` cần điền:
 - **Tên**: [điền]
 - **Type**: code / multi-agent
 - **Stack**: [điền]
-- **Mục tiêu**: [điền]
+- **Lý do / đầu ra**: [tạo ra gì, phục vụ ai]
+- **Mục tiêu**: [kết quả — khi nào coi là thành công]
+- **Không làm**: [scope loại trừ, nếu có]
 ```
 
 Marker bắt buộc trong project `AGENTS.md`:

@@ -941,7 +941,22 @@ User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại
 | `env.DISABLE_AUTOUPDATER` | `"1"` | Chặn bundled claude (cmux) tự update fail — nhớ chạy `claude update` thủ công định kỳ |
 | `skipDangerousModePermissionPrompt` | `true` | Đã chấp nhận dialog bypass-permissions, không hỏi lại |
 | `skipAutoPermissionPrompt` | `true` | Đã chấp nhận dialog auto-mode, không hỏi lại |
-| `hooks.UserPromptSubmit` → `hooks/rules-digest.sh` | wired | Inject rule digest mỗi prompt chống context decay (gates + skill routing + model tiering). Hook paths dùng `$HOME` — portable, không cần sửa khi sang máy mới |
+**Custom hooks phải wired đủ (paths dùng `$HOME`, portable — máy mới chỉ cần merge, không sửa path):**
+
+| Event · Matcher | Script | Tác dụng |
+|---|---|---|
+| PreToolUse · `Bash` | `rtk hook claude` | RTK token proxy mọi Bash |
+| PreToolUse · `Grep\|Glob\|Bash` | `hooks/gitnexus/gitnexus-hook.cjs` | Enrich search bằng GitNexus graph |
+| PreToolUse · `Bash` | `hooks/gitnexus/commit-gate.py` | Chặn commit nếu chưa `detect_changes` (repo có `.gitnexus/`) |
+| PreToolUse · `Bash` | `hooks/security-gate.py` | Chặn commit khi diff đụng auth/api/migration/rls chưa qua `/review` (code project có stamp) |
+| PreToolUse · `mcp__gitnexus__detect_changes` | `hooks/gitnexus/touch-detect-changes.py` | Touch marker mở commit-gate |
+| UserPromptSubmit | `hooks/rules-digest.sh` | Digest chống context decay mỗi prompt |
+| SessionStart | `hooks/project-check.sh` + `hooks/session-resume.sh` | Check cấu trúc + load session context |
+| PostToolUse · `Agent` | `hooks/codex-wakeup-reminder.sh` | Nhắc ScheduleWakeup sau dispatch (60–120s nhỏ, 270s dài) |
+| PostToolUse · `Bash` | `hooks/gitnexus/gitnexus-hook.cjs` | Check index freshness |
+| statusLine | `hooks/statusline.sh` | Model + rate-limit bar |
+
+Merge máy mới: thiếu entry nào → hỏi user 1 lần gộp rồi thêm entry đó vào `settings.json` (nguồn chuẩn = `settings.json` trong repo này). Gate cứng (commit-gate, security-gate) khuyến nghị luôn bật với code project.
 
 Thiếu key nào → hỏi user 1 lần gộp có muốn set theo giá trị trên không, merge vào `env`/root của `settings.json` (không replace toàn file). Nếu user đã tự chỉnh giá trị khác trên máy hiện tại → báo giá trị khác nhau, hỏi giữ máy hiện tại hay đồng bộ theo bảng trên, không tự ý ghi đè.
 

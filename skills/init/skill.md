@@ -48,7 +48,7 @@ Nếu project có `package.json`, `*.py`, `*.go`:
 | `.gitignore` | có / chưa → tạo hoặc append |
 | `.mcp.json` | có / chưa → hỏi |
 | `rules/` | có / chưa → sẽ tạo (trống) |
-| `context/architecture.md` | có / chưa → tạo blank |
+| `context/architecture.md` | có / chưa → copy skeleton từ `~/.claude/templates/architecture.md`, điền entry points + map từ codebase detect được |
 
 3. Báo cáo + xác nhận 1 lần → tạo hết.
 

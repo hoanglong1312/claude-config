@@ -9,6 +9,7 @@ Kiểm tra trước khi commit/báo done.
 3. `/review` — dispatch code-reviewer agent
 4. Grep `ASSUMPTION:` trong staged/recent commits → nếu có, xác nhận với user trước
 5. Check migration nếu có DB: version đã tăng chưa?
-6. Báo cáo: ✓ pass / ✗ fail với lý do cụ thể
+6. Diff có file/module/bảng DB mới → update map trong `context/architecture.md` + status trong `docs/plan-overview.md`
+7. Báo cáo: ✓ pass / ✗ fail với lý do cụ thể
 
 ## Chỉ báo "sẵn sàng commit" khi tất cả ✓

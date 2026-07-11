@@ -3,7 +3,7 @@
 <!-- generated-date: 2026-07-11 -->
 <!-- shared-rules-sha256: f7432a6c632351ddad10ca839f7bcaa56834f37efcee71edbc9b92179633d266 -->
 <!-- workflows-sha256: 1a9844d58bf3897a4f482d2b419df4266ec07e568b1e51f887ed8bd9e3044527 -->
-<!-- template-sha256: e40b76e3175914aa2004839bb69be5b4bd6c48365760a833b00191910a0b74cd -->
+<!-- template-sha256: 45af31fd88c6974151310bd00b1cb1649bbff5b49fa4e676a9b27e4486cc6dcd -->
 
 # Shared Agent Rules — Claude + Codex
 
@@ -244,9 +244,9 @@ Source: ~/.claude/templates/shared-agent-rules.md
 
 ## When Working Without Claude
 
-Use this when user opens Codex directly instead of dispatching through Claude:
+Use this when user opens Codex (or another executor agent) directly instead of dispatching through Claude — e.g. Claude hit usage limit mid-project:
 
-1. Read `AGENTS.md` first, then `context/architecture.md` if present.
+1. Read in order: `docs/plan-overview.md` (what's in progress), `docs/superpowers/decisions.md` (settled decisions — do not relitigate), `context/architecture.md` (codebase map + entry points). Start from the map, not from guessing/grepping around.
 2. If no task plan exists, create a short implementation plan before editing.
 3. Use project commands from `rules/*.md`, `package.json`, `pyproject.toml`, `go.mod`, or README.
 4. Keep changes surgical and verify after each meaningful step.
@@ -271,7 +271,8 @@ Use this when user opens Codex directly instead of dispatching through Claude:
 3. Nếu mơ hồ → ghi `ASSUMPTION:` vào commit message, tiếp tục.
 4. Chạy Quality Gate trước commit: static audit + test suite + build.
 5. QA fail → tự fix tối đa 3 retry → sau đó `QA-FAIL:` + escalate.
-6. Pass → commit + báo Claude review.
+6. Thêm file/module/bảng DB mới → update map trong `context/architecture.md` (chỉ map, không ghi tiến độ) + status task trong `docs/plan-overview.md`.
+7. Pass → commit + báo Claude review.
 
 **Commit signals bắt buộc:**
 

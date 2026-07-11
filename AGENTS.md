@@ -1,7 +1,7 @@
 <!-- BEGIN GENERATED AGENT RULES -->
 <!-- generated-from: templates/shared-agent-rules.md + templates/shared-workflows/*.md + templates/AGENTS.md -->
 <!-- generated-date: 2026-07-11 -->
-<!-- shared-rules-sha256: c30925432701193b4a986f343369e3c8d6e183bc5bd285880999bc8d38d99ccf -->
+<!-- shared-rules-sha256: f09113c69592a5ee315ccdee386573f9f4c1cd88b5981b50413f6adf58521fd2 -->
 <!-- workflows-sha256: 1a9844d58bf3897a4f482d2b419df4266ec07e568b1e51f887ed8bd9e3044527 -->
 <!-- template-sha256: 236540a460ccd72899244aec425fa4a9772e3db65c025d17338162a22c2490bf -->
 
@@ -78,6 +78,14 @@ Môi trường không có subagent tool (Codex CLI, executor agent khác) → t�
 ## Rule 13 — Clarify Before Execute
 
 Mơ hồ **làm đổi outcome** (kiến trúc, xoá/ghi đè data, scope, hành vi user thấy) → hỏi user trong **1 lần duy nhất** gộp mọi câu hỏi, trước khi thực thi. Mơ hồ nhỏ không đổi outcome → nêu assumption rõ ràng rồi làm tiếp, không dừng chờ.
+
+Dấu hiệu mơ hồ (gặp ≥1 → hỏi gộp 1 lần rồi mới thực thi, có AskUserQuestion tool thì dùng):
+- Prompt có ≥2 cách hiểu hợp lý.
+- Goal nêu triệu chứng, không nêu mong muốn ("nó bị lỗi" — muốn hành vi đúng là gì?).
+- Thiếu tiêu chí "done" — không biết khi nào được coi là xong.
+- Từ chỉ định không rõ ("cái này", "chỗ đó", "như cũ" — không có path/tên cụ thể).
+
+Task đã rõ ràng → làm luôn, không hỏi thừa.
 
 ## Rule 14 — Ground Progress Claims
 

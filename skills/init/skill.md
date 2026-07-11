@@ -950,7 +950,7 @@ User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại
 | PreToolUse · `Bash` | `hooks/gitnexus/commit-gate.py` | Chặn commit nếu chưa `detect_changes` (repo có `.gitnexus/`) |
 | PreToolUse · `Bash` | `hooks/security-gate.py` | Chặn commit khi diff đụng auth/api/migration/rls chưa qua `/review` (code project có stamp) |
 | PreToolUse · `mcp__gitnexus__detect_changes` | `hooks/gitnexus/touch-detect-changes.py` | Touch marker mở commit-gate |
-| UserPromptSubmit | `hooks/rules-digest.sh` | Digest chống context decay mỗi prompt |
+| UserPromptSubmit | `hooks/rules-digest.sh` | Digest chống context decay mỗi prompt — 4 dòng: GATES (debug/verify) · MƠ HỒ (AskUserQuestion trước khi làm nếu prompt ≥2 cách hiểu / thiếu goal/done) · SKILL (routing) · MODEL (tiering). Sửa nội dung = edit script trực tiếp, hiệu lực ngay không cần restart |
 | SessionStart | `hooks/project-check.sh` + `hooks/session-resume.sh` | Check cấu trúc + load session context |
 | PostToolUse · `Agent` | `hooks/codex-wakeup-reminder.sh` | Nhắc ScheduleWakeup sau dispatch (60–120s nhỏ, 270s dài) |
 | PostToolUse · `Bash` | `hooks/gitnexus/gitnexus-hook.cjs` | Check index freshness |

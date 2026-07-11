@@ -72,6 +72,14 @@ Môi trường không có subagent tool (Codex CLI, executor agent khác) → t�
 
 Mơ hồ **làm đổi outcome** (kiến trúc, xoá/ghi đè data, scope, hành vi user thấy) → hỏi user trong **1 lần duy nhất** gộp mọi câu hỏi, trước khi thực thi. Mơ hồ nhỏ không đổi outcome → nêu assumption rõ ràng rồi làm tiếp, không dừng chờ.
 
+Dấu hiệu mơ hồ (gặp ≥1 → hỏi gộp 1 lần rồi mới thực thi, có AskUserQuestion tool thì dùng):
+- Prompt có ≥2 cách hiểu hợp lý.
+- Goal nêu triệu chứng, không nêu mong muốn ("nó bị lỗi" — muốn hành vi đúng là gì?).
+- Thiếu tiêu chí "done" — không biết khi nào được coi là xong.
+- Từ chỉ định không rõ ("cái này", "chỗ đó", "như cũ" — không có path/tên cụ thể).
+
+Task đã rõ ràng → làm luôn, không hỏi thừa.
+
 ## Rule 14 — Ground Progress Claims
 
 Trước khi báo xong: audit từng claim dựa trên tool result thực tế trong session. Chỉ report việc có evidence; nếu chưa verify → nói rõ. Nếu test fail → báo output cụ thể. Nếu bước bị skip → nói thẳng.

@@ -52,9 +52,9 @@ Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 - Quyết kiến trúc trước khi giao Codex.
 - Đọc/grep source trực tiếp CHỈ khi ≥1 signal: silent-failure (no error, 0 rows affected) · cần cross-ref đồng thời DB schema+RLS+code · đối chiếu MCP data với code · Codex QA-FAIL 2+ lần cùng symptom. Không signal → viết investigation plan → giao Codex.
 
-**GitNexus-first:** project có index → `query→context→trace` TRƯỚC grep/Read (xem `rules/gitnexus.md`).
+**GitNexus-first (câu hỏi structural):** project có index + câu hỏi dạng symbol/call-graph ("X định nghĩa đâu", "ai gọi Y", "sửa Z vỡ gì", trace flow) → `query→context→trace` TRƯỚC grep/Read (xem `rules/gitnexus.md`). Grep/Read thẳng là ĐÚNG tool khi: tìm chuỗi text literal · file đã biết tên · file .md/config · repo không phải code.
 
-Chưa có `.gitnexus/` → dừng, hỏi user index trước (`npx gitnexus analyze`), không tự ý bỏ qua GitNexus-first bằng grep/Read thường.
+Repo code nhiều file chưa có `.gitnexus/` → đề xuất index 1 lần (`npx gitnexus analyze`); user từ chối hoặc task chỉ cần literal search → grep bình thường, không dừng cứng.
 
 ## Definition of Done
 

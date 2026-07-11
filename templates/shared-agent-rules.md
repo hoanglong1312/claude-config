@@ -66,6 +66,7 @@ Khi có cmux: dùng `cmux claude-teams` thay `claude` khi có 2+ việc độc l
 When fixing bugs or investigating issues requiring 3+ file reads: spawn a subagent (Explore or general-purpose) to investigate, grep, and trace. Main context receives summary only — no raw file dumps. Edit/fix happens in main context after summary received.
 
 Exception: code projects with code-project.md — follow token discipline rules there instead.
+Môi trường không có subagent tool (Codex CLI, executor agent khác) → tự đọc nhưng scoped tối thiểu: đúng file/symbol liên quan (GitNexus query trước nếu có index), không dump cả directory.
 
 ## Rule 13 — Clarify Before Execute
 

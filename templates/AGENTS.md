@@ -6,7 +6,7 @@ Do not rely on @include for Codex unless Codex include expansion is verified.
 Source: ~/.claude/templates/shared-agent-rules.md
 -->
 
-*File này dành cho code project hoặc project có nhiều agent cùng sửa artifact. Non-code project không bắt buộc có `AGENTS.md` trừ khi cần phối hợp nhiều tool.*
+*File này dành cho MỌI executor agent không phải Claude (Codex, Gemini CLI, agent khác) làm việc trên code project. Non-code project không bắt buộc có `AGENTS.md` trừ khi cần phối hợp nhiều tool. Chỗ nào ghi "Codex" = executor agent đang đọc file này.*
 
 ---
 
@@ -56,11 +56,11 @@ Use this when user opens Codex (or another executor agent) directly instead of d
 | Tool | Vai trò |
 |------|---------|
 | **Claude Code** | Orchestration + Review: plan, quyết kiến trúc, review output |
-| **Codex** (`codex:codex-rescue`) | Execution + QA: viết code, test, commit |
+| **Executor** (Codex qua `codex:codex-rescue`, hoặc agent khác chạy standalone) | Execution + QA: viết code, test, commit |
 
 ---
 
-## Codex — Workflow
+## Executor Workflow (Codex / agent khác)
 
 0. **Nếu được giao review plan (cross-review, read-only):** đối chiếu plan với codebase qua GitNexus (`query`/`context`/`impact`) — file/symbol trong plan có thật không, impact đủ chưa, thiếu bước nào. Trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề cụ thể]`. KHÔNG sửa code trong bước này.
 1. Nhận task list từ Claude (extract từ `docs/plan-overview.md`). Không tự tạo plan.
@@ -84,13 +84,15 @@ Use this when user opens Codex (or another executor agent) directly instead of d
 
 ## Code Intelligence — GitNexus MCP
 
-Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase. Codex gọi tools qua MCP được cấu hình trong `.codex/config.toml` (init tự tạo nếu project có gitnexus):
+Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase. Codex gọi tools qua MCP cấu hình trong `.codex/config.toml` (init tự tạo nếu project có gitnexus); agent khác cấu hình MCP theo cơ chế riêng của tool đó, cùng command:
 
 ```toml
 [mcp_servers.gitnexus]
 command = "npx"
 args = ["gitnexus", "mcp"]
 ```
+
+Agent không hỗ trợ MCP → dùng CLI trực tiếp: `npx gitnexus query "<concept>"` (các subcommand tương ứng tool table dưới).
 
 **Bắt buộc trước khi sửa code:**
 
@@ -109,9 +111,9 @@ args = ["gitnexus", "mcp"]
 - Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
 - Chưa có `.gitnexus/` (chưa từng index)? Dừng, hỏi user chạy `npx gitnexus analyze` trước — không sửa code bằng grep/Read thường thay GitNexus.
 
-## Browser Automation (Codex)
+## Browser Automation (executor)
 
-Codex dùng `cmux browser` qua bash cho UI verification và debugging:
+UI verification/debugging dùng `cmux browser` qua bash — CHỈ khi máy có cmux (`command -v cmux`). Không có → Playwright script hoặc browser tool sẵn có của môi trường agent:
 
 ```bash
 cmux browser goto http://localhost:5173

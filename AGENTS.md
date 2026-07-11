@@ -3,7 +3,7 @@
 <!-- generated-date: 2026-07-11 -->
 <!-- shared-rules-sha256: f7432a6c632351ddad10ca839f7bcaa56834f37efcee71edbc9b92179633d266 -->
 <!-- workflows-sha256: 1a9844d58bf3897a4f482d2b419df4266ec07e568b1e51f887ed8bd9e3044527 -->
-<!-- template-sha256: a152f831c78a47accdc00926b3c0b6ca849c571ed8ca05e94a146081bd6faf61 -->
+<!-- template-sha256: e40b76e3175914aa2004839bb69be5b4bd6c48365760a833b00191910a0b74cd -->
 
 # Shared Agent Rules — Claude + Codex
 
@@ -265,6 +265,7 @@ Use this when user opens Codex directly instead of dispatching through Claude:
 
 ## Codex — Workflow
 
+0. **Nếu được giao review plan (cross-review, read-only):** đối chiếu plan với codebase qua GitNexus (`query`/`context`/`impact`) — file/symbol trong plan có thật không, impact đủ chưa, thiếu bước nào. Trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề cụ thể]`. KHÔNG sửa code trong bước này.
 1. Nhận task list từ Claude (extract từ `docs/plan-overview.md`). Không tự tạo plan.
 2. Đọc `docs/superpowers/decisions.md` trước khi bắt đầu.
 3. Nếu mơ hồ → ghi `ASSUMPTION:` vào commit message, tiếp tục.

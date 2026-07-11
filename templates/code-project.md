@@ -27,11 +27,11 @@ Bug / lỗi / không work → **`superpowers:systematic-debugging`** (reproduce 
 
 `Agent` tool **LUÔN async** — dispatch Codex trả `agentId` ngay dù có `--wait`. Không set wakeup → Codex chạy nhưng Claude **không bao giờ check kết quả**.
 
-→ Sau dispatch có `agentId`: **BẮT BUỘC `ScheduleWakeup(120s)` ngay cùng response.**
+→ Sau dispatch có `agentId`: **BẮT BUỘC `ScheduleWakeup` ngay cùng response** (hook PostToolUse:Agent sẽ nhắc). Delay theo task: nhỏ 60–120s · vừa/dài 270s. Không chọn 300s+ khi poll Codex — cache TTL 5 phút, ≤270s giữ cache ấm.
 ```
 wake → SendMessage hỏi status
   xong → git diff (so khớp plan/spec) → build/test → UI diff? /frontend-verify → migration diff? verify DB
-  chưa → ScheduleWakeup(120s) lại
+  chưa → ScheduleWakeup(cùng delay) lại
 loop tới done/fail
 ```
 Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
@@ -67,6 +67,10 @@ Diff đụng `**/auth/**` · `**/middleware/**` · `**/api/**` · `**/*migration
 ## ASSUMPTION / decisions
 
 Codex commit có `ASSUMPTION:` → Claude quyết + append `docs/superpowers/decisions.md` NGAY (không để session sau). Codex đọc file này trước mỗi executing-plans.
+
+## Plan cross-review (trước execute)
+
+Plan xong, TRƯỚC khi dispatch execute → giao Codex **review chéo plan** (1 dispatch riêng, read-only): Codex dùng GitNexus `query/context/impact` đối chiếu plan với codebase thật — file/symbol nêu trong plan có tồn tại không, impact đủ blast radius chưa, thiếu bước nào. Codex trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề]`. Có PLAN-GAP → Claude sửa plan trước, không execute plan chưa qua review. Plan nhỏ (≤2 task, 1 file) → skip được, ghi rõ skip.
 
 ## Plan tracking
 

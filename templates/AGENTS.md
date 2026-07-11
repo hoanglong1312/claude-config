@@ -62,6 +62,7 @@ Use this when user opens Codex directly instead of dispatching through Claude:
 
 ## Codex — Workflow
 
+0. **Nếu được giao review plan (cross-review, read-only):** đối chiếu plan với codebase qua GitNexus (`query`/`context`/`impact`) — file/symbol trong plan có thật không, impact đủ chưa, thiếu bước nào. Trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề cụ thể]`. KHÔNG sửa code trong bước này.
 1. Nhận task list từ Claude (extract từ `docs/plan-overview.md`). Không tự tạo plan.
 2. Đọc `docs/superpowers/decisions.md` trước khi bắt đầu.
 3. Nếu mơ hồ → ghi `ASSUMPTION:` vào commit message, tiếp tục.

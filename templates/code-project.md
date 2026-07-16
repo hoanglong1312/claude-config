@@ -78,6 +78,10 @@ Khác Plan cross-review bên dưới: scout chạy TRƯỚC plan (định hình 
 
 Plan xong, TRƯỚC khi dispatch execute → giao Codex **review chéo plan** (1 dispatch riêng, read-only): Codex dùng GitNexus `query/context/impact` đối chiếu plan với codebase thật — file/symbol nêu trong plan có tồn tại không, impact đủ blast radius chưa, thiếu bước nào. Codex trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề]`. Có PLAN-GAP → Claude sửa plan trước, không execute plan chưa qua review. Plan nhỏ (≤2 task, 1 file) → skip được, ghi rõ skip.
 
+## UI feature mới — design pipeline
+
+Thứ tự: `/wireframe` (user flow + spec table, user duyệt) → design token theo `rules/design-system.md` (chưa có file → sinh 1 lần bằng `ui-ux-pro-max`, chốt token vào file, không sinh lại mỗi màn) → `frontend-design` direction khi build màn cụ thể, bám token → Codex code → `/frontend-verify`. Plan link tới wireframe đã duyệt thay vì tả UI bằng chữ. Sửa UI nhỏ trên màn có sẵn → skip wireframe, vào thẳng build.
+
 ## Plan tracking
 
 Feature mới / execute plan nhiều task → `docs/plan-overview.md` (task + status). Format + workflow → **`/plan-track`**.
@@ -89,6 +93,8 @@ Feature mới / execute plan nhiều task → `docs/plan-overview.md` (task + st
 | Cần | Dùng |
 |---|---|
 | Dispatch Codex (script, template, wakeup loop) | `/codex-exec` |
+| Wireframe + spec màn hình trước khi code UI | `wireframe` skill |
+| Design system (style/palette/typography, 1 lần) | `ui-ux-pro-max` → `rules/design-system.md` |
 | Code review + security 11-loại | `/review` |
 | Chạy test suite | `/verify` |
 | Gate trước commit (= DoD) | `/ship` |

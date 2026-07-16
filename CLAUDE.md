@@ -13,7 +13,9 @@ Tự động invoke skill — không đợi user gọi thủ công:
 | User báo bug / lỗi / không work / crash | `superpowers:systematic-debugging` TRƯỚC KHI đề xuất bất kỳ fix nào |
 | Fix xong bất kỳ thứ gì | `superpowers:verification-before-completion` TRƯỚC KHI báo done |
 | User nói "merge" / "push" / "PR" / "xong rồi" | `superpowers:requesting-code-review` |
+| Feature có UI mới / cần mockup / spec màn hình trước khi code | `wireframe` — sinh wireframe + bảng spec, user duyệt rồi mới code |
 | Implement feature có UI / form / navigation | Verify theo Rule 10 tier (cmux browser mặc định; `playwright-testing` chỉ khi flow quan trọng dễ regression) |
+| Chọn style / palette / typography / design system / audit UI | `ui-ux-pro-max` sinh design system 1 lần → chốt vào `rules/design-system.md` của project · build từng màn → `frontend-design` bám token đó. Không dùng lẫn vai |
 | User hỏi "nên làm gì" / "bắt đầu từ đâu" / feature mới | `superpowers:brainstorming` |
 | User muốn hiểu sâu / "tại sao" / "explain" | `teach` |
 | Auth / payment / RLS / Supabase security | Code project → `/review` (security checklist, hook `security-gate.py` chặn commit) · ngoài code project → kiểm tra manual |

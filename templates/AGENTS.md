@@ -68,6 +68,7 @@ Use this when user opens Codex (or another executor agent) directly instead of d
 1. Nhận task list từ Claude (extract từ `docs/plan-overview.md`). Không tự tạo plan.
 2. Đọc `docs/superpowers/decisions.md` trước khi bắt đầu.
 3. Nếu mơ hồ → ghi `ASSUMPTION:` vào commit message, tiếp tục.
+3b. Task UI: bám wireframe đã duyệt (path Claude đưa trong task) + design token trong `rules/design-system.md` nếu file tồn tại — không tự chế style/màu/font mới ngoài token.
 4. Chạy Quality Gate trước commit: static audit + test suite + build.
 5. QA fail → tự fix tối đa 3 retry → sau đó `QA-FAIL:` + escalate.
 6. Thêm file/module/bảng DB mới → update map trong `context/architecture.md` (chỉ map, không ghi tiến độ) + status task trong `docs/plan-overview.md`.

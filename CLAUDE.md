@@ -13,10 +13,10 @@ Tự động invoke skill — không đợi user gọi thủ công:
 | User báo bug / lỗi / không work / crash | `superpowers:systematic-debugging` TRƯỚC KHI đề xuất bất kỳ fix nào |
 | Fix xong bất kỳ thứ gì | `superpowers:verification-before-completion` TRƯỚC KHI báo done |
 | User nói "merge" / "push" / "PR" / "xong rồi" | `superpowers:requesting-code-review` |
-| Implement feature có UI / form / navigation | `playwright-testing` sau khi xong |
+| Implement feature có UI / form / navigation | Verify theo Rule 10 tier (cmux browser mặc định; `playwright-testing` chỉ khi flow quan trọng dễ regression) |
 | User hỏi "nên làm gì" / "bắt đầu từ đâu" / feature mới | `superpowers:brainstorming` |
 | User muốn hiểu sâu / "tại sao" / "explain" | `teach` |
-| Auth / payment / RLS / Supabase security | `superpowers:systematic-debugging` + kiểm tra manual (security-review chưa có skill) |
+| Auth / payment / RLS / Supabase security | Code project → `/review` (security checklist, hook `security-gate.py` chặn commit) · ngoài code project → kiểm tra manual |
 
 **KHÔNG invoke khi:** fix 1 dòng rõ ràng, code chưa compile, task đã hoàn toàn rõ ràng.
 
@@ -89,5 +89,3 @@ Khi user nói "xong" / "tạm dừng" / "mai tiếp":
 ✓ Obsidian: lưu → raw/projects/[project]/[date]-session.md
 → Còn lại: [task 1], [task 2]
 ```
-
-@RTK.md

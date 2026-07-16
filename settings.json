@@ -160,7 +160,8 @@
     "codex@openai-codex": true,
     "ponytail@ponytail": true,
     "superpowers@claude-plugins-official": true,
-    "caveman@caveman": true
+    "caveman@caveman": true,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": true
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
@@ -179,6 +180,12 @@
       "source": {
         "source": "github",
         "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "ui-ux-pro-max-skill": {
+      "source": {
+        "source": "github",
+        "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
       }
     }
   },

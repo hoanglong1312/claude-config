@@ -204,6 +204,18 @@ Camoufox cần 2 bước (package + tải binary Firefox patch riêng qua `camou
 #   Không → bỏ qua AGENTS.md ở Bước 2
 ```
 
+**3g0. Bật plugin code (CHỈ cho code project — BẮT BUỘC):**
+
+Global tắt superpowers/caveman/ponytail/ui-ux-pro-max/supabase. Code project → merge vào `.claude/settings.json` (không replace):
+```json
+{ "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "caveman@caveman": true,
+    "ponytail@ponytail": true
+} }
+```
+Web/UI → thêm `"ui-ux-pro-max@ui-ux-pro-max-skill": true`. Dùng Supabase → thêm `"supabase@claude-plugins-official": true`. Validate `jq empty .claude/settings.json`. Project không phải code → KHÔNG bật.
+
 **3g. Project permissions (CHỈ cho code project):**
 
 Hỏi 1 lần: "Bật `bypassPermissions` cho project không? Claude sẽ không hỏi confirm mỗi tool call."
@@ -260,24 +272,6 @@ Nếu project đã có test runner riêng (pytest / vitest / go test...) → đi
 |---|---|
 | `supabase`/`sqlite`/`prisma` trong deps | Copy `~/.claude/templates/commands/db-migrate.md` → `.claude/commands/db-migrate.md` |
 | `vite`/`react`/`vue`/`next` trong deps | Copy `~/.claude/templates/commands/frontend-verify.md` → `.claude/commands/frontend-verify.md` |
-| `.gitnexus/` tồn tại (root hoặc subdir) | Tạo `rules/gitnexus.md` + `@rules/gitnexus.md` trong CLAUDE.md + `.codex/config.toml` với `[mcp_servers.gitnexus]` |
-| `.gitnexus/` CHƯA tồn tại nhưng là git repo thật (có commit) | Hỏi: "Project chưa index GitNexus (impact-analysis/blast-radius trước khi edit). Cài luôn không?" → nếu đồng ý: chạy `npx gitnexus analyze` (hoặc `gitnexus setup` nếu global CLI có), rồi làm tiếp bước trên như đã có `.gitnexus/` |
-
-Detect GitNexus (check cả subdir vì repo thường nằm trong `repo/`):
-```bash
-find . -name ".gitnexus" -maxdepth 4 -type d 2>/dev/null | head -1
-# Nếu có → lấy repo name từ `gitnexus list_repos` hoặc đường dẫn folder cha
-# Nếu KHÔNG có: git rev-parse --is-inside-work-tree 2>/dev/null && git log -1 --oneline 2>/dev/null
-# → có output nghĩa là git repo thật có commit, hỏi cài GitNexus mới (xem row trên)
-```
-
-`.codex/config.toml` cho gitnexus:
-```toml
-[mcp_servers.gitnexus]
-command = "npx"
-args = ["gitnexus", "mcp"]
-```
-
 ---
 
 **3h. Module opt-in cho code-project (CHỈ code project dùng Codex flow):**
@@ -479,10 +473,6 @@ Hooks phải đăng ký trong `.claude/settings.json`.
 
 Máy mới cài `~/.claude` từ đầu → xem `~/.claude/README.md` (đọc tay/Claude tổng quát trước khi có skill nào, KHÔNG thuộc phạm vi `init` — `init` chỉ chạy được khi `~/.claude/skills/init/` đã tồn tại, nghĩa là máy không còn "mới" nữa).
 
-**Session-resume hook — 2 bản khác mục đích, không tự ý chọn thay user:**
-- `hooks/session-resume.js` (repo, generic) — đọc `OBSIDIAN_VAULT_PATH` env, không hardcode path, dùng được máy khác.
-- `hooks/session-resume.sh` (personal, nếu user đã tự viết) — có thể hardcode path Obsidian vault riêng, làm nhiều hơn (in nội dung session note gần nhất). Không đẩy bản hardcode lên repo chung; không ghi đè bản personal bằng bản generic nếu user đã có sẵn.
-
 **Các component khác** (tạo khi project thực sự cần):
 
 | User muốn | Component |
@@ -578,20 +568,7 @@ Lưu ý khi stamp: `review.md` bước cuối touch `.claude/.security-reviewed`
 
 ---
 
-### `rules/gitnexus.md`
-
-```markdown
-# GitNexus Reflex
-
-Repo indexed: `[repo-name]` (path: `[repo-path]`)
-
-## Trước mỗi query/trace/impact/context call
-
-1. `list_repos` → check `staleness.commitsBehind`
-2. Nếu `commitsBehind > 0` AND task là debug/impact/architecture → chạy analyze trước
-3. Nếu `commitsBehind > 0` AND task là brainstorm/overview → skip analyze, ok
-
-```
+---
 
 ---
 
@@ -936,7 +913,7 @@ Phạm vi:
 - Sau sửa phải validate phù hợp: `jq` cho JSON, grep/check include policy cho shared rules, report skipped checks.
 
 **Hook wiring (statusLine/SessionStart/PreToolUse) — gợi ý, hỏi trước khi thêm:**
-User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại, hỏi cụ thể muốn hook nào (statusline model+rate-limit, GitNexus enrich, caveman mode activate, session-resume, project-check...), chỉ Edit thêm khi user confirm từng cái — không tự thêm hết. Dùng path tương đối `$HOME` khi viết ví dụ, không hardcode path máy cụ thể. Validate `jq empty ~/.claude/settings.json` sau khi sửa.
+User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại, hỏi cụ thể muốn hook nào (statusline model+rate-limit, security-gate...), chỉ Edit thêm khi user confirm từng cái — không tự thêm hết. Dùng path tương đối `$HOME` khi viết ví dụ, không hardcode path máy cụ thể. Validate `jq empty ~/.claude/settings.json` sau khi sửa.
 
 **Personal tuning checklist (fresh machine / sync sang máy khác):**
 
@@ -947,7 +924,7 @@ User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại
 | `autoCompactWindow` | `300000` | Fixed-token auto-compact thay vì %, tránh phình context khi model có context window lớn (1M) |
 | `env.CLAUDE_CODE_SUBAGENT_MODEL` | `"haiku"` | Subagent việc nhẹ/lặp lại dùng model rẻ, tiết kiệm token |
 | `env.MAX_THINKING_TOKENS` | `"10000"` | Giới hạn thinking budget mặc định |
-| `env.DISABLE_AUTOUPDATER` | `"1"` | Chặn bundled claude (cmux) tự update fail — nhớ chạy `claude update` thủ công định kỳ |
+| `env.DISABLE_AUTOUPDATER` | `"1"` | Tắt auto-update — nhớ chạy `claude update` thủ công định kỳ |
 | `skipDangerousModePermissionPrompt` | `true` | Đã chấp nhận dialog bypass-permissions, không hỏi lại |
 | `skipAutoPermissionPrompt` | `true` | Đã chấp nhận dialog auto-mode, không hỏi lại |
 **Custom hooks phải wired đủ (paths dùng `$HOME`, portable — máy mới chỉ cần merge, không sửa path):**
@@ -955,17 +932,13 @@ User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại
 | Event · Matcher | Script | Tác dụng |
 |---|---|---|
 | PreToolUse · `Bash` | `rtk hook claude` | RTK token proxy mọi Bash |
-| PreToolUse · `Grep\|Glob\|Bash` | `hooks/gitnexus/gitnexus-hook.cjs` | Enrich search bằng GitNexus graph |
-| PreToolUse · `Bash` | `hooks/gitnexus/commit-gate.py` | Chặn commit nếu chưa `detect_changes` (repo có `.gitnexus/`) |
 | PreToolUse · `Bash` | `hooks/security-gate.py` | Chặn commit khi diff đụng auth/api/migration/rls chưa qua `/review` (code project có stamp) |
-| PreToolUse · `mcp__gitnexus__detect_changes` | `hooks/gitnexus/touch-detect-changes.py` | Touch marker mở commit-gate |
-| UserPromptSubmit | `hooks/rules-digest.sh` | Digest chống context decay mỗi prompt — 4 dòng: GATES (debug/verify) · CLARIFY (AskUserQuestion trước khi làm nếu prompt ≥2 cách hiểu / thiếu goal/done) · SKILL (routing) · MODEL (tiering). Sửa nội dung = edit script trực tiếp, hiệu lực ngay không cần restart |
-| SessionStart | `hooks/project-check.sh` + `hooks/session-resume.sh` | Check cấu trúc + load session context |
-| PostToolUse · `Agent` | `hooks/codex-wakeup-reminder.sh` | Nhắc ScheduleWakeup sau dispatch (60–120s nhỏ, 270s dài) |
-| PostToolUse · `Bash` | `hooks/gitnexus/gitnexus-hook.cjs` | Check index freshness |
+| Stop | `afplay Ping.aiff` | Âm báo xong turn |
 | statusLine | `hooks/statusline.sh` | Model + rate-limit bar |
 
-Merge máy mới: thiếu entry nào → hỏi user 1 lần gộp rồi thêm entry đó vào `settings.json` (nguồn chuẩn = `settings.json` trong repo này). Gate cứng (commit-gate, security-gate) khuyến nghị luôn bật với code project.
+Đã bỏ (2026-10-31, đừng thêm lại): `rules-digest.sh` (chèn luật code vào mọi prompt, hại content), `project-check.sh` (nhắc init ở mọi folder), `session-resume.sh` (no-op), `codex-wakeup-reminder.sh` (Claude Code tự báo agent xong), GitNexus hooks.
+
+Merge máy mới: thiếu entry nào → hỏi user 1 lần gộp rồi thêm entry đó vào `settings.json` (nguồn chuẩn = `settings.json` trong repo này). Gate cứng security-gate khuyến nghị luôn bật với code project.
 
 Thiếu key nào → hỏi user 1 lần gộp có muốn set theo giá trị trên không, merge vào `env`/root của `settings.json` (không replace toàn file). Nếu user đã tự chỉnh giá trị khác trên máy hiện tại → báo giá trị khác nhau, hỏi giữ máy hiện tại hay đồng bộ theo bảng trên, không tự ý ghi đè.
 

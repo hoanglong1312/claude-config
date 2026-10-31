@@ -50,7 +50,7 @@ Tích lũy. Codex đọc trước mỗi executing-plans (tránh lặp câu hỏi
 
 ## Review gate (mặc định cho mọi plan có file spec)
 
-Mọi plan feature mới có ghi file spec → dispatch Codex review trước execute (nếu Codex có MCP đọc code — GitNexus hoặc tương đương — tự đối chiếu code hiện tại, không chỉ đọc plan suông). Bỏ qua chỉ khi bug nhỏ/patch hẹp không cần plan chính thức.
+Mọi plan feature mới có ghi file spec → dispatch Codex review trước execute (nếu Codex có MCP/code-reading tool thì tự đối chiếu code hiện tại, không chỉ đọc plan suông). Bỏ qua chỉ khi bug nhỏ/patch hẹp không cần plan chính thức.
 ```
 Review [path]. Đối chiếu với code hiện tại qua MCP đọc code nếu có. Check: gaps, contradictions, ambiguous req, missing error handling, plan có khớp state code thật không. Report: numbered issues + severity + fix. Concise.
 ```

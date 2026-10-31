@@ -8,7 +8,7 @@ Portable config for Claude Code and Codex across macOS and Windows.
 - `templates/shared-workflows/`: curated workflow checklists adapted from current Superpowers/Caveman/RTK discipline.
 - `templates/CLAUDE.global.md`: Claude Code wrapper with plugin-specific mechanisms.
 - `templates/AGENTS.md`: Codex appendix.
-- `AGENTS.md`: generated materialized Codex rules.
+- Code-only rules/plugins load per code project via `templates/code-project.md` + project `.claude/settings.json` `enabledPlugins`. Global stays neutral (content/business work).
 
 Claude Code can use includes and plugins. Codex receives plain text in `AGENTS.md`.
 
@@ -31,16 +31,13 @@ Optional plugin setup:
 ```
 claude plugin marketplace add openai/codex-plugin-cc
 claude plugin marketplace add JuliusBrussee/caveman
-claude plugin marketplace add obra/superpowers-marketplace
 claude plugin marketplace update
 claude plugin install codex@openai-codex
 claude plugin install caveman@caveman
-claude plugin install superpowers@superpowers-marketplace
+claude plugin install superpowers@claude-plugins-official   # global disabled; enable per code project
 ```
 
-`superpowers@claude-plugins-official` may not exist in every marketplace. Current fallback is `superpowers@superpowers-marketplace` if that marketplace is installed.
-
-To render `AGENTS.md` from shared rules (Codex-side), run `bash scripts/sync-agent-rules.sh` (or `.ps1` on Windows) after the config is in place.
+To render a project's `AGENTS.md` from shared rules (Codex-side), run `bash ~/.claude/scripts/sync-agent-rules.sh` from inside that project (never from `~/.claude`).
 
 ## Settings Layers
 
@@ -64,5 +61,6 @@ Setup should back up `~/.claude` (timestamped copy) before writing, and merge `s
 ```bash
 jq empty settings.local.example.json
 bash -n scripts/sync-agent-rules.sh
-node --check hooks/project-check.js hooks/session-resume.js hooks/caveman-activate.js hooks/caveman-mode-tracker.js
+python3 -m py_compile hooks/security-gate.py
+bash -n hooks/statusline.sh
 ```

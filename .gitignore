@@ -34,3 +34,5 @@ templates/*.bak-*
 remote-settings.json
 settings.json.bak
 __pycache__/
+.claude.json
+.claude-mem/

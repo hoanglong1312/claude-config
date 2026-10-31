@@ -50,69 +50,13 @@
         ]
       },
       {
-        "matcher": "Grep|Glob|Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$HOME/.claude/hooks/gitnexus/gitnexus-hook.cjs\"",
-            "timeout": 10,
-            "statusMessage": "Enriching with GitNexus graph context..."
-          }
-        ]
-      },
-      {
         "matcher": "Bash",
         "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/gitnexus/commit-gate.py\"",
-            "timeout": 10,
-            "statusMessage": "Checking GitNexus detect_changes gate before commit..."
-          },
           {
             "type": "command",
             "command": "python3 \"$HOME/.claude/hooks/security-gate.py\"",
             "timeout": 10,
             "statusMessage": "Checking security-review gate before commit..."
-          }
-        ]
-      },
-      {
-        "matcher": "mcp__gitnexus__detect_changes",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$HOME/.claude/hooks/gitnexus/touch-detect-changes.py\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/rules-digest.sh\"",
-            "timeout": 5
-          }
-        ]
-      }
-    ],
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/project-check.sh\"",
-            "timeout": 5,
-            "statusMessage": "Checking project structure..."
-          },
-          {
-            "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/session-resume.sh\"",
-            "timeout": 5,
-            "statusMessage": "Loading session context..."
           }
         ]
       }
@@ -126,29 +70,6 @@
           }
         ]
       }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Agent",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash \"$HOME/.claude/hooks/codex-wakeup-reminder.sh\"",
-            "timeout": 5
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"$HOME/.claude/hooks/gitnexus/gitnexus-hook.cjs\"",
-            "timeout": 10,
-            "statusMessage": "Checking GitNexus index freshness..."
-          }
-        ]
-      }
     ]
   },
   "statusLine": {
@@ -156,24 +77,18 @@
     "command": "bash \"$HOME/.claude/hooks/statusline.sh\""
   },
   "enabledPlugins": {
-    "claude-mem@thedotmack": true,
     "codex@openai-codex": true,
-    "ponytail@ponytail": true,
-    "superpowers@claude-plugins-official": true,
-    "caveman@caveman": true,
-    "ui-ux-pro-max@ui-ux-pro-max-skill": true
+    "ponytail@ponytail": false,
+    "superpowers@claude-plugins-official": false,
+    "caveman@caveman": false,
+    "ui-ux-pro-max@ui-ux-pro-max-skill": false,
+    "supabase@claude-plugins-official": false
   },
   "extraKnownMarketplaces": {
     "openai-codex": {
       "source": {
         "source": "github",
         "repo": "openai/codex-plugin-cc"
-      }
-    },
-    "superpowers-marketplace": {
-      "source": {
-        "source": "github",
-        "repo": "obra/superpowers-marketplace"
       }
     },
     "caveman": {
@@ -192,6 +107,8 @@
   "effortLevel": "medium",
   "autoCompactWindow": 300000,
   "skipDangerousModePermissionPrompt": true,
-  "theme": "dark",
+  "theme": "auto",
+  "inputNeededNotifEnabled": true,
+  "agentPushNotifEnabled": true,
   "skipAutoPermissionPrompt": true
 }

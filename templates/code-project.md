@@ -1,7 +1,36 @@
+@~/.claude/templates/shared-agent-rules.md
+
 # CLAUDE.md — Code Project (reflex core)
 
 Reflex mọi code task. Reference chi tiết → slash command (xem Pointer cuối file).
 init stamp command vào project khi type = code.
+
+## Plugin code — bật theo project
+
+Global tắt superpowers/caveman/ponytail (giữ luồng sáng tạo sạch). Code project bật lại trong `.claude/settings.json` (merge, không replace):
+```json
+{ "enabledPlugins": {
+    "superpowers@claude-plugins-official": true,
+    "caveman@caveman": true,
+    "ponytail@ponytail": true
+} }
+```
+Web/UI thêm `"ui-ux-pro-max@ui-ux-pro-max-skill": true` · Supabase thêm `"supabase@claude-plugins-official": true`.
+
+## Superpowers — bắt buộc trong code project
+
+Trước mỗi response: classify intent. 1% chance skill áp dụng → invoke.
+
+| Trigger | Skill bắt buộc |
+|---|---|
+| Bug / lỗi / không work / crash | `superpowers:systematic-debugging` TRƯỚC KHI đề xuất fix |
+| Fix xong bất kỳ thứ gì | `superpowers:verification-before-completion` TRƯỚC KHI báo done |
+| "merge" / "push" / "PR" / "xong rồi" | `superpowers:requesting-code-review` |
+| Feature mới / "nên làm gì" | `superpowers:brainstorming` |
+| UI mới / cần mockup | `wireframe` → xem design pipeline bên dưới |
+| Auth / payment / RLS / Supabase security | `/review` (hook `security-gate.py` chặn commit) |
+
+Không invoke khi: fix 1 dòng rõ ràng, task đã hoàn toàn rõ ràng.
 
 ## Trục 1 — AI nào viết code
 
@@ -15,7 +44,7 @@ init stamp command vào project khi type = code.
 - Codex fail **3 lần** cùng symptom → Claude direct-fix (ghi lý do trong response).
 - File **.md** (plan, spec, rule).
 
-Read MCP (GitNexus `query/context/impact`, Supabase SELECT) → Codex tự làm được.
+Read MCP (nếu có) và Supabase SELECT → Codex tự làm được.
 
 **Cách gọi Codex → `/codex-exec`.**
 
@@ -23,16 +52,11 @@ Read MCP (GitNexus `query/context/impact`, Supabase SELECT) → Codex tự làm 
 
 Bug / lỗi / không work → **`superpowers:systematic-debugging`** (reproduce trước, không đoán). Không tự chế phân loại ở đây.
 
-## Codex async loop (BẮT BUỘC — forget-prone)
+## Codex async loop
 
-`Agent` tool **LUÔN async** — dispatch Codex trả `agentId` ngay dù có `--wait`. Không set wakeup → Codex chạy nhưng Claude **không bao giờ check kết quả**.
-
-→ Sau dispatch có `agentId`: **BẮT BUỘC `ScheduleWakeup` ngay cùng response** (hook PostToolUse:Agent sẽ nhắc). Delay theo task: nhỏ 60–120s · vừa/dài 270s. Không chọn 300s+ khi poll Codex — cache TTL 5 phút, ≤270s giữ cache ấm.
+`Agent` tool chạy nền — Claude Code tự báo khi agent xong, KHÔNG poll bằng `ScheduleWakeup`. Nhận notification xong:
 ```
-wake → SendMessage hỏi status
-  xong → git diff (so khớp plan/spec) → build/test → UI diff? /frontend-verify → migration diff? verify DB
-  chưa → ScheduleWakeup(cùng delay) lại
-loop tới done/fail
+git diff (so khớp plan/spec) → build/test → UI diff? /frontend-verify → migration diff? verify DB
 ```
 Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 
@@ -52,9 +76,7 @@ Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 - Quyết kiến trúc trước khi giao Codex.
 - Đọc/grep source trực tiếp CHỈ khi ≥1 signal: silent-failure (no error, 0 rows affected) · cần cross-ref đồng thời DB schema+RLS+code · đối chiếu MCP data với code · Codex QA-FAIL 2+ lần cùng symptom. Không signal → viết investigation plan → giao Codex.
 
-**GitNexus-first (câu hỏi structural):** project có index + câu hỏi dạng symbol/call-graph ("X định nghĩa đâu", "ai gọi Y", "sửa Z vỡ gì", trace flow) → `query→context→trace` TRƯỚC grep/Read (xem `rules/gitnexus.md`). Grep/Read thẳng là ĐÚNG tool khi: tìm chuỗi text literal · file đã biết tên · file .md/config · repo không phải code.
-
-Repo code nhiều file chưa có `.gitnexus/` → đề xuất index 1 lần (`npx gitnexus analyze`); user từ chối hoặc task chỉ cần literal search → grep bình thường, không dừng cứng.
+**Structural-first:** với câu hỏi về symbol/call-graph ("X định nghĩa đâu", "ai gọi Y", "sửa Z vỡ gì", trace flow) → xác định file và đọc callers/callees trước khi grep lan man. Grep/Read thẳng là ĐÚNG tool khi: tìm chuỗi text literal · file đã biết tên · file .md/config · repo không phải code.
 
 ## Definition of Done
 
@@ -70,13 +92,13 @@ Codex commit có `ASSUMPTION:` → Claude quyết + append `docs/superpowers/dec
 
 ## Blindspot scout (trước plan)
 
-Task đụng vùng code chưa quen / feature mới nhiều file → TRƯỚC khi viết plan, scout tìm unknown unknowns: GitNexus `query/context` + `git log` vùng liên quan + docs/architecture.md. Output = **unknown map** ngắn (3-5 dòng: đã biết gì, chưa biết gì, rủi ro ở đâu) đặt đầu plan. Unknown chỉ user trả lời được → gộp vào câu hỏi CLARIFY, không đoán. Task nhỏ vùng quen → skip, không cần ghi.
+Task đụng vùng code chưa quen / feature mới nhiều file → TRƯỚC khi viết plan, scout tìm unknown unknowns: code search/callers-callees + `git log` vùng liên quan + docs/architecture.md. Output = **unknown map** ngắn (3-5 dòng: đã biết gì, chưa biết gì, rủi ro ở đâu) đặt đầu plan. Unknown chỉ user trả lời được → gộp vào câu hỏi CLARIFY, không đoán. Task nhỏ vùng quen → skip, không cần ghi.
 
 Khác Plan cross-review bên dưới: scout chạy TRƯỚC plan (định hình plan), cross-review chạy SAU plan (bắt lỗi plan). Không thay nhau.
 
 ## Plan cross-review (trước execute)
 
-Plan xong, TRƯỚC khi dispatch execute → giao Codex **review chéo plan** (1 dispatch riêng, read-only): Codex dùng GitNexus `query/context/impact` đối chiếu plan với codebase thật — file/symbol nêu trong plan có tồn tại không, impact đủ blast radius chưa, thiếu bước nào. Codex trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề]`. Có PLAN-GAP → Claude sửa plan trước, không execute plan chưa qua review. Plan nhỏ (≤2 task, 1 file) → skip được, ghi rõ skip.
+Plan xong, TRƯỚC khi dispatch execute → giao Codex **review chéo plan** (1 dispatch riêng, read-only): đối chiếu plan với codebase thật — file/symbol nêu trong plan có tồn tại không, impact đủ blast radius chưa, thiếu bước nào. Codex trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề]`. Có PLAN-GAP → Claude sửa plan trước, không execute plan chưa qua review. Plan nhỏ (≤2 task, 1 file) → skip được, ghi rõ skip.
 
 ## UI feature mới — design pipeline
 
@@ -92,7 +114,7 @@ Feature mới / execute plan nhiều task → `docs/plan-overview.md` (task + st
 
 | Cần | Dùng |
 |---|---|
-| Dispatch Codex (script, template, wakeup loop) | `/codex-exec` |
+| Dispatch Codex (script, template, review kết quả) | `/codex-exec` |
 | Wireframe + spec màn hình trước khi code UI | `wireframe` skill |
 | Design system (style/palette/typography, 1 lần) | `ui-ux-pro-max` → `rules/design-system.md` |
 | Code review + security 11-loại | `/review` |
@@ -103,14 +125,13 @@ Feature mới / execute plan nhiều task → `docs/plan-overview.md` (task + st
 | Plan task format + status | `/plan-track` |
 | Debug có phương pháp | `superpowers:systematic-debugging` |
 | Viết plan | `superpowers:writing-plans` |
-| GitNexus reflex | `rules/gitnexus.md` |
 
 ## Cấu trúc CLAUDE.md project
 
 Thứ tự @include bắt buộc: template → rules → context.
 ```
 @~/.claude/templates/code-project.md
-@rules/*.md          ← DB schema, quirk tool, gitnexus — thứ template KHÔNG có
+@rules/*.md          ← DB schema, quirk tool — thứ template KHÔNG có
 @context/architecture.md
 ```
 `rules/*.md` KHÔNG restate global workflow — chỉ thứ project-specific.

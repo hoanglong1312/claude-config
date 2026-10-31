@@ -1,5 +1,5 @@
 ---
-description: Dispatch code task cho Codex — companion resume, Agent codex-rescue, foreground/background, wakeup loop, prompt template. Dùng khi giao code change cho Codex.
+description: Dispatch code task cho Codex — companion resume, Agent codex-rescue, foreground/background, review kết quả, prompt template. Dùng khi giao code change cho Codex.
 ---
 
 # /codex-exec — Dispatch Codex
@@ -19,17 +19,13 @@ description: Dispatch code task cho Codex — companion resume, Agent codex-resc
 - **Default foreground:** prompt bắt đầu `--wait`. Background (>10 phút): `--background`.
 - Prompt CHỈ gồm: goal + file/spec path + constraints + verification. KHÔNG paste source (Codex tự đọc).
 
-## Wakeup loop (BẮT BUỘC)
+## Khi Codex xong
 
-`Agent` LUÔN async → result trả `agentId` ngay dù `--wait`. Sau dispatch:
-1. **`ScheduleWakeup(120s)` ngay trong cùng response.**
-2. Wake → `SendMessage` tới `agentId` hỏi status:
-   - **Xong:**
-     1. `git diff HEAD` — nếu Codex edit chưa commit: syntax check → `git add <files> && git commit -m "<task> (codex-autocommit)"`.
-     2. `git diff HEAD~1 HEAD` — Claude review committed diff.
-     3. `npm run build` + test nếu có.
-   - **Chưa:** `ScheduleWakeup(120s)` lại.
-3. Loop tới done/fail.
+`Agent` chạy nền → Claude Code tự báo khi xong (không poll bằng `ScheduleWakeup`). Nhận notification:
+1. `git diff HEAD` — nếu Codex edit chưa commit: syntax check → `git add <files> && git commit -m "<task> (codex-autocommit)"`.
+2. `git diff HEAD~1 HEAD` — Claude review committed diff.
+3. `npm run build` + test nếu có.
+Fail → `SendMessage` tới agent đó với lỗi cụ thể, lặp tới done/fail.
 
 ## Prompt template — executing-plans
 
@@ -46,8 +42,8 @@ Mơ hồ: ghi ASSUMPTION: vào commit message
 
 ## Codex capabilities (xem AGENTS.md)
 
-- GitNexus MCP (`.codex/config.toml`) → tự `query/context/impact/detect_changes`.
-- cmux browser qua bash (`cmux browser ...`).
+- MCP/code search nếu có → tự kiểm tra symbol, callers/callees và blast radius.
+- Browser tool sẵn có của môi trường, hoặc Playwright.
 - `detect_changes` trước mỗi commit (self blast-radius check).
 
 ## Fallback

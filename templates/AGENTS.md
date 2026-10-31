@@ -64,7 +64,7 @@ Use this when user opens Codex (or another executor agent) directly instead of d
 
 ## Executor Workflow (Codex / agent khác)
 
-0. **Nếu được giao review plan (cross-review, read-only):** đối chiếu plan với codebase qua GitNexus (`query`/`context`/`impact`) — file/symbol trong plan có thật không, impact đủ chưa, thiếu bước nào. Trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề cụ thể]`. KHÔNG sửa code trong bước này.
+0. **Nếu được giao review plan (cross-review, read-only):** đối chiếu plan với codebase — file/symbol trong plan có thật không, impact đủ chưa, thiếu bước nào. Trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề cụ thể]`. KHÔNG sửa code trong bước này.
 1. Nhận task list từ Claude (extract từ `docs/plan-overview.md`). Không tự tạo plan.
 2. Đọc `docs/superpowers/decisions.md` trước khi bắt đầu.
 3. Nếu mơ hồ → ghi `ASSUMPTION:` vào commit message, tiếp tục.
@@ -85,50 +85,9 @@ Use this when user opens Codex (or another executor agent) directly instead of d
 
 ---
 
-## Code Intelligence — GitNexus MCP
-
-Dự án dùng GitNexus (MCP `npx gitnexus mcp`) để index toàn bộ codebase. Codex gọi tools qua MCP cấu hình trong `.codex/config.toml` (init tự tạo nếu project có gitnexus); agent khác cấu hình MCP theo cơ chế riêng của tool đó, cùng command:
-
-```toml
-[mcp_servers.gitnexus]
-command = "npx"
-args = ["gitnexus", "mcp"]
-```
-
-Agent không hỗ trợ MCP → dùng CLI trực tiếp: `npx gitnexus query "<concept>"` (các subcommand tương ứng tool table dưới).
-
-**Bắt buộc trước khi sửa code:**
-
-| Câu hỏi | Tool | Khi nào dùng |
-|---------|------|-------------|
-| Feature/area liên quan file/flow nào? | `query({search_query: "concept"})` | Trước khi bắt đầu bất kỳ task nào |
-| Symbol X là gì, callers/callees? | `context({name: "symbolName"})` | Hiểu function trước khi sửa |
-| Sửa X sẽ ảnh hưởng gì? | `impact({target: "symbolName", direction: "upstream"})` | Trước khi sửa function quan trọng |
-| Trace path từ A → B | `trace({from: "A", to: "B"})` | Debug data flow |
-| Thay đổi này ảnh hưởng symbol nào? | `detect_changes()` | Trước khi commit |
-
-**Quy tắc:**
-- `query` TRƯỚC khi đọc file source — trả về execution flows, process-grouped, tiết kiệm token.
-- `impact` bắt buộc trước khi sửa bất kỳ function nào — biết blast radius.
-- `detect_changes()` trước commit — verify chỉ sửa đúng scope (self blast-radius check).
-- Index stale? Chạy `node .gitnexus/run.cjs analyze` từ project root.
-- Chưa có `.gitnexus/` (chưa từng index)? Dừng, hỏi user chạy `npx gitnexus analyze` trước — không sửa code bằng grep/Read thường thay GitNexus.
-
 ## Browser Automation (executor)
 
-UI verification/debugging dùng `cmux browser` qua bash — CHỈ khi máy có cmux (`command -v cmux`). Không có → Playwright script hoặc browser tool sẵn có của môi trường agent:
-
-```bash
-cmux browser goto http://localhost:5173
-cmux browser snapshot          # đọc accessibility tree
-cmux browser screenshot        # capture visual
-cmux browser console list      # JS errors + logs
-cmux browser eval "<js>"       # execute JS in page
-cmux browser click "<selector>"
-cmux browser fill "<selector>" "<value>"
-```
-
-Dùng `cmux browser` khi: cần verify UI sau code change, debug DOM/console error, confirm layout. Không dùng cho E2E flow phức tạp (→ Playwright).
+UI verification/debugging: dùng browser tool sẵn có của môi trường agent; không có → Playwright script. Verify UI sau code change, debug DOM/console error, confirm layout. E2E flow phức tạp → Playwright.
 
 ---
 

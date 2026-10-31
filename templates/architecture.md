@@ -7,7 +7,7 @@ Updated: [YYYY-MM-DD] — update file này khi thêm module / đổi flow chính
 1. `docs/plan-overview.md` — đang làm gì, task nào dở, task nào xong
 2. `docs/superpowers/decisions.md` — quyết định đã chốt (không hỏi lại, không làm ngược)
 3. File này — map codebase bên dưới
-4. Cần sâu hơn → GitNexus `query({search_query})` (project đã index), KHÔNG grep lan man
+4. Cần sâu hơn → tìm đúng file/symbol và đọc callers/callees, KHÔNG grep lan man
 
 ## Stack & entry points
 

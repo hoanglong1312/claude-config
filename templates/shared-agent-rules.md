@@ -43,30 +43,34 @@ Pick the lightest tool that can confirm the bug:
 
 | Bug loại | Tool |
 |---|---|
+| Phong cách / biến thừa / import thừa / `==` vs `===` | Linter (ESLint/Ruff) — đọc tĩnh, tức thì |
+| Sai kiểu dữ liệu (string đưa vào chỗ cần number) | Type check (`tsc --noEmit` / mypy) — đọc tĩnh |
 | Logic thuần / function / formatter / reducer | Unit test — nhanh nhất, run nhiều lần |
 | React component / interaction / state | Inspect code + `npm run build`, unit test nhỏ nếu cần |
-| UI visual / layout / navigation | `cmux browser snapshot` — đọc accessibility tree, verify bằng mắt |
-| Console error / network / DOM / JS | `cmux browser console list` / `cmux browser network requests` / `cmux browser eval <js>` |
-| Click, fill, interact | `cmux browser click/fill/type <selector>` |
-| Screenshot | `cmux browser screenshot` |
+| UI visual / layout / navigation | Browser tool của môi trường (Claude: built-in browser `read_page`/screenshot) — đọc accessibility tree, verify bằng mắt |
+| Console error / network / DOM / JS | Browser tool: console / network / eval JS |
+| Click, fill, interact | Browser tool: click / form input |
 | E2E flow quan trọng (login, payment, navigation nhiều màn) | Playwright — chỉ khi flow dễ regression |
 
-`cmux browser` chỉ khi cmux available (`command -v cmux`) — không có → dùng Playwright hoặc browser tool sẵn có của môi trường. Không assume optional tool tồn tại.
+Không assume optional tool tồn tại — detect trước, không có → fallback Playwright.
+
+Thang feedback loop (rẻ→đắt, chạy từ trên xuống — đỏ tầng rẻ thì sửa trước, đừng nhảy xuống test):
+`formatter → linter → type check → unit test → build/E2E`. Lint + type đọc tĩnh không chạy code nên rẻ nhất, chạy trước.
 
 Default với React/Vite project:
 ```
-Đọc file liên quan → sửa scoped → npm run build → browser verify (cmux nếu có) → commit file cụ thể
+Đọc file liên quan → sửa scoped → lint + type check → npm run build → browser verify → commit file cụ thể
 ```
 
-## Rule 11 — claude-teams cho Multi-Agent
+## Rule 11 — Parallel Work
 
-Khi có cmux: dùng `cmux claude-teams` thay `claude` khi có 2+ việc độc lập chạy song song được (fix A + fix B, feature + test). Không có cmux → dispatch subagent song song bình thường.
+2+ việc độc lập chạy song song được (fix A + fix B, feature + test) → dispatch subagent song song.
 
 ## Rule 12 — Subagent for Exploration
 When fixing bugs or investigating issues requiring 3+ file reads: spawn a subagent (Explore or general-purpose) to investigate, grep, and trace. Main context receives summary only — no raw file dumps. Edit/fix happens in main context after summary received.
 
 Exception: code projects with code-project.md — follow token discipline rules there instead.
-Môi trường không có subagent tool (Codex CLI, executor agent khác) → tự đọc nhưng scoped tối thiểu: đúng file/symbol liên quan (GitNexus query trước nếu có index), không dump cả directory.
+Môi trường không có subagent tool (Codex CLI, executor agent khác) → tự đọc nhưng scoped tối thiểu: đúng file/symbol liên quan, không dump cả directory.
 
 ## Rule 13 — Clarify Before Execute
 

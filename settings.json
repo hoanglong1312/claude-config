@@ -120,6 +120,5 @@
   "theme": "auto",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true,
-  "outputStyle": "Explanatory"
+  "skipAutoPermissionPrompt": true
 }

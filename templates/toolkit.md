@@ -17,7 +17,7 @@
 | **Code không UI** (CLI, pipeline) | superpowers, caveman, ponytail | `/codex-exec`, `/review`, `/verify`, `/ship` | như trên |
 | **Business / vận hành** | không plugin code | template `business.md`; `chom` (soi tool/hype), `teach` | skill riêng dự án (vd Long Cafe: `checkpoint`, `cogs-calculator`) |
 | **Content** (reel, caption, script) | không plugin code | — | skill Codex global: `dumbify`, `viral-hooks`, `storytelling`, `anti-ai-writing` |
-| **Mọi loại — ảnh bitmap** | — | skill `codex-image` (Claude soạn prompt + kiểm) | `codex exec` CLI ≥0.166, `gpt-image-2.5` qua Cockpit Tools (`localhost:54726`) |
+| **Mọi loại — ảnh bitmap** | — | skill `codex-image` — BẮT BUỘC, không đường khác (Claude soạn prompt + kiểm) | `codex exec` CLI ≥0.166, `gpt-image-2.5` qua Cockpit Tools (`localhost:54726`) |
 
 ## Phân vai model (Claude)
 

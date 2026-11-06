@@ -137,7 +137,7 @@ Feature mới / execute plan nhiều task → `docs/plan-overview.md` (task + st
 | Wireframe + spec màn hình trước khi code UI | `wireframe` skill |
 | Design system (style/palette/typography, 1 lần) | bật tạm `ui-ux-pro-max` → chốt `rules/design-system.md` → tắt |
 | Mockup UI 2–3 bản | Stitch MCP (Claude gọi) |
-| Tạo/sửa ảnh bitmap | skill `codex-image` |
+| Tạo/sửa ảnh bitmap | skill `codex-image` — BẮT BUỘC (Cockpit + `gpt-image-2.5`), không đường khác |
 | Bản đồ plugin/skill theo loại project | `~/.claude/templates/toolkit.md` |
 | Code review + security 11-loại | `/review` |
 | Chạy test suite | `/verify` |

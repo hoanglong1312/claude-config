@@ -55,7 +55,7 @@ Có trước/sau (bug fix, refactor): ❌ hành vi sai trước đó, ✅ hành 
 
 - Bash đi qua `rtk` hook tự động. `rtk gain` xem token tiết kiệm. `rtk find` không support `-exec`/`-o`/`\(…\)` → dùng `/usr/bin/find`.
 - PDF/Word/PPT/Excel/HTML → `markitdown [file] > [file].md` trước khi đọc. Không dùng cho ảnh.
-- Tạo/sửa ảnh bitmap → skill `codex-image`: Claude soạn prompt, Codex `codex exec` (CLI ≥0.166) tạo ảnh `gpt-image-2.5` qua app Cockpit Tools (`localhost:54726`), Claude kiểm. Không gọi qua `codex-rescue`/Codex MCP vì ở đó không có `image_gen`.
+- Tạo/sửa ảnh bitmap → **BẮT BUỘC** skill `codex-image`: Claude soạn prompt, Codex `codex exec` (CLI ≥0.166) tạo ảnh `gpt-image-2.5` qua app Cockpit Tools (`localhost:54726`), Claude kiểm. Không dùng cách nào khác: không tool/model tạo ảnh khác, không tự vẽ SVG/HTML/canvas thay ảnh, không gọi qua `codex-rescue`/Codex MCP (không có `image_gen`). Cockpit/Codex lỗi → báo user nguyên văn lỗi rồi dừng, không tự đổi đường khác.
 - Chọn plugin/skill/agent cho loại việc (code, ảnh, business, content) → đọc `~/.claude/templates/toolkit.md` (không tự nạp).
 - Hỏi về tool/repo → đọc `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/raw/resources/repos/index.md`.
 - Install package/tool/service mới → hỏi: **"Thêm [tên] vào Obsidian repo wiki không?"** Format: `| [tên] | [URL] | installed | [project/global] | [ghi chú ngắn] |`

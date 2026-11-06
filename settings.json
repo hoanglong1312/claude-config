@@ -58,6 +58,17 @@
             "statusMessage": "Checking security-review gate before commit..."
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/test-guard.py\"",
+            "timeout": 15,
+            "statusMessage": "Checking tests not deleted/skipped before commit..."
+          }
+        ]
       }
     ],
     "Stop": [
@@ -109,5 +120,6 @@
   "theme": "auto",
   "inputNeededNotifEnabled": true,
   "agentPushNotifEnabled": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "outputStyle": "Explanatory"
 }

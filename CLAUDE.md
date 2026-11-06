@@ -24,6 +24,7 @@ User muốn được phỏng vấn kỹ để Claude hiểu đúng ý trước k
 # Cách Làm Việc
 
 - Chỉ báo "xong" khi có bằng chứng. Bước nào bỏ qua / chưa kiểm → nói thẳng.
+- Skill vấp lỗi đã kiểm chứng (không phải phỏng đoán) → ghi 1 dòng vào mục "Gotchas" cuối SKILL.md của skill đó, để lần sau không lặp lại.
 - Việc sáng tạo (content, kịch bản, ý tưởng): đưa nhiều phương án, viết đầy đủ giàu hình ảnh — không rút gọn câu chữ, không ép thành spec/plan.
 
 # Phân Vai Model — Khi Gọi Subagent

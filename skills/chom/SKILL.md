@@ -1,6 +1,8 @@
 ---
 name: chom
 description: Use when user shares a repo link, tool name, screenshot of GitHub/ProductHunt/npm, YouTube review, Twitter thread, or any promotional content about a tool/AI/SaaS — to fact-check hype vs reality and decide whether to adopt or extract patterns.
+context: fork
+agent: general-purpose
 ---
 
 # Chôm — Fact-check Repo & Tool

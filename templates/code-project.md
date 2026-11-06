@@ -15,7 +15,7 @@ Global tắt superpowers/caveman/ponytail (giữ luồng sáng tạo sạch). Co
     "ponytail@ponytail": true
 } }
 ```
-Web/UI thêm `"ui-ux-pro-max@ui-ux-pro-max-skill": true` · Supabase thêm `"supabase@claude-plugins-official": true`.
+Web/UI: KHÔNG bật `ui-ux-pro-max` mặc định (chỉ bật tạm khi dựng design system mới) · Supabase thêm `"supabase@claude-plugins-official": true`.
 
 ## Superpowers — bắt buộc trong code project
 
@@ -34,19 +34,36 @@ Không invoke khi: fix 1 dòng rõ ràng, task đã hoàn toàn rõ ràng.
 
 ## Trục 1 — AI nào viết code
 
-| Vai | Làm |
-|---|---|
-| **Claude = não** | plan, review, architecture, quyết what/why, MCP-write |
-| **Codex = tay** | viết/sửa code, unit/integration test, build, commit |
+| Vai | Tốn | Làm |
+|---|---|---|
+| **Opus = não** (main) | quota Claude, đắt | làm rõ yêu cầu, plan, quyết what/why, review diff, MCP-write, nói chuyện user |
+| **Haiku = chân** (subagent `model: haiku`) | quota Claude, rẻ | dò `file:dòng`, chạy lại build/test/lint, sửa cơ học có spec rõ — trả **bằng chứng**, không kết luận |
+| **Codex = tay** (`/codex-exec`) | quota OpenAI, không ăn Claude | viết/sửa code, test, build, commit; review chéo plan (agent `reviewer`) |
+| **Sonnet = tay dự phòng** (subagent `model: sonnet`, `isolation: worktree`) | quota Claude, vừa | chỉ khi Codex lỗi hạ tầng (xem "Codex lỗi") |
 
 **Mọi code change qua Codex.** Claude tự viết code CHỈ khi:
 - Thao tác **MCP-write** (Supabase `apply_migration`, INSERT/UPDATE/DELETE + verify) — khó undo, Claude cầm.
-- Codex fail **3 lần** cùng symptom → Claude direct-fix (ghi lý do trong response).
+- Codex lỗi theo mục "Codex lỗi" bên dưới (A: hạ tầng → Sonnet/Opus; C: lặp 3 lần → Opus).
 - File **.md** (plan, spec, rule).
+
+**Luồng chuẩn:** làm rõ (Opus) → dò vùng chưa biết (Haiku ×2–3 song song) → plan (Opus) → review chéo plan (Codex) → code từng task (Codex, tuần tự trên cùng thư mục; song song chỉ khi mỗi Codex có worktree riêng + không chung file) → chạy lại build/test độc lập (Haiku) → review diff (Opus) → `/ship` (Opus).
+
+**Opus review diff — bảng kiểm:** (1) sửa file ngoài phạm vi task? (2) **test bị sửa/xoá/skip?** — cách "pass giả" phổ biến nhất (3) `ASSUMPTION:` mâu thuẫn `decisions.md`? (4) đụng auth/api/migration → `/review`.
 
 Read MCP (nếu có) và Supabase SELECT → Codex tự làm được.
 
 **Cách gọi Codex → `/codex-exec`.**
+
+## Codex lỗi — phân loại trước, xử lý sau
+
+| Loại | Dấu hiệu | Xử lý | Tính vào số lần fail? |
+|---|---|---|---|
+| **A. Hạ tầng** | codex không có / chưa login / hết quota OpenAI / timeout / mạng / companion crash | Haiku lấy nguyên văn lỗi → lỗi tạm thì thử lại **1 lần** → vẫn lỗi: Sonnet subagent (`isolation: worktree`) làm **cùng brief**; task nhỏ (≲20 dòng, 1 file) → Opus tự sửa. Báo user 1 dòng: "Codex lỗi [lý do], đang dùng Sonnet" | Không |
+| **B. Đầu ra sai** | không diff / lệch spec / `QA-FAIL:` / sửa lan file khác | `SendMessage` lại **chính agent đó** kèm output lỗi nguyên văn + `file:dòng` (không giao lại từ đầu) | Có |
+| **C. Lặp** | cùng triệu chứng lần 2 | Đổi executor vô ích — lỗi ở chẩn đoán/spec. Opus `systematic-debugging` → viết lại spec / chia nhỏ task → giao lại Codex. Lần 3 cùng triệu chứng → Opus sửa trực tiếp, ghi `<!-- claude-override: direct-fix after 3 Codex retries [date] -->` | Có |
+| **D. Âm thầm** | báo xong nhưng test bị sửa/skip, catch nuốt lỗi, tính năng không chạy | Chỉ bắt được ở bước Haiku chạy lại + Opus đọc riêng diff test. Xử lý như B, ghi rõ "không được sửa test để pass" | Có |
+
+Hết quota OpenAI → A. Hết quota Claude giữa chừng → Codex làm tiếp độc lập theo `AGENTS.md` ("When Working Without Claude") — nên trạng thái task **luôn** phải nằm trong `docs/plan-overview.md`. Hết cả hai → ghi trạng thái vào plan, dừng, báo user.
 
 ## Trục 2 — Điều tra trước khi fix
 
@@ -56,7 +73,7 @@ Bug / lỗi / không work → **`superpowers:systematic-debugging`** (reproduce 
 
 `Agent` tool chạy nền — Claude Code tự báo khi agent xong, KHÔNG poll bằng `ScheduleWakeup`. Nhận notification xong:
 ```
-git diff (so khớp plan/spec) → build/test → UI diff? /frontend-verify → migration diff? verify DB
+Haiku chạy lại build/test (output nguyên văn) → Opus đọc git diff theo bảng kiểm → UI diff? /frontend-verify → migration diff? verify DB → lỗi? phân loại theo "Codex lỗi"
 ```
 Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 
@@ -64,10 +81,10 @@ Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 
 **KHÔNG:**
 - Đọc full source để lấy context khi Codex tự đọc được.
-- Grep/trace lan man khi debug — viết investigation plan → giao Codex (trừ signal dưới).
+- Grep/trace lan man khi debug. Dò vị trí/thu bằng chứng nhanh → Haiku; điều tra sâu (repro, trace runtime) → viết investigation plan → giao Codex (trừ signal dưới).
 - Paste nội dung file vào Codex prompt.
 - Dùng Edit/Write cho file code (.js/.jsx/.py/.sql) — giao Codex.
-- Dispatch Claude subagent làm middleman.
+- Dispatch Claude subagent làm middleman chuyển lời cho Codex (Haiku chỉ dò + verify, không chuyển tiếp task).
 
 **CHỈ:**
 - Đọc `git log` / `git diff`.
@@ -98,11 +115,13 @@ Khác Plan cross-review bên dưới: scout chạy TRƯỚC plan (định hình 
 
 ## Plan cross-review (trước execute)
 
-Plan xong, TRƯỚC khi dispatch execute → giao Codex **review chéo plan** (1 dispatch riêng, read-only): đối chiếu plan với codebase thật — file/symbol nêu trong plan có tồn tại không, impact đủ blast radius chưa, thiếu bước nào. Codex trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề]`. Có PLAN-GAP → Claude sửa plan trước, không execute plan chưa qua review. Plan nhỏ (≤2 task, 1 file) → skip được, ghi rõ skip.
+Plan xong, TRƯỚC khi dispatch execute → giao Codex **review chéo plan** (1 dispatch riêng, read-only, brief yêu cầu agent `reviewer`; Codex lỗi hạ tầng → Sonnet subagent review thay): đối chiếu plan với codebase thật — file/symbol nêu trong plan có tồn tại không, impact đủ blast radius chưa, thiếu bước nào. Codex trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề]`. Có PLAN-GAP → Claude sửa plan trước, không execute plan chưa qua review. Plan nhỏ (≤2 task, 1 file) → skip được, ghi rõ skip.
 
 ## UI feature mới — design pipeline
 
-Thứ tự: `/wireframe` (user flow + spec table, user duyệt) → design token theo `rules/design-system.md` (chưa có file → sinh 1 lần bằng `ui-ux-pro-max`, chốt token vào file, không sinh lại mỗi màn) → `frontend-design` direction khi build màn cụ thể, bám token → Codex code → `/frontend-verify`. Plan link tới wireframe đã duyệt thay vì tả UI bằng chữ. Sửa UI nhỏ trên màn có sẵn → skip wireframe, vào thẳng build.
+Thứ tự: `/wireframe` (user flow + spec table, user duyệt) → design token theo `rules/design-system.md` (chưa có file → sinh 1 lần, có thể bật tạm `ui-ux-pro-max` cho riêng bước này rồi tắt; chốt token vào file, không sinh lại mỗi màn) → mockup 2–3 bản bằng Stitch MCP (Claude gọi trực tiếp — Codex exec không thấy Stitch; project chưa nối Stitch thì dùng `frontend-design` direction), user chọn bản, Claude không tự chọn → Codex code theo `projectId`/`screenId` đã duyệt + token → `/frontend-verify`. Plan link tới wireframe/mockup đã duyệt thay vì tả UI bằng chữ. Sửa UI nhỏ trên màn có sẵn → skip wireframe + mockup, vào thẳng build.
+
+Nối Stitch cho project: `.mcp.json` → `{"mcpServers":{"stitch":{"type":"stdio","command":"/Users/giinlow./.codex/stitch-mcp-proxy.zsh"}}}` + `.claude/settings.local.json` → `{"enabledMcpjsonServers":["stitch"]}`.
 
 ## Plan tracking
 
@@ -116,7 +135,10 @@ Feature mới / execute plan nhiều task → `docs/plan-overview.md` (task + st
 |---|---|
 | Dispatch Codex (script, template, review kết quả) | `/codex-exec` |
 | Wireframe + spec màn hình trước khi code UI | `wireframe` skill |
-| Design system (style/palette/typography, 1 lần) | `ui-ux-pro-max` → `rules/design-system.md` |
+| Design system (style/palette/typography, 1 lần) | bật tạm `ui-ux-pro-max` → chốt `rules/design-system.md` → tắt |
+| Mockup UI 2–3 bản | Stitch MCP (Claude gọi) |
+| Tạo/sửa ảnh bitmap | skill `codex-image` |
+| Bản đồ plugin/skill theo loại project | `~/.claude/templates/toolkit.md` |
 | Code review + security 11-loại | `/review` |
 | Chạy test suite | `/verify` |
 | Gate trước commit (= DoD) | `/ship` |

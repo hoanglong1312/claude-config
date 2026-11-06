@@ -94,6 +94,7 @@ UI verification/debugging: dùng browser tool sẵn có của môi trường age
 ## Do NOT
 
 - Push code chưa pass tests.
+- Sửa / xoá / skip test để cho pass. Test sai thật → ghi `ASSUMPTION:` + lý do, để Claude quyết.
 - Retry QA quá 3 lần mà không escalate.
 - Tự thêm dependencies không có trong plan. Ghi `ASSUMPTION:` và báo Claude approve trước.
 - Bỏ qua code review khi có code review skill.

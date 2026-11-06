@@ -67,7 +67,7 @@ Default với React/Vite project:
 2+ việc độc lập chạy song song được (fix A + fix B, feature + test) → dispatch subagent song song.
 
 ## Rule 12 — Subagent for Exploration
-When fixing bugs or investigating issues requiring 3+ file reads: spawn a subagent (Explore or general-purpose) to investigate, grep, and trace. Main context receives summary only — no raw file dumps. Edit/fix happens in main context after summary received.
+When fixing bugs or investigating issues requiring 3+ file reads: spawn a cheap subagent (Claude: `model: haiku`) to locate, grep, and trace. It returns evidence (`file:line` + exact quotes / raw command output), not conclusions — main agent decides what matters. Edit/fix happens in main context after evidence received.
 
 Exception: code projects with code-project.md — follow token discipline rules there instead.
 Môi trường không có subagent tool (Codex CLI, executor agent khác) → tự đọc nhưng scoped tối thiểu: đúng file/symbol liên quan, không dump cả directory.

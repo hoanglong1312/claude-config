@@ -14,6 +14,22 @@ Luật code (Superpowers, TDD, Codex, 15 Rule) KHÔNG nằm ở đây — chỉ 
 - Chỉ báo "xong" khi có bằng chứng. Bước nào bỏ qua / chưa kiểm → nói thẳng.
 - Việc sáng tạo (content, kịch bản, ý tưởng): đưa nhiều phương án, viết đầy đủ giàu hình ảnh — không rút gọn câu chữ, không ép thành spec/plan.
 
+# Phân Vai Model — Khi Gọi Subagent
+
+Main (Opus) giữ việc cần phán đoán. Mỗi lần gọi `Agent` → tự chọn `model` theo việc:
+
+| Giao `model: haiku` | Giữ Opus (hoặc `model: sonnet`) |
+|---|---|
+| Dò vị trí: "X ở đâu" → `file:dòng` | Tóm tắt "cái gì quan trọng" qua nhiều file |
+| Chạy build/test/lint/mô phỏng → output nguyên văn + pass/fail | Tìm nguyên nhân gốc bug |
+| Sửa cơ học có spec rõ (đổi tên, format, chuyển đổi file) | Quyết kiến trúc, review code/plan |
+| Trích nguyên văn đoạn liên quan kèm đường dẫn | Content, kịch bản, ý tưởng |
+
+- Dấu hiệu: tiêu chí "xong" **kiểm được bằng máy** → Haiku. Cần **chọn lọc / đánh giá** → giữ lại.
+- Brief cho Haiku: mục tiêu 1 câu · phạm vi · "trả bằng chứng (`file:dòng` + trích nguyên văn / output nguyên văn), KHÔNG kết luận" · tiêu chí xong.
+- Brief cho agent viết code: thêm dòng **"Đã quyết / đã loại"** — chống lệch ngữ cảnh.
+- Code project: phân vai Opus/Haiku/Codex/Sonnet + xử lý Codex lỗi → `code-project.md`.
+
 # Giải Thích Code — Behavior Flow
 
 Khi giải thích luồng code (fix bug, explain feature, review change), kèm mô tả bằng ngôn ngữ đơn giản — không dùng tên hàm:
@@ -39,6 +55,8 @@ Có trước/sau (bug fix, refactor): ❌ hành vi sai trước đó, ✅ hành 
 
 - Bash đi qua `rtk` hook tự động. `rtk gain` xem token tiết kiệm. `rtk find` không support `-exec`/`-o`/`\(…\)` → dùng `/usr/bin/find`.
 - PDF/Word/PPT/Excel/HTML → `markitdown [file] > [file].md` trước khi đọc. Không dùng cho ảnh.
+- Tạo/sửa ảnh bitmap → skill `codex-image`: Claude soạn prompt, Codex `codex exec` (CLI ≥0.166) tạo ảnh `gpt-image-2.5` qua app Cockpit Tools (`localhost:54726`), Claude kiểm. Không gọi qua `codex-rescue`/Codex MCP vì ở đó không có `image_gen`.
+- Chọn plugin/skill/agent cho loại việc (code, ảnh, business, content) → đọc `~/.claude/templates/toolkit.md` (không tự nạp).
 - Hỏi về tool/repo → đọc `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/raw/resources/repos/index.md`.
 - Install package/tool/service mới → hỏi: **"Thêm [tên] vào Obsidian repo wiki không?"** Format: `| [tên] | [URL] | installed | [project/global] | [ghi chú ngắn] |`
 

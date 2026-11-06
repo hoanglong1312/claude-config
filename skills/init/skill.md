@@ -159,6 +159,8 @@ CLAUDE.local.md
 
 ### Bước 3 — Kiểm tra tools universal (MỌI loại project)
 
+Đọc `~/.claude/templates/toolkit.md` trước — chọn plugin/skill/Codex agent theo loại project ở đó, chỉ bật đúng phần của loại đó.
+
 Check trước, chỉ hỏi install khi chưa có:
 
 **3a. Superpowers:**
@@ -214,7 +216,7 @@ Global tắt superpowers/caveman/ponytail/ui-ux-pro-max/supabase. Code project �
     "ponytail@ponytail": true
 } }
 ```
-Web/UI → thêm `"ui-ux-pro-max@ui-ux-pro-max-skill": true`. Dùng Supabase → thêm `"supabase@claude-plugins-official": true`. Validate `jq empty .claude/settings.json`. Project không phải code → KHÔNG bật.
+Web/UI → KHÔNG bật `ui-ux-pro-max` mặc định (chỉ bật tạm khi dựng design system mới; mockup dùng Stitch — xem `~/.claude/templates/toolkit.md`). Dùng Supabase → thêm `"supabase@claude-plugins-official": true`. Validate `jq empty .claude/settings.json`. Project không phải code → KHÔNG bật.
 
 **3g. Project permissions (CHỈ cho code project):**
 
@@ -922,7 +924,7 @@ User hỏi "thêm statusline"/"thêm hook" → Read `settings.json` hiện tại
 | Key | Giá trị chủ đích | Lý do |
 |---|---|---|
 | `autoCompactWindow` | `300000` | Fixed-token auto-compact thay vì %, tránh phình context khi model có context window lớn (1M) |
-| `env.CLAUDE_CODE_SUBAGENT_MODEL` | `"haiku"` | Subagent việc nhẹ/lặp lại dùng model rẻ, tiết kiệm token |
+| `env.CLAUDE_CODE_SUBAGENT_MODEL` | **không set** | Đã bỏ 2026-11-06: ép mọi subagent thành Haiku → Sonnet dự phòng không chạy được. Model chọn từng lần gọi theo bảng "Phân Vai Model" trong `CLAUDE.md` |
 | `env.MAX_THINKING_TOKENS` | `"10000"` | Giới hạn thinking budget mặc định |
 | `env.DISABLE_AUTOUPDATER` | `"1"` | Tắt auto-update — nhớ chạy `claude update` thủ công định kỳ |
 | `skipDangerousModePermissionPrompt` | `true` | Đã chấp nhận dialog bypass-permissions, không hỏi lại |

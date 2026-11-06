@@ -123,6 +123,16 @@ Thứ tự: `/wireframe` (user flow + spec table, user duyệt) → design token
 
 Nối Stitch cho project: `.mcp.json` → `{"mcpServers":{"stitch":{"type":"stdio","command":"/Users/giinlow./.codex/stitch-mcp-proxy.zsh"}}}` + `.claude/settings.local.json` → `{"enabledMcpjsonServers":["stitch"]}`.
 
+## Design system (UI kit) — project có giao diện
+
+Áp khi project có UI từ 2–3 màn trở lên. Tool 1 màn, script, project business → bỏ qua.
+
+- Cần có **1 file design system** (tên/chỗ tuỳ project; mặc định `rules/design-system.md`). Format tự do, tối thiểu trả lời 3 câu: **(1) Tokens** — màu, chữ, khoảng cách, bo góc dùng giá trị nào, tên biến gì · **(2) Thành phần chung** — mỗi thành phần trông/hoạt động ra sao (kích thước, trạng thái) · **(3) Code ở đâu** — thư mục component library mà mọi màn gọi lại.
+- Thành phần mới → ghi vào design system trước, rồi mới dùng ở màn. Không viết lại nút/ô nhập/menu riêng cho từng màn.
+- Quyết định riêng từng màn (mockup đã duyệt, annotation) để file khác — design system chỉ giữ thứ dùng chung.
+- Nên có khi thành phần nhiều lên: trang mẫu trực quan (component gallery — 1 file HTML hoặc Storybook) hiện mọi thành phần + trạng thái.
+- File khởi đầu (không bắt buộc): `~/.claude/templates/design-system.starter.md`. Cần bàn giao thiết kế đầy đủ → module `modules/ui-design-handoff.md`.
+
 ## Plan tracking
 
 Feature mới / execute plan nhiều task → `docs/plan-overview.md` (task + status). Format + workflow → **`/plan-track`**.

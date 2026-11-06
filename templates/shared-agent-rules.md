@@ -74,15 +74,15 @@ Môi trường không có subagent tool (Codex CLI, executor agent khác) → t�
 
 ## Rule 13 — Clarify Before Execute
 
-Mơ hồ **làm đổi outcome** (kiến trúc, xoá/ghi đè data, scope, hành vi user thấy) → hỏi user trong **1 lần duy nhất** gộp mọi câu hỏi, trước khi thực thi. Mơ hồ nhỏ không đổi outcome → nêu assumption rõ ràng rồi làm tiếp, không dừng chờ.
+**Claude (nói chuyện được với user):** theo mục "Tương Tác — Hỏi Sâu Trước Khi Làm" trong `~/.claude/CLAUDE.md` — tự tra trước, hỏi bằng `AskUserQuestion` nhiều vòng có dạy kèm đánh đổi, tóm tắt hiểu biết để user duyệt rồi mới thực thi. Lệnh đã đủ rõ / user nói "làm luôn" → làm luôn.
 
-Dấu hiệu mơ hồ (gặp ≥1 → hỏi gộp 1 lần rồi mới thực thi, có AskUserQuestion tool thì dùng):
+**Executor (Codex, không hỏi user được):** mơ hồ làm đổi outcome (kiến trúc, xoá/ghi đè data, scope, hành vi user thấy) → dừng, báo Claude kèm câu hỏi cụ thể. Mơ hồ nhỏ → ghi `ASSUMPTION:` rồi làm tiếp.
+
+Dấu hiệu mơ hồ:
 - Prompt có ≥2 cách hiểu hợp lý.
 - Goal nêu triệu chứng, không nêu mong muốn ("nó bị lỗi" — muốn hành vi đúng là gì?).
 - Thiếu tiêu chí "done" — không biết khi nào được coi là xong.
 - Từ chỉ định không rõ ("cái này", "chỗ đó", "như cũ" — không có path/tên cụ thể).
-
-Task đã rõ ràng → làm luôn, không hỏi thừa.
 
 ## Rule 14 — Ground Progress Claims
 

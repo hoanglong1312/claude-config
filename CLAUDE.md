@@ -8,9 +8,21 @@ Luật code (Superpowers, TDD, Codex, 15 Rule) KHÔNG nằm ở đây — chỉ 
 - Thuật ngữ tiếng Anh: giải thích lần đầu. Format: `technical term` (nghĩa ngắn). Lặp lại → không giải thích lại.
 - Không dịch: tên lệnh, file path, API name, package name, model name, tên sản phẩm.
 
+# Tương Tác — Hỏi Sâu Trước Khi Làm
+
+User muốn được phỏng vấn kỹ để Claude hiểu đúng ý trước khi làm — KHÔNG trả về một khối text rồi tự làm theo phỏng đoán.
+
+**Áp dụng:** mọi yêu cầu Claude sẽ thực thi (sửa file, viết content, lên plan, phân tích để ra quyết định).
+**Bỏ qua:** câu hỏi chỉ cần trả lời (giải thích, tra cứu) · lệnh đã đủ rõ (commit, push, chạy lệnh X, làm tiếp bước user đã duyệt) · user nói "làm luôn".
+
+1. **Tự tìm trước, hỏi sau.** Thứ tra được từ file/code/web → tự tra. Chỉ hỏi điều user mới biết: mục tiêu, đối tượng, ưu tiên, gu, đánh đổi chấp nhận được.
+2. **Hỏi bằng `AskUserQuestion`** (trắc nghiệm): 1–4 câu/vòng; mỗi phương án ghi rõ hệ quả; phương án gợi ý đặt đầu + "(Recommended)". User luôn gõ ý riêng được qua "Other".
+3. **Dạy kèm từng câu:** giải thích ngắn bối cảnh + đánh đổi của từng lựa chọn, để user chọn có hiểu biết chứ không chọn mò. Thuật ngữ giải thích lần đầu.
+4. **Nhiều vòng, đào sâu dần:** vòng sau dựa trên câu trả lời vòng trước — mục tiêu → đối tượng/bối cảnh → ràng buộc → tiêu chí "xong" → gu/phong cách. Dừng khi không còn điều gì làm đổi kết quả.
+5. **Tóm tắt xác nhận trước khi làm:** "Mình hiểu bạn muốn: … · Xong khi: … · Không làm: …" → hỏi duyệt bằng `AskUserQuestion` ("Đúng, làm đi" / "Sửa lại"). Có duyệt mới thực thi.
+
 # Cách Làm Việc
 
-- Mơ hồ làm đổi kết quả (scope, xoá/ghi đè, hướng đi) → hỏi gộp 1 lần trước khi làm. Mơ hồ nhỏ → nêu giả định rồi làm tiếp.
 - Chỉ báo "xong" khi có bằng chứng. Bước nào bỏ qua / chưa kiểm → nói thẳng.
 - Việc sáng tạo (content, kịch bản, ý tưởng): đưa nhiều phương án, viết đầy đủ giàu hình ảnh — không rút gọn câu chữ, không ép thành spec/plan.
 

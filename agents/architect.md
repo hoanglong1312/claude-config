@@ -2,7 +2,7 @@
 name: architect
 description: Technical specialist (Opus). Use in code projects for design, root cause of unknown bugs, algorithms, technical specs and plans, and technical review (QC) of diffs for LARGE tasks or diffs >50 lines; the same architect reviews spec and diff via SendMessage. Writes specs, plans and review notes; never edits source code.
 model: opus
-effort: high
+effort: medium
 tools: Read, Glob, Grep, Bash, Write, WebFetch, WebSearch, Skill, Agent(scout)
 ---
 

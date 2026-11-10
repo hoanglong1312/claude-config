@@ -32,36 +32,46 @@ Trước mỗi response: classify intent. 1% chance skill áp dụng → invoke.
 
 Không invoke khi: fix 1 dòng rõ ràng, task đã hoàn toàn rõ ràng.
 
-## Trục 1 — AI nào viết code
+## Trục 1 — Phân vai theo cỡ việc (bộ điều phối agent)
 
-| Vai | Tốn | Làm |
-|---|---|---|
-| **Opus = não** (main) | quota Claude, đắt | làm rõ yêu cầu, plan, quyết what/why, review diff, MCP-write, nói chuyện user |
-| **Haiku = chân** (subagent `model: haiku`) | quota Claude, rẻ | dò `file:dòng`, chạy lại build/test/lint, sửa cơ học có spec rõ — trả **bằng chứng**, không kết luận |
-| **Codex = tay** (`/codex-exec`) | quota OpenAI, không ăn Claude | viết/sửa code, test, build, commit; review chéo plan (agent `reviewer`) |
-| **Sonnet = tay dự phòng** (subagent `model: sonnet`, `isolation: worktree`) | quota Claude, vừa | chỉ khi Codex lỗi hạ tầng (xem "Codex lỗi") |
+Chi tiết + brief + QA-QC + leo thang → skill **`orchestrating-agents`** (nạp ở mọi code task). Phân vai theo **cỡ việc + độ nhạy cảm** (sửa 2026-11-10, đo token kho đợt A/C/D ~57M: builder 32%, architect 22%, general-purpose 13%, phiên chính ~25%, security-reviewer 6%, scout+scribe <2% → mục tiêu giảm ~30%).
 
-**Mọi code change qua Codex.** Claude tự viết code CHỈ khi:
-- Thao tác **MCP-write** (Supabase `apply_migration`, INSERT/UPDATE/DELETE + verify) — khó undo, Claude cầm.
-- Codex lỗi theo mục "Codex lỗi" bên dưới (A: hạ tầng → Sonnet/Opus; C: lặp 3 lần → Opus).
-- File **.md** (plan, spec, rule).
+| Cỡ | Định nghĩa | Ai code | Review |
+|---|---|---|---|
+| **NHỎ** | ≤50 dòng, ≤3 file, không đụng tiền/auth/DB/migration/RLS | **phiên chính sửa trực tiếp**, `scout` chạy test | phiên chính đọc diff + output test nguyên văn. Không spec, không architect, không worktree |
+| **VỪA** | tính năng 1 màn, không đụng tiền/bảo mật | `builder` (Sonnet), worktree | diff >50 dòng → `architect` review mức medium; ≤50 → phiên chính QC. Không cần spec riêng nếu brief đủ |
+| **LỚN** / đụng tiền·auth·DB·RLS | còn lại | `builder` (Sonnet), worktree | đủ quy trình: spec (`architect`) → `security-reviewer` rà spec → builder → `architect` + `security-reviewer` rà diff song song |
 
-**Luồng chuẩn:** làm rõ (Opus) → dò vùng chưa biết (Haiku ×2–3 song song) → plan (Opus) → review chéo plan (Codex) → code từng task (Codex, tuần tự trên cùng thư mục; song song chỉ khi mỗi Codex có worktree riêng + không chung file) → chạy lại build/test độc lập (Haiku) → review diff (Opus) → `/ship` (Opus).
+| Vai | Model · quota | Làm | Không bao giờ |
+|---|---|---|---|
+| **Phiên chính** | Opus · Claude | nói chuyện user, chia việc theo cỡ, viết brief, quyết, nghiệm thu, MCP-write; **tự sửa việc NHỎ; sửa luôn lỗi UI vừa thấy trên trình duyệt** | code việc VỪA/LỚN, đọc hàng loạt |
+| `builder` | Sonnet · Claude | code + test việc VỪA/LỚN | quyết thiết kế, đoán khi brief mơ hồ |
+| `architect` | Opus · Claude | spec/plan, nguyên nhân gốc, review diff — **chỉ việc LỚN hoặc diff >50 dòng**; review spec và review diff là **cùng 1 agent** (SendMessage, không spawn mới) | sửa code |
+| `scout` | Haiku · Claude, rẻ | dò `file:dòng`, đọc log/web, chạy build/test/lint — trả **output nguyên văn** | sửa file, quyết đạt/không |
+| `scribe` | Haiku · Claude, rẻ | tiến độ, bàn giao, báo cáo, changelog, HDSD | đụng code/config, bịa |
+| `security-reviewer` | Opus (ngữ cảnh mới) · Claude | rà bảo mật chỉ đọc, spec TRƯỚC + diff SAU khi đụng auth/api/migration/RLS/bí mật/thanh toán/đầu vào ngoài/installer — **mọi cỡ việc** | sửa bất cứ gì |
+| Codex | GPT · OpenAI | ý kiến thứ 2 (`/codex:review`), tạo ảnh (`codex-image`) | code mặc định |
 
-**Opus review diff — bảng kiểm:** (1) sửa file ngoài phạm vi task? (2) **test bị sửa/xoá/skip?** — cách "pass giả" phổ biến nhất (3) `ASSUMPTION:` mâu thuẫn `decisions.md`? (4) đụng auth/api/migration → `/review`.
+- **Cấm `general-purpose`** trong code project (13% token, không có vai). Tìm/đọc/chạy → `scout`; cần phán đoán → `architect`.
+- Fable cần usage credits trên 2 tài khoản Pro (kiểm 2026-11-09, 2026-11-10) → vai rà bảo mật dùng Opus.
+- MCP-write (Supabase `apply_migration`, INSERT/UPDATE/DELETE) — khó undo, phiên chính cầm, `scout` verify bằng truy vấn đọc.
 
-Read MCP (nếu có) và Supabase SELECT → Codex tự làm được.
+**Cổng kiểm màn thật (bắt buộc, TRƯỚC merge):** diff đụng UI → mở app thật trên trình duyệt ở **1440px + 375px**, chặn ghi (dữ liệu chỉ đọc hoặc chặn request ghi), đi đúng luồng đã sửa kể cả trạng thái lỗi/rỗng. Test xanh chưa đủ (đợt kho: test xanh vẫn ra 4 lỗi UI). Lỗi UI thấy trên trình duyệt → phiên đang có ngữ cảnh sửa luôn, không viết brief giao lại.
 
-**Cách gọi Codex → `/codex-exec`.**
+**Worktree builder:** tạo từ **đúng commit nhánh làm việc** (ghi hash vào brief), không từ `main` (main có thể thiếu `app/`). Builder sửa nhiều file JSX → chạy script kiểm tên chưa khai báo `undef.cjs` (**chưa có — cần tạo**; tạm thời `scout` chạy build và tìm `is not defined` / `no-undef`).
+
+**Review diff — bảng kiểm** (`architect` khi được gọi, còn lại phiên chính): (1) sửa file ngoài phạm vi? (2) **test bị sửa/xoá/skip?** — cách "pass giả" phổ biến nhất (3) `ASSUMPTION:` mâu thuẫn `decisions.md`? (4) đụng auth/api/migration → `/review` + `security-reviewer`.
 
 ## Codex lỗi — phân loại trước, xử lý sau
 
+> Chỉ áp khi chủ động giao Codex code (không còn mặc định). Với `builder`: B/C/D giữ nguyên, thay "Codex" bằng "builder".
+
 | Loại | Dấu hiệu | Xử lý | Tính vào số lần fail? |
 |---|---|---|---|
-| **A. Hạ tầng** | codex không có / chưa login / hết quota OpenAI / timeout / mạng / companion crash | Haiku lấy nguyên văn lỗi → lỗi tạm thì thử lại **1 lần** → vẫn lỗi: Sonnet subagent (`isolation: worktree`) làm **cùng brief**; task nhỏ (≲20 dòng, 1 file) → Opus tự sửa. Báo user 1 dòng: "Codex lỗi [lý do], đang dùng Sonnet" | Không |
+| **A. Hạ tầng** | codex không có / chưa login / hết quota OpenAI / timeout / mạng / companion crash | `scout` lấy nguyên văn lỗi → lỗi tạm thì thử lại **1 lần** → vẫn lỗi: `builder` (`isolation: worktree`) làm **cùng brief**, kể cả task nhỏ. Báo user 1 dòng: "Codex lỗi [lý do], đang dùng builder (Sonnet)" | Không |
 | **B. Đầu ra sai** | không diff / lệch spec / `QA-FAIL:` / sửa lan file khác | `SendMessage` lại **chính agent đó** kèm output lỗi nguyên văn + `file:dòng` (không giao lại từ đầu) | Có |
-| **C. Lặp** | cùng triệu chứng lần 2 | Đổi executor vô ích — lỗi ở chẩn đoán/spec. Opus `systematic-debugging` → viết lại spec / chia nhỏ task → giao lại Codex. Lần 3 cùng triệu chứng → Opus sửa trực tiếp, ghi `<!-- claude-override: direct-fix after 3 Codex retries [date] -->` | Có |
-| **D. Âm thầm** | báo xong nhưng test bị sửa/skip, catch nuốt lỗi, tính năng không chạy | Chỉ bắt được ở bước Haiku chạy lại + Opus đọc riêng diff test. Xử lý như B, ghi rõ "không được sửa test để pass" | Có |
+| **C. Lặp** | cùng triệu chứng lần 2 | Đổi executor vô ích — lỗi ở chẩn đoán/spec. `architect` `systematic-debugging` → viết lại spec / chia nhỏ task → giao lại Codex. Lần 3 cùng triệu chứng → `builder` áp spec của architect trực tiếp, ghi `<!-- claude-override: direct-fix after 3 Codex retries [date] -->`. architect fail 2 lần → `security-reviewer` phân tích chỉ đọc, viết spec | Có |
+| **D. Âm thầm** | báo xong nhưng test bị sửa/skip, catch nuốt lỗi, tính năng không chạy | Chỉ bắt được ở bước `scout` chạy lại + `architect` đọc riêng diff test. Xử lý như B, ghi rõ "không được sửa test để pass" | Có |
 
 Hết quota OpenAI → A. Hết quota Claude giữa chừng → Codex làm tiếp độc lập theo `AGENTS.md` ("When Working Without Claude") — nên trạng thái task **luôn** phải nằm trong `docs/plan-overview.md`. Hết cả hai → ghi trạng thái vào plan, dừng, báo user.
 
@@ -69,29 +79,27 @@ Hết quota OpenAI → A. Hết quota Claude giữa chừng → Codex làm tiế
 
 Bug / lỗi / không work → **`superpowers:systematic-debugging`** (reproduce trước, không đoán). Không tự chế phân loại ở đây.
 
-## Codex async loop
+## Async loop (builder / Codex)
 
 `Agent` tool chạy nền — Claude Code tự báo khi agent xong, KHÔNG poll bằng `ScheduleWakeup`. Nhận notification xong:
 ```
-Haiku chạy lại build/test (output nguyên văn) → Opus đọc git diff theo bảng kiểm → UI diff? /frontend-verify → migration diff? verify DB → lỗi? phân loại theo "Codex lỗi"
+`scout` chạy lại build/test (output nguyên văn) → review diff theo bảng kiểm (`architect` nếu LỚN hoặc >50 dòng, SendMessage agent cũ; ∥ `security-reviewer` nếu nhạy cảm) → UI diff? cổng kiểm màn thật 1440/375 TRƯỚC merge → migration diff? verify DB → lỗi? phân loại theo "Codex lỗi"
 ```
 Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 
 ## Token Discipline — Claude main
 
 **KHÔNG:**
-- Đọc full source để lấy context khi Codex tự đọc được.
-- Grep/trace lan man khi debug. Dò vị trí/thu bằng chứng nhanh → Haiku; điều tra sâu (repro, trace runtime) → viết investigation plan → giao Codex (trừ signal dưới).
-- Paste nội dung file vào Codex prompt.
-- Dùng Edit/Write cho file code (.js/.jsx/.py/.sql) — giao Codex.
-- Dispatch Claude subagent làm middleman chuyển lời cho Codex (Haiku chỉ dò + verify, không chuyển tiếp task).
+- Đọc full source để lấy context khi agent tự đọc được.
+- Grep/trace lan man khi debug. Dò vị trí/thu bằng chứng → `scout`; điều tra sâu việc VỪA/LỚN → `architect`.
+- Paste nội dung file vào brief.
+- Edit/Write file code cho việc VỪA/LỚN — giao `builder`. (Việc NHỎ và lỗi UI vừa thấy → phiên chính sửa thẳng.)
+- Gọi `general-purpose`.
 
 **CHỈ:**
-- Đọc `git log` / `git diff`.
-- Viết/sửa file .md (plan, spec, rule).
-- Gọi Codex với goal + spec path + constraints.
-- Quyết kiến trúc trước khi giao Codex.
-- Đọc/grep source trực tiếp CHỈ khi ≥1 signal: silent-failure (no error, 0 rows affected) · cần cross-ref đồng thời DB schema+RLS+code · đối chiếu MCP data với code · Codex QA-FAIL 2+ lần cùng symptom. Không signal → viết investigation plan → giao Codex.
+- Đọc `git log` / `git diff`, output nguyên văn agent trả.
+- Quyết nội dung plan/spec (`architect` viết file cho việc LỚN) · tài liệu/tiến độ → `scribe`.
+- Giao `builder` với goal + brief/spec path + "Đã quyết / đã loại" + commit gốc worktree.
 
 **Structural-first:** với câu hỏi về symbol/call-graph ("X định nghĩa đâu", "ai gọi Y", "sửa Z vỡ gì", trace flow) → xác định file và đọc callers/callees trước khi grep lan man. Grep/Read thẳng là ĐÚNG tool khi: tìm chuỗi text literal · file đã biết tên · file .md/config · repo không phải code.
 
@@ -105,7 +113,7 @@ Diff đụng `**/auth/**` · `**/middleware/**` · `**/api/**` · `**/*migration
 
 ## ASSUMPTION / decisions
 
-Codex commit có `ASSUMPTION:` → Claude quyết + append `docs/superpowers/decisions.md` NGAY (không để session sau). Codex đọc file này trước mỗi executing-plans.
+Commit (builder/Codex) có `ASSUMPTION:` → Claude quyết + append `docs/superpowers/decisions.md` NGAY (không để session sau). Brief builder trỏ tới file này.
 
 ## Blindspot scout (trước plan)
 
@@ -115,11 +123,11 @@ Khác Plan cross-review bên dưới: scout chạy TRƯỚC plan (định hình 
 
 ## Plan cross-review (trước execute)
 
-Plan xong, TRƯỚC khi dispatch execute → giao Codex **review chéo plan** (1 dispatch riêng, read-only, brief yêu cầu agent `reviewer`; Codex lỗi hạ tầng → Sonnet subagent review thay): đối chiếu plan với codebase thật — file/symbol nêu trong plan có tồn tại không, impact đủ blast radius chưa, thiếu bước nào. Codex trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề]`. Có PLAN-GAP → Claude sửa plan trước, không execute plan chưa qua review. Plan nhỏ (≤2 task, 1 file) → skip được, ghi rõ skip.
+Chỉ việc LỚN. Plan xong, TRƯỚC khi giao builder → `architect` (cùng agent viết plan thì dùng `/codex:review` hoặc `scout` kiểm file/symbol tồn tại) đối chiếu plan với codebase thật — file/symbol có tồn tại không, impact đủ blast radius chưa, thiếu bước nào. Trả `PLAN-OK` hoặc `PLAN-GAP: [vấn đề]`. Có PLAN-GAP → sửa plan trước. Việc NHỎ/VỪA → skip.
 
 ## UI feature mới — design pipeline
 
-Thứ tự: `/wireframe` (user flow + spec table, user duyệt) → design token theo `rules/design-system.md` (chưa có file → sinh 1 lần, có thể bật tạm `ui-ux-pro-max` cho riêng bước này rồi tắt; chốt token vào file, không sinh lại mỗi màn) → mockup 2–3 bản bằng Stitch MCP (Claude gọi trực tiếp — Codex exec không thấy Stitch; project chưa nối Stitch thì dùng `frontend-design` direction), user chọn bản, Claude không tự chọn → Codex code theo `projectId`/`screenId` đã duyệt + token → `/frontend-verify`. Plan link tới wireframe/mockup đã duyệt thay vì tả UI bằng chữ. Sửa UI nhỏ trên màn có sẵn → skip wireframe + mockup, vào thẳng build.
+Thứ tự: `/wireframe` (user flow + spec table, user duyệt) → design token theo `rules/design-system.md` (chưa có file → sinh 1 lần, có thể bật tạm `ui-ux-pro-max` cho riêng bước này rồi tắt; chốt token vào file, không sinh lại mỗi màn) → mockup 2–3 bản bằng Stitch MCP (Claude gọi trực tiếp; project chưa nối Stitch thì dùng `frontend-design` direction), user chọn bản, Claude không tự chọn → `builder` code theo `projectId`/`screenId` đã duyệt + token → `/frontend-verify` + cổng kiểm màn thật 1440/375. Plan link tới wireframe/mockup đã duyệt thay vì tả UI bằng chữ. Sửa UI nhỏ trên màn có sẵn → skip wireframe + mockup, vào thẳng build.
 
 Nối Stitch cho project: `.mcp.json` → `{"mcpServers":{"stitch":{"type":"stdio","command":"/Users/giinlow./.codex/stitch-mcp-proxy.zsh"}}}` + `.claude/settings.local.json` → `{"enabledMcpjsonServers":["stitch"]}`.
 

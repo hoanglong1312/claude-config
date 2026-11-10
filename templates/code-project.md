@@ -32,39 +32,26 @@ Trước mỗi response: classify intent. 1% chance skill áp dụng → invoke.
 
 Không invoke khi: fix 1 dòng rõ ràng, task đã hoàn toàn rõ ràng.
 
-## Trục 1 — Phân vai theo cỡ việc (bộ điều phối agent)
+## Trục 1 — Phân vai (nguồn duy nhất: skill `orchestrating-agents`)
 
-Chi tiết + brief + QA-QC + leo thang → skill **`orchestrating-agents`** (nạp ở mọi code task). Phân vai theo **cỡ việc + độ nhạy cảm** (sửa 2026-11-10, đo token kho đợt A/C/D ~57M: builder 32%, architect 22%, general-purpose 13%, phiên chính ~25%, security-reviewer 6%, scout+scribe <2% → mục tiêu giảm ~30%).
+Luật đầy đủ (bảng cỡ việc, vai, brief, QA-QC, leo thang, cách đo token) **chỉ nằm trong skill `orchestrating-agents`** — nạp ở mọi code task. File project chỉ ghi phần riêng của project + trỏ về skill, không chép lại bảng.
 
-| Cỡ | Định nghĩa | Ai code | Review |
-|---|---|---|---|
-| **NHỎ** | ≤50 dòng, ≤3 file, không đụng tiền/auth/DB/migration/RLS | **phiên chính sửa trực tiếp**, `scout` chạy test | phiên chính đọc diff + output test nguyên văn. Không spec, không architect, không worktree |
-| **VỪA** | tính năng 1 màn, không đụng tiền/bảo mật | `builder` (Sonnet), worktree | diff >50 dòng → `architect` review mức medium; ≤50 → phiên chính QC. Không cần spec riêng nếu brief đủ |
-| **LỚN** / đụng tiền·auth·DB·RLS | còn lại | `builder` (Sonnet), worktree | đủ quy trình: spec (`architect`) → `security-reviewer` rà spec → builder → `architect` + `security-reviewer` rà diff song song |
+Tóm tắt để nhớ:
+- **Cỡ việc đo theo phạm vi, trước khi code.** NHỎ (≤3 file có sẵn, không component mới, không đổi luồng dữ liệu/schema) → phiên chính tự sửa, `scout` chạy test. VỪA (1 màn) → `builder` Sonnet. LỚN (nhiều màn, schema, luồng mới) → spec `architect` → `builder` (hoặc Codex nếu đang có).
+- **Sonnet là người code mặc định** — Codex không phải lúc nào cũng có; có thì chỉ nhận việc LỚN đã chốt spec. Không bao giờ chờ Codex.
+- **Vùng bảo mật** (auth/RLS/migration/secrets/endpoint công khai) → `security-reviewer` trước + sau, mọi cỡ. **Logic tiền** (lương, két, giá vốn, P&L) → `scout` đối chiếu ≥1 tháng thật, không cần security-reviewer.
+- `architect` chỉ cho LỚN, hoặc VỪA đổi luồng dữ liệu / code dùng chung / >~150 dòng; dùng lại qua SendMessage.
+- Cấm `general-purpose`. Effort mọi agent ≤ medium.
+- **Kiểm màn thật 1440 + 375px, chặn ghi, TRƯỚC merge.** Lỗi UI thấy trên trình duyệt → phiên có ngữ cảnh sửa luôn.
+- Worktree tạo từ commit nhánh làm việc, không từ main. Thư mục chung: chỉ `git add` đúng file mình sửa.
+- MCP-write (Supabase migration/INSERT/UPDATE/DELETE) → phiên chính cầm, `scout` verify bằng truy vấn đọc.
+- Fable cần usage credits trên 2 tài khoản Pro → vai Opus.
 
-| Vai | Model · quota | Làm | Không bao giờ |
-|---|---|---|---|
-| **Phiên chính** | Opus · Claude | nói chuyện user, chia việc theo cỡ, viết brief, quyết, nghiệm thu, MCP-write; **tự sửa việc NHỎ; sửa luôn lỗi UI vừa thấy trên trình duyệt** | code việc VỪA/LỚN, đọc hàng loạt |
-| `builder` | Sonnet · Claude | code + test việc VỪA/LỚN | quyết thiết kế, đoán khi brief mơ hồ |
-| `architect` | Opus · Claude | spec/plan, nguyên nhân gốc, review diff — **chỉ việc LỚN hoặc diff >50 dòng**; review spec và review diff là **cùng 1 agent** (SendMessage, không spawn mới) | sửa code |
-| `scout` | Haiku · Claude, rẻ | dò `file:dòng`, đọc log/web, chạy build/test/lint — trả **output nguyên văn** | sửa file, quyết đạt/không |
-| `scribe` | Haiku · Claude, rẻ | tiến độ, bàn giao, báo cáo, changelog, HDSD | đụng code/config, bịa |
-| `security-reviewer` | Opus (ngữ cảnh mới) · Claude | rà bảo mật chỉ đọc, spec TRƯỚC + diff SAU khi đụng auth/api/migration/RLS/bí mật/thanh toán/đầu vào ngoài/installer — **mọi cỡ việc** | sửa bất cứ gì |
-| Codex | GPT · OpenAI | ý kiến thứ 2 (`/codex:review`), tạo ảnh (`codex-image`) | code mặc định |
-
-- **Cấm `general-purpose`** trong code project (13% token, không có vai). Tìm/đọc/chạy → `scout`; cần phán đoán → `architect`.
-- Fable cần usage credits trên 2 tài khoản Pro (kiểm 2026-11-09, 2026-11-10) → vai rà bảo mật dùng Opus.
-- MCP-write (Supabase `apply_migration`, INSERT/UPDATE/DELETE) — khó undo, phiên chính cầm, `scout` verify bằng truy vấn đọc.
-
-**Cổng kiểm màn thật (bắt buộc, TRƯỚC merge):** diff đụng UI → mở app thật trên trình duyệt ở **1440px + 375px**, chặn ghi (dữ liệu chỉ đọc hoặc chặn request ghi), đi đúng luồng đã sửa kể cả trạng thái lỗi/rỗng. Test xanh chưa đủ (đợt kho: test xanh vẫn ra 4 lỗi UI). Lỗi UI thấy trên trình duyệt → phiên đang có ngữ cảnh sửa luôn, không viết brief giao lại.
-
-**Worktree builder:** tạo từ **đúng commit nhánh làm việc** (ghi hash vào brief), không từ `main` (main có thể thiếu `app/`). Builder sửa nhiều file JSX → chạy script kiểm tên chưa khai báo `undef.cjs` (**chưa có — cần tạo**; tạm thời `scout` chạy build và tìm `is not defined` / `no-undef`).
-
-**Review diff — bảng kiểm** (`architect` khi được gọi, còn lại phiên chính): (1) sửa file ngoài phạm vi? (2) **test bị sửa/xoá/skip?** — cách "pass giả" phổ biến nhất (3) `ASSUMPTION:` mâu thuẫn `decisions.md`? (4) đụng auth/api/migration → `/review` + `security-reviewer`.
+**Review diff — bảng kiểm:** (1) sửa file ngoài phạm vi? (2) **test bị sửa/xoá/skip?** (3) `ASSUMPTION:` mâu thuẫn `decisions.md`? (4) đụng auth/api/migration → `/review` + `security-reviewer`.
 
 ## Codex lỗi — phân loại trước, xử lý sau
 
-> Chỉ áp khi chủ động giao Codex code (không còn mặc định). Với `builder`: B/C/D giữ nguyên, thay "Codex" bằng "builder".
+> Codex là tuỳ chọn. Loại A (hạ tầng) → `builder` làm ngay cùng brief, không thử lại chờ. B/C/D áp như nhau cho `builder` (thay "Codex" bằng "builder").
 
 | Loại | Dấu hiệu | Xử lý | Tính vào số lần fail? |
 |---|---|---|---|
@@ -83,7 +70,7 @@ Bug / lỗi / không work → **`superpowers:systematic-debugging`** (reproduce 
 
 `Agent` tool chạy nền — Claude Code tự báo khi agent xong, KHÔNG poll bằng `ScheduleWakeup`. Nhận notification xong:
 ```
-`scout` chạy lại build/test (output nguyên văn) → review diff theo bảng kiểm (`architect` nếu LỚN hoặc >50 dòng, SendMessage agent cũ; ∥ `security-reviewer` nếu nhạy cảm) → UI diff? cổng kiểm màn thật 1440/375 TRƯỚC merge → migration diff? verify DB → lỗi? phân loại theo "Codex lỗi"
+`scout` chạy lại build/test (output nguyên văn) → review diff theo bảng kiểm (`architect` nếu LỚN hoặc VỪA đổi luồng dữ liệu/code dùng chung/>~150 dòng, SendMessage agent cũ; ∥ `security-reviewer` nếu nhạy cảm) → UI diff? cổng kiểm màn thật 1440/375 TRƯỚC merge → migration diff? verify DB → lỗi? phân loại theo "Codex lỗi"
 ```
 Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 

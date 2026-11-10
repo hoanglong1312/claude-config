@@ -175,6 +175,8 @@ Re-measure after 1–2 rounds with the same method: for each session of the roun
 
 ## Red flags - stop
 
+Enforced by hook `~/.claude/hooks/agent-guard.py` in code projects (CLAUDE.md importing `code-project.md`): blocks `general-purpose` / missing `subagent_type`, and `git add -A/--all/./-u`. Bypass only with `[guard-ok] <reason>` in the prompt or command.
+
 - Main editing a task that is MEDIUM/LARGE or touches a security area.
 - Money-logic change about to be signed off without a real-month reconciliation.
 - `git add -A` / `git add .` on a shared working tree.

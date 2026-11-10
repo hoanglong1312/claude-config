@@ -1,37 +1,45 @@
 ---
 name: orchestrating-agents
-description: Use in code projects (the project's CLAUDE.md loads code-project.md) on every task that changes code, reads files or logs, runs builds or tests, writes reports or docs, or needs review - sizing the task (small / medium / large), deciding who owns the work (main session, scout, scribe, builder, architect, security-reviewer), how to brief it, QA-QC gates including the real-browser screen check before merge, hard bugs, before reporting delegated work done, or when the user asks "điều phối agent", "phân công", "giao việc cho agent", "kiểm tra đầu vào đầu ra". Not for content, business or note-taking work outside code projects.
+description: Use in code projects (the project's CLAUDE.md loads code-project.md) on every task that changes code, reads files or logs, runs builds or tests, writes reports or docs, or needs review - sizing the task by scope (small / medium / large) plus security and money-logic overlays, deciding who owns the work (main session, scout, scribe, builder, architect, security-reviewer), how to brief it, QA-QC gates including the real-browser screen check before merge, hard bugs, before reporting delegated work done, or when the user asks "điều phối agent", "phân công", "giao việc cho agent", "kiểm tra đầu vào đầu ra". Not for content, business or note-taking work outside code projects.
 ---
 
 # Orchestrating Agents (macOS · Opus điều phối · chia theo cỡ việc)
 
-Adapted from orchestrating-agents-pack 2026-10-23, revised 2026-11-10. Differences from the pack: the main session is **Opus** (Fable needs usage credits on the user's Pro accounts); code is written by the **main session (small)** or **`builder` Sonnet (medium/large)** - Codex no longer writes code by default (only second-opinion review `/codex:review` and image generation); the security reviewer is `security-reviewer` on **Opus**; settings stay as the user set them (effortLevel medium, autoCompactWindow 300000).
+Adapted from orchestrating-agents-pack 2026-10-23, revised 2026-11-10. Differences from the pack: the main session is **Opus** (Fable needs usage credits on the user's Pro accounts); the default coder is **`builder` (Sonnet)** - it must work whether or not Codex is available; **Codex is an optional offload** for LARGE tasks with a finished spec, only when it is installed and logged in (saves Claude quota; slow, ~15 min, so never for fast UI back-and-forth); the security reviewer is `security-reviewer` on **Opus**. Effort: every agent `medium` or lower (scout/scribe `low`), session effortLevel medium, autoCompactWindow 300000.
 
-**Why the 2026-11-10 revision** (token measurement of the LONG-CAFE kho sessions, rounds A/C/D: ~57M effective tokens): builder 32%, architect 22%, general-purpose 13%, main session ~25%, security-reviewer 6%, scout+scribe <2%. Goal: ~30% fewer tokens while keeping security review and the real-screen check. Cuts: no general-purpose, small tasks done inline, architect only for large tasks or diffs >50 lines and reused via SendMessage.
+**Why the 2026-11-10 revision** (token measurement of the LONG-CAFE kho sessions, rounds A/C/D: ~57M effective tokens): builder 32%, architect 22%, general-purpose 13%, main session ~25%, security-reviewer 6%, scout+scribe <2%. Goal: ~30% fewer tokens while keeping security review and the real-screen check. Cuts: no general-purpose, small tasks done inline, architect only when the change needs design judgment, reused via SendMessage; money logic checked by reconciliation (cheap) instead of Opus security review; agent effort capped at medium.
 
-Work is routed by **size and sensitivity** (table below). The main session holds the context, decides and signs off; on small tasks it also edits. Security review never gets skipped on a sensitive area.
+Work is routed by **scope and risk** (table below). The main session holds the context, decides and signs off; on small tasks it also edits. Security review never gets skipped on a security area.
 
-## Size the task first
+## Size the task first - by scope, before any code
 
-| Size | Definition | Who codes | Review | Spec / worktree |
+Line counts are only known after coding, so size by **scope**:
+
+| Size | Scope (decide before coding) | Who codes | Review | Spec / worktree |
 |---|---|---|---|---|
-| **SMALL** | ≤50 lines, ≤3 files, no money/auth/DB/migration/RLS | **main session** edits directly; `scout` runs the tests | main reads its own diff + raw test output; no architect | no spec, no worktree |
-| **MEDIUM** | one screen / one feature, no money/security | `builder` (Sonnet) | `architect` reviews the diff at **medium** - only if the diff is >50 lines; ≤50 lines → main QC | no separate spec when the brief already says enough; builder in a worktree |
-| **LARGE** or touches money/auth/DB/RLS/migration | anything bigger, or any sensitive area | `builder` (Sonnet) | full flow: spec → `security-reviewer` (spec) → builder → `architect` + `security-reviewer` (diff) in parallel | spec by architect; builder in a worktree |
+| **SMALL** | ≤3 existing files, no new component/module, no change to data flow, schema or shared helpers | **main session** edits directly; `scout` runs the tests | main reads its own diff + raw test output | no spec; no worktree unless another session works on the same branch |
+| **MEDIUM** | one screen / one feature, may add components; no schema change | `builder` (Sonnet) in a worktree | `architect` (medium) **only if** the diff changes data flow, a shared helper/component, or exceeds ~150 lines; otherwise main QC | no separate spec when the brief already says enough |
+| **LARGE** | several screens/modules, schema/migration, new data flow, or anything that needs a plan | `builder` (Sonnet) in a worktree, or Codex if available and the spec is final | spec by `architect` → `architect` reviews the diff (same agent, SendMessage) | spec + plan |
 
-Unsure between two sizes → take the larger. A small task that grows past 50 lines or 3 files while you work → stop, re-size, hand to builder.
+**Risk overlays - added on top of the size, never replacing it:**
+- **Security area** (auth, RLS, migration, secrets, public endpoints, parsing outside input, payments integration, installer) → `security-reviewer` on the spec before code and on the diff after, at any size.
+- **Money logic** (payroll, cash drawer, COGS, P&L, prices, stock value) → **reconciliation gate**: `scout` computes at least one real month from the source data with its own script and compares with the new output; any difference = fail. Brief quotes the brain-file section. No security-reviewer unless it is also a security area.
+
+Unsure between two sizes → take the larger. A SMALL task that turns out to need a 4th file, a new component or a data-flow change → stop, re-size, hand to builder with what you already learned.
+
+**Shared working tree:** before a SMALL inline edit, check `git status` and whether another session/worktree is on the same branch. Stage only the files you changed (`git add <file>`, never `-A`/`.`). Another session active on the branch → do the SMALL edit in a worktree too.
 
 ## Role table
 
 | Work type | Owner | Model | Never does |
 |---|---|---|---|
 | Hold context, talk to the user, size and split work, write briefs, decide, sign-off, MCP-write (Supabase migration/INSERT/UPDATE/DELETE - hard to undo); **edit SMALL tasks; fix UI bugs just seen in the browser** | **main session** | Opus 5.5 | code MEDIUM/LARGE tasks; bulk reading; review its own LARGE-task brief |
-| Write or change code and tests for MEDIUM/LARGE tasks | `builder` | Sonnet 5.5 | design decisions; guessing when the brief is unclear; reports |
-| Design, root cause, algorithm, spec/plan, technical review (QC) of diffs - **only LARGE tasks or diffs >50 lines** | `architect` | Opus 5.5 | edit source code - it writes specs, plans and review notes |
+| Write or change code and tests for MEDIUM/LARGE tasks (default coder, always available) | `builder` | Sonnet 5.5 | design decisions; guessing when the brief is unclear; reports |
+| Design, root cause, algorithm, spec/plan, technical review (QC) of diffs - **LARGE tasks, or MEDIUM diffs that change data flow / shared code / exceed ~150 lines** | `architect` | Opus 5.5 | edit source code - it writes specs, plans and review notes |
 | Find, read, summarize files/logs/web; run commands, builds, tests, scripts, screenshots; count, compare, reconcile | `scout` | Haiku 5.5 | edit any file; decide pass/fail of a gate |
 | Write and format progress entries, handoffs, reports, changelogs, README/HDSD, tables, release notes, translations | `scribe` | Haiku 5.5 | touch source code or config; invent facts |
-| Security review (license, auth, secrets, crypto, parsing outside input, public endpoints, payments, RLS/migrations, installer/packaging), read-only, BEFORE code (spec) and AFTER code (diff) | `security-reviewer` | Opus 5.5, fresh context | edit anything |
-| Second opinion on a diff (optional), image generation | Codex (`/codex:review`, `/anh`) | GPT | write production code by default |
+| Security review of a **security area** (license, auth, secrets, crypto, parsing outside input, public endpoints, payment integration, RLS/migrations, installer/packaging), read-only, BEFORE code (spec) and AFTER code (diff). Not for money-logic correctness - that is the reconciliation gate | `security-reviewer` | Opus 5.5, fresh context | edit anything |
+| Optional: code a LARGE task with a final spec (when installed + logged in); second opinion on a diff; image generation | Codex (`/codex-exec`, `/codex:review`, `codex-image`) | GPT (OpenAI quota) | fast UI back-and-forth; anything when unavailable - then `builder` does it, no waiting |
 
 **`general-purpose` is banned in code projects** (13% of tokens, no role: it inherits the main model and every tool). Find/read/run → `scout`. Needs judgment → `architect`.
 
@@ -51,9 +59,11 @@ Every dispatch prompt has these parts, in order:
 
 ## Flows
 
-- **SMALL:** clarify → main edits → `scout` runs tests/build (raw tail) → main reads diff + raw output → UI touched? real-screen gate → sign-off → commit.
-- **MEDIUM:** clarify → brief (no spec if the brief is enough) → `builder` in worktree → `scout` re-runs build/test → diff >50 lines? `architect` reviews at medium : main QC → real-screen gate → sign-off → merge.
-- **LARGE / sensitive:** clarify → unknown areas (`scout` ×2–3 parallel) → spec (`architect`, main approves) → `security-reviewer` on the spec (sensitive area) → `builder` per task → `scout` re-runs build/test → `architect` (same agent via SendMessage) + `security-reviewer` review the diff in parallel → real-screen gate → sign-off → merge → `scribe` writes progress/handoff.
+- **SMALL:** clarify → check shared tree → main edits → `scout` runs tests/build (raw tail) → main reads diff + raw output → UI touched? real-screen gate → sign-off → commit only the changed files.
+- **MEDIUM:** clarify → brief (no spec if the brief is enough) → `builder` in worktree → `scout` re-runs build/test → data flow / shared code / >~150 lines? `architect` (medium) : main QC → real-screen gate → sign-off → merge.
+- **LARGE:** clarify → unknown areas (`scout` ×2–3 parallel) → spec (`architect`, main approves) → `builder` per task (or Codex if available) → `scout` re-runs build/test → `architect` (same agent via SendMessage) reviews the diff → real-screen gate → sign-off → merge → `scribe` writes progress/handoff.
+- **+ Security area:** `security-reviewer` on the spec (or brief) before code and on the diff after, in parallel with any architect review.
+- **+ Money logic:** reconciliation gate (`scout`, real month, own script) before sign-off.
 
 **One architect per task.** The architect that reviewed the spec also reviews the diff: SendMessage to it, never a new spawn.
 
@@ -74,9 +84,9 @@ Required on every task that changes code, config, data or output. Output that re
 
 **Output - before "done":**
 1. Evidence: `scout` runs the check and returns the exact command, exit code and the last 30 raw lines. Judge from raw lines, never from a paraphrase. An agent's "done" is a claim.
-2. Technical QC: per the size table. `architect` only for LARGE or diff >50 lines (medium effort for MEDIUM, high for LARGE, max when output reaches a machine, money or a customer); otherwise main QC. Checklist: files outside scope? tests edited/deleted/skipped? `ASSUMPTION:` vs `decisions.md`? auth/api/migration → `/review`.
-3. Independent check (machine, money, customer, public): `scout` writes its own script from the source data - never the implementer's code - and compares.
-4. Security: sensitive area → `security-reviewer` reviews the spec before code and the diff after code. Always, at any size.
+2. Technical QC: per the size table. `architect` for LARGE, or MEDIUM diffs that change data flow / shared code / exceed ~150 lines; otherwise main QC. code-review level: medium; high only for LARGE with a security area; max/ultra only when the user asks. Checklist: files outside scope? tests edited/deleted/skipped? `ASSUMPTION:` vs `decisions.md`? auth/api/migration → `/review`.
+3. Independent check / reconciliation gate (money logic, machine, customer, public): `scout` writes its own script from the source data - never the implementer's code - computes at least one real month and compares. Any difference = fail.
+4. Security: security area → `security-reviewer` reviews the spec before code and the diff after code. Always, at any size. Money logic alone does not trigger it - item 3 covers it.
 5. **Real-screen gate (UI touched) - mandatory BEFORE merge, never after:** open the real app in a browser at **1440 px and 375 px**, with writes blocked (read-only data or intercepted write requests), and walk the changed path including error and empty states. Green tests are not enough (kho round: tests green, still 4 UI bugs). Cannot be driven → hand the user exact steps and say it is unverified; do not merge.
 6. **UI bug seen in the browser:** the session that has the context fixes it right away (main for SMALL-sized fixes, or SendMessage to the builder already holding the task). No new brief, no new agent.
 7. Sign-off: **main session only**, after 1-6 are green. Then merge / `/ship`.
@@ -94,7 +104,7 @@ Load only the skill a row names; no row matches → no skill. Where code-project
 | New logic with branches/parsing/money/security | superpowers:test-driven-development | builder (in the brief) |
 | About to claim done/fixed | superpowers:verification-before-completion | main |
 | Received review feedback | superpowers:receiving-code-review | main |
-| Correctness review of a diff | code-review medium / high / max per QA-QC output 2; ultra is user-triggered and billed | architect (LARGE or >50 lines) |
+| Correctness review of a diff | code-review per QA-QC output 2 (medium default); max/ultra only when the user asks | architect (LARGE, or MEDIUM touching data flow / shared code / >~150 lines) |
 | Security of pending changes | security-review / `/review` | security-reviewer (sensitive area) |
 | Second opinion | `/codex:review` | Codex, optional |
 | Code calling Claude API / Anthropic SDK | claude-api | architect designs, builder writes |
@@ -131,6 +141,10 @@ Failure = agent reports stuck, the check fails, or a spot-check shows a wrong an
 - `scout` result looks wrong → a second `scout` with a different method; judgment needed → `architect`.
 Give the next agent a ≤10-line summary of what was tried and ruled out. Never forward the transcript.
 
+## Measuring the token split
+
+Re-measure after 1–2 rounds with the same method: for each session of the round, sum `usage` (input + cache_creation + output; cache_read weighted 0.1) from the main transcript and from every `subagents/agent-*.jsonl`, grouped by `agentType` in the matching `.meta.json`. Compare the shares with the 2026-11-10 baseline above; `scribe` records the result in the project's decisions file.
+
 ## Main-session rules
 
 - Keep the main context for decisions: no bulk reading (that is scout), no raw logs beyond the tail, reports capped.
@@ -148,9 +162,11 @@ Give the next agent a ≤10-line summary of what was tried and ruled out. Never 
 
 | Thought | Reality |
 |---|---|
-| "It's SMALL, but let me brief builder anyway" | A brief + worktree + review for ≤50 lines costs more than the edit. SMALL → main edits, scout tests. |
-| "It's only 60 lines across 4 files, still small" | Over the line is MEDIUM. → builder |
-| "Touches payroll but it's one line" | Money/auth/DB/RLS is LARGE at any size. → full flow + security-reviewer |
+| "It's SMALL, but let me brief builder anyway" | A brief + worktree + review for a ≤3-file change costs more than the edit. SMALL → main edits, scout tests. |
+| "It's 4 files but each change is tiny, still small" | Scope over the line is MEDIUM. → builder |
+| "Touches payroll but it's one line" | Size stays SMALL, but the reconciliation gate still runs on a real month. |
+| "Payroll change, call security-reviewer to be safe" | Money logic → reconciliation by scout. security-reviewer only for a security area. |
+| "Codex isn't logged in, wait for it" | Never wait. builder codes. |
 | "I'll spawn a fresh architect for the diff review" | The spec architect already holds the context. → SendMessage |
 | "Tests are green, merge now, look at the screen later" | Real-screen gate is before merge. Kho round: green tests, 4 UI bugs. |
 | "Write a brief so builder fixes this UI glitch I just saw" | The session with the context fixes it now. |
@@ -159,7 +175,9 @@ Give the next agent a ≤10-line summary of what was tried and ruled out. Never 
 
 ## Red flags - stop
 
-- Main editing a task that is MEDIUM/LARGE or touches money/auth/DB/RLS.
+- Main editing a task that is MEDIUM/LARGE or touches a security area.
+- Money-logic change about to be signed off without a real-month reconciliation.
+- `git add -A` / `git add .` on a shared working tree.
 - A `general-purpose` agent in a code project.
 - A second architect spawned for the same task.
 - builder's worktree based on `main` instead of the working branch commit.
@@ -179,3 +197,4 @@ Give the next agent a ≤10-line summary of what was tried and ruled out. Never 
 | New spawn for a follow-up | SendMessage |
 | scribe given an agent's claim as a fact | main passes only verified facts |
 | Worktree from main | worktree from the working branch commit |
+| Agent with `effort: high` | `medium` max; scout/scribe `low` |

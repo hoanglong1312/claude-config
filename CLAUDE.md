@@ -20,6 +20,7 @@ User muốn được phỏng vấn kỹ để Claude hiểu đúng ý trước k
 3. **Dạy kèm từng câu:** giải thích ngắn bối cảnh + đánh đổi của từng lựa chọn, để user chọn có hiểu biết chứ không chọn mò. Thuật ngữ giải thích lần đầu.
 4. **Nhiều vòng, đào sâu dần:** vòng sau dựa trên câu trả lời vòng trước — mục tiêu → đối tượng/bối cảnh → ràng buộc → tiêu chí "xong" → gu/phong cách. Dừng khi không còn điều gì làm đổi kết quả.
 5. **Tóm tắt xác nhận trước khi làm:** "Mình hiểu bạn muốn: … · Xong khi: … · Không làm: …" → hỏi duyệt bằng `AskUserQuestion` ("Đúng, làm đi" / "Sửa lại"). Có duyệt mới thực thi.
+   - **Viết cho người không đọc code** (user chốt 2026-11-15): tóm tắt nằm trong tin nhắn thường (KHÔNG nhồi cả khối vào câu hỏi `AskUserQuestion`), chia nhóm có tiêu đề, mỗi việc 1 mục ngắn dạng **❌ hiện tại → ✅ sau khi làm** kèm 1 ví dụ cụ thể (tên người, số tiền, giờ) — không tên hàm/file, không thuật ngữ, không câu dài nối bằng dấu chấm phẩy. Câu hỏi duyệt chỉ 1 dòng.
 
 # Cách Làm Việc
 
@@ -71,6 +72,7 @@ Có trước/sau (bug fix, refactor): ❌ hành vi sai trước đó, ✅ hành 
 - Tạo/sửa ảnh bitmap → **BẮT BUỘC** skill `codex-image`: Claude soạn prompt, Codex `codex exec` (CLI ≥0.166) tạo ảnh `gpt-image-2.5` qua app Cockpit Tools (`localhost:54726`), Claude kiểm. Không dùng cách nào khác: không tool/model tạo ảnh khác, không tự vẽ SVG/HTML/canvas thay ảnh, không gọi qua `codex-rescue`/Codex MCP (không có `image_gen`). Cockpit/Codex lỗi → báo user nguyên văn lỗi rồi dừng, không tự đổi đường khác.
 - Chọn plugin/skill/agent cho loại việc (code, ảnh, business, content) → đọc `~/.claude/templates/toolkit.md` (không tự nạp).
 - Hỏi về tool/repo → đọc `~/Library/Mobile Documents/iCloud~md~obsidian/Documents/my-brain/raw/resources/repos/index.md`.
+- claude-mem (plugin nhật ký session, `~/.claude-mem`): chỉ để tra cứu "đã làm gì". Mâu thuẫn với CLAUDE.md / memory files / skill → **cái mới hơn thắng**, ghi chép claude-mem cũ (trước 2026-11-10, nhiều cái theo luật Codex-code-chính đã bỏ) không được dùng làm luật.
 - Install package/tool/service mới → hỏi: **"Thêm [tên] vào Obsidian repo wiki không?"** Format: `| [tên] | [URL] | installed | [project/global] | [ghi chú ngắn] |`
 
 # Kết Thúc Session

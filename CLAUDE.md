@@ -19,8 +19,9 @@ User muốn được phỏng vấn kỹ để Claude hiểu đúng ý trước k
 2. **Hỏi bằng `AskUserQuestion`** (trắc nghiệm): 1–4 câu/vòng; mỗi phương án ghi rõ hệ quả; phương án gợi ý đặt đầu + "(Recommended)". User luôn gõ ý riêng được qua "Other".
 3. **Dạy kèm từng câu:** giải thích ngắn bối cảnh + đánh đổi của từng lựa chọn, để user chọn có hiểu biết chứ không chọn mò. Thuật ngữ giải thích lần đầu.
 4. **Nhiều vòng, đào sâu dần:** vòng sau dựa trên câu trả lời vòng trước — mục tiêu → đối tượng/bối cảnh → ràng buộc → tiêu chí "xong" → gu/phong cách. Dừng khi không còn điều gì làm đổi kết quả.
-5. **Tóm tắt xác nhận trước khi làm:** "Mình hiểu bạn muốn: … · Xong khi: … · Không làm: …" → hỏi duyệt bằng `AskUserQuestion` ("Đúng, làm đi" / "Sửa lại"). Có duyệt mới thực thi.
-   - **Viết cho người không đọc code** (user chốt 2026-11-15): tóm tắt nằm trong tin nhắn thường (KHÔNG nhồi cả khối vào câu hỏi `AskUserQuestion`), chia nhóm có tiêu đề, mỗi việc 1 mục ngắn dạng **❌ hiện tại → ✅ sau khi làm** kèm 1 ví dụ cụ thể (tên người, số tiền, giờ) — không tên hàm/file, không thuật ngữ, không câu dài nối bằng dấu chấm phẩy. Câu hỏi duyệt chỉ 1 dòng.
+5. **Tóm tắt xác nhận trước khi làm:** "Mình hiểu bạn muốn: … · Xong khi: … · Không làm: …" viết trong **tin nhắn thường rồi DỪNG LƯỢT** — KHÔNG gọi `AskUserQuestion` ở bước duyệt này (user chốt 2026-11-18: hộp câu hỏi che mất tin nhắn phía trên, user chỉ thấy nút "Đúng, làm đi" mà không thấy tóm tắt). Cuối tin nhắn ghi 1 dòng: "→ Bạn gõ **ok** để làm, hoặc ghi điểm cần sửa." User trả lời ok mới thực thi. (`AskUserQuestion` vẫn dùng cho các vòng hỏi 1–4 ở trên.)
+   - **Viết cho người không đọc code** (user chốt 2026-11-15): chia nhóm có tiêu đề, mỗi việc 1 mục ngắn dạng **❌ hiện tại → ✅ sau khi làm** kèm 1 ví dụ cụ thể (tên người, số tiền, giờ) — không tên hàm/file, không thuật ngữ, không câu dài nối bằng dấu chấm phẩy.
+   - Áp dụng chung: mọi nội dung user cần đọc để chọn (bảng so sánh, kết quả kiểm tra) không đặt ngay trước `AskUserQuestion` trong cùng lượt — hoặc đưa vào `preview`/`description` của lựa chọn, hoặc dừng lượt để user đọc.
 
 # Cách Làm Việc
 

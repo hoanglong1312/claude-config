@@ -69,6 +69,17 @@
             "statusMessage": "Checking tests not deleted/skipped before commit..."
           }
         ]
+      },
+      {
+        "matcher": "Agent|Task|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$HOME/.claude/hooks/agent-guard.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking agent/git-add rules (code project)..."
+          }
+        ]
       }
     ],
     "Stop": [

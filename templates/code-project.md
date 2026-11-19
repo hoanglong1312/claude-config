@@ -25,7 +25,7 @@ Trước mỗi response: classify intent. 1% chance skill áp dụng → invoke.
 |---|---|
 | Bug / lỗi / không work / crash | `superpowers:systematic-debugging` TRƯỚC KHI đề xuất fix |
 | Fix xong bất kỳ thứ gì | `superpowers:verification-before-completion` TRƯỚC KHI báo done |
-| "merge" / "push" / "PR" / "xong rồi" | `superpowers:requesting-code-review` |
+| "merge" / "push" / "PR" / "xong rồi" | `/review` — đúng 1 lần review độc lập cho mỗi diff (`code-reviewer`, hoặc verdict của `architect` với việc LỚN) |
 | Feature mới / "nên làm gì" | `superpowers:brainstorming` |
 | UI mới / cần mockup | `wireframe` → xem design pipeline bên dưới |
 | Auth / payment / RLS / Supabase security | `/review` (hook `security-gate.py` chặn commit) |
@@ -34,24 +34,20 @@ Không invoke khi: fix 1 dòng rõ ràng, task đã hoàn toàn rõ ràng.
 
 ## Trục 1 — Phân vai (nguồn duy nhất: skill `orchestrating-agents`)
 
-Luật đầy đủ (bảng cỡ việc, vai, brief, QA-QC, leo thang, cách đo token) **chỉ nằm trong skill `orchestrating-agents`** — nạp ở mọi code task. File project chỉ ghi phần riêng của project + trỏ về skill, không chép lại bảng.
+Luật đầy đủ (bảng cỡ việc, vai, cổng kiểm, leo thang, cách đo token) **chỉ nằm trong skill `orchestrating-agents`** — nạp ở mọi code task. File này và file project KHÔNG chép lại bảng; mâu thuẫn → skill thắng.
 
-Tóm tắt để nhớ:
-- **Cỡ việc đo theo phạm vi, trước khi code.** NHỎ (≤3 file có sẵn, không component mới, không đổi luồng dữ liệu/schema) → phiên chính tự sửa, `scout` chạy test. VỪA (1 màn) → `builder` Sonnet. LỚN (nhiều màn, schema, luồng mới) → spec `architect` → `builder` (hoặc Codex nếu đang có).
-- **Sonnet là người code mặc định** — Codex không phải lúc nào cũng có; có thì chỉ nhận việc LỚN đã chốt spec. Không bao giờ chờ Codex.
-- **Vùng bảo mật** (auth/RLS/migration/secrets/endpoint công khai) → `security-reviewer` trước + sau, mọi cỡ. **Logic tiền** (lương, két, giá vốn, P&L) → `scout` đối chiếu ≥1 tháng thật, không cần security-reviewer.
-- `architect` chỉ cho LỚN, hoặc VỪA đổi luồng dữ liệu / code dùng chung / >~150 dòng; dùng lại qua SendMessage.
-- Cấm `general-purpose`. Effort mọi agent ≤ medium.
-- **Kiểm màn thật 1440 + 375px, chặn ghi, TRƯỚC merge.** Lỗi UI thấy trên trình duyệt → phiên có ngữ cảnh sửa luôn.
-- Worktree tạo từ commit nhánh làm việc, không từ main. Thư mục chung: chỉ `git add` đúng file mình sửa.
-- MCP-write (Supabase migration/INSERT/UPDATE/DELETE) → phiên chính cầm, `scout` verify bằng truy vấn đọc.
-- Fable cần usage credits trên 2 tài khoản Pro → vai Opus.
+**Chế độ gọn (thử nghiệm từ 2026-11-11).** Phương án điều phối đầy đủ trước đó + cách quay lại: `~/.claude/backups/orchestration-full-20261111/RESTORE.md`.
+
+Ba điều không được quên (chi tiết trong skill):
+- **Phiên chính tự code việc NHỎ và VỪA.** Chỉ việc LỚN (nhiều màn, schema/migration, luồng dữ liệu mới, cần plan) mới đi spec `architect` → `builder`. Codex là tuỳ chọn cho việc LỚN đã chốt spec; không bao giờ chờ Codex.
+- **Các cổng giữ nguyên:** việc VỪA bắt buộc 1 lần `code-reviewer` trước merge · vùng bảo mật → `security-reviewer` trước + sau · logic tiền → `scout` đối chiếu ≥1 tháng thật · đụng UI → kiểm màn thật 1440 + 375px, chặn ghi, TRƯỚC merge.
+- **Mỗi tính năng một phiên.** Agent con chỉ gọi khi đáng: output dài, cần mắt độc lập, hoặc việc LỚN. Cấm `general-purpose`; chỉ `git add` đúng file mình sửa.
 
 **Review diff — bảng kiểm:** (1) sửa file ngoài phạm vi? (2) **test bị sửa/xoá/skip?** (3) `ASSUMPTION:` mâu thuẫn `decisions.md`? (4) đụng auth/api/migration → `/review` + `security-reviewer`.
 
 ## Codex lỗi — phân loại trước, xử lý sau
 
-> Codex là tuỳ chọn. Loại A (hạ tầng) → `builder` làm ngay cùng brief, không thử lại chờ. B/C/D áp như nhau cho `builder` (thay "Codex" bằng "builder").
+> Chỉ áp cho việc LỚN (việc NHỎ/VỪA phiên chính tự code). Codex là tuỳ chọn. Loại A (hạ tầng) → `builder` làm ngay cùng brief, không thử lại chờ. B/C/D áp như nhau cho `builder` (thay "Codex" bằng "builder").
 
 | Loại | Dấu hiệu | Xử lý | Tính vào số lần fail? |
 |---|---|---|---|
@@ -66,27 +62,24 @@ Hết quota OpenAI → A. Hết quota Claude giữa chừng → Codex làm tiế
 
 Bug / lỗi / không work → **`superpowers:systematic-debugging`** (reproduce trước, không đoán). Không tự chế phân loại ở đây.
 
-## Async loop (builder / Codex)
+## Async loop (builder / Codex — việc LỚN)
 
 `Agent` tool chạy nền — Claude Code tự báo khi agent xong, KHÔNG poll bằng `ScheduleWakeup`. Nhận notification xong:
 ```
-`scout` chạy lại build/test (output nguyên văn) → review diff theo bảng kiểm (`architect` nếu LỚN hoặc VỪA đổi luồng dữ liệu/code dùng chung/>~150 dòng, SendMessage agent cũ; ∥ `security-reviewer` nếu nhạy cảm) → UI diff? cổng kiểm màn thật 1440/375 TRƯỚC merge → migration diff? verify DB → lỗi? phân loại theo "Codex lỗi"
+`scout` chạy lại build/test (output nguyên văn) → `architect` đã viết spec review diff theo bảng kiểm (SendMessage agent cũ; ∥ `security-reviewer` nếu nhạy cảm) → UI diff? cổng kiểm màn thật 1440/375 TRƯỚC merge → migration diff? verify DB → lỗi? phân loại theo "Codex lỗi"
 ```
 Mechanics đầy đủ (companion resume, autocommit) → `/codex-exec`.
 
 ## Token Discipline — Claude main
 
-**KHÔNG:**
-- Đọc full source để lấy context khi agent tự đọc được.
-- Grep/trace lan man khi debug. Dò vị trí/thu bằng chứng → `scout`; điều tra sâu việc VỪA/LỚN → `architect`.
-- Paste nội dung file vào brief.
-- Edit/Write file code cho việc VỪA/LỚN — giao `builder`. (Việc NHỎ và lỗi UI vừa thấy → phiên chính sửa thẳng.)
-- Gọi `general-purpose`.
+Phiên chính là phần tốn nhất (đo 2026-11-10: 65% token, mỗi lượt đọc lại cả ngữ cảnh) → giữ ngữ cảnh nhỏ:
 
-**CHỈ:**
-- Đọc `git log` / `git diff`, output nguyên văn agent trả.
-- Quyết nội dung plan/spec (`architect` viết file cho việc LỚN) · tài liệu/tiến độ → `scribe`.
-- Giao `builder` với goal + brief/spec path + "Đã quyết / đã loại" + commit gốc worktree.
+- **Mỗi tính năng một phiên.** Merge/push xong → nhắc user 1 dòng: mở phiên mới hoặc `/compact <giữ gì>`.
+- Đọc hẹp: đúng file sẽ sửa + nơi gọi trực tiếp, không đọc cả thư mục. Khi đang lặp sửa → chạy test đích, không chạy cả bộ.
+- Không đổ log dài vào hội thoại: `tail`. Output dự kiến >~100 dòng (cả bộ test, build, Playwright, dò rộng nhiều file) → `scout`.
+- Không gọi agent cho việc 1–2 lệnh là xong (chạy 1 test, grep, đọc 1–3 file, ghi chú ngắn).
+- Việc LỚN: không tự Edit/Write code — giao `builder` với goal + spec path + "Đã quyết / đã loại" + commit gốc worktree; không paste nội dung file vào brief.
+- Không gọi `general-purpose`.
 
 **Structural-first:** với câu hỏi về symbol/call-graph ("X định nghĩa đâu", "ai gọi Y", "sửa Z vỡ gì", trace flow) → xác định file và đọc callers/callees trước khi grep lan man. Grep/Read thẳng là ĐÚNG tool khi: tìm chuỗi text literal · file đã biết tên · file .md/config · repo không phải code.
 

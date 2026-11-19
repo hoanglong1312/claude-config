@@ -1,6 +1,6 @@
 ---
 name: builder
-description: Implementer (Sonnet). Use in code projects for MEDIUM tasks (one screen/feature, no money/security) and LARGE or sensitive tasks (after spec + security review) - writes or changes code and tests exactly to the brief or spec. Not for SMALL tasks (≤50 lines, ≤3 files, non-sensitive): the main session edits those itself.
+description: Implementer (Sonnet). Use in code projects for LARGE tasks only (several screens/modules, schema/migration, new data flow, anything needing a plan), after the architect's spec (and security review when sensitive) - writes or changes code and tests exactly to the spec, in a worktree. Not for SMALL or MEDIUM tasks (up to one screen / one feature, no schema change): the main session codes those itself.
 model: sonnet
 effort: medium
 tools: Read, Glob, Grep, Bash, Edit, Write, Skill

@@ -24,8 +24,8 @@ description: Dispatch code task cho Codex — companion resume, Agent codex-resc
 
 `Agent` chạy nền → Claude Code tự báo khi xong (không poll bằng `ScheduleWakeup`). Nhận notification:
 1. `git diff HEAD` — nếu Codex edit chưa commit: syntax check → `git add <files> && git commit -m "<task> (codex-autocommit)"`.
-2. **Haiku** (`model: haiku`) chạy lại build + test độc lập — không tin Codex tự báo — trả output nguyên văn + pass/fail.
-3. **Opus** đọc `git diff HEAD~1 HEAD` theo bảng kiểm trong `code-project.md` (ngoài phạm vi? test bị sửa/skip? ASSUMPTION? đụng auth/api/migration?).
+2. `scout` chạy lại build + test độc lập — không tin Codex tự báo — trả lệnh, exit code và output nguyên văn.
+3. `architect` đã viết spec review `git diff HEAD~1 HEAD` theo bảng kiểm trong `code-project.md` (ngoài phạm vi? test bị sửa/skip? ASSUMPTION? đụng auth/api/migration?) — SendMessage agent cũ.
 4. Lỗi → phân loại A/B/C/D (mục Fallback).
 
 ## Prompt template — executing-plans
@@ -52,9 +52,9 @@ Mơ hồ: ghi ASSUMPTION: vào commit message
 ## Fallback
 
 Phân loại trước — bảng đầy đủ trong `code-project.md` mục "Codex lỗi":
-- **A. Hạ tầng** (không chạy được, hết quota OpenAI, timeout): thử lại 1 lần → Sonnet subagent (`model: sonnet`, `isolation: worktree`) làm **cùng brief** / task ≲20 dòng → Opus tự sửa. Không tính vào số lần fail.
+- **A. Hạ tầng** (không chạy được, hết quota OpenAI, timeout): thử lại 1 lần → `builder` (`isolation: worktree`) làm **cùng brief**. Không tính vào số lần fail.
 - **B. Đầu ra sai** (không diff, lệch spec, `QA-FAIL:`): `SendMessage` lại chính agent đó kèm lỗi nguyên văn.
-- **C. Lặp** (cùng triệu chứng lần 2): Opus chẩn đoán lại → spec mới → giao lại. Lần 3 → Opus sửa, ghi `<!-- claude-override: direct-fix after 3 Codex retries [date] -->`.
+- **C. Lặp** (cùng triệu chứng lần 2): `architect` chẩn đoán lại → spec mới → giao lại. Lần 3 → `builder` áp spec của architect trực tiếp, ghi `<!-- claude-override: direct-fix after 3 Codex retries [date] -->`.
 - **D. Âm thầm** (test bị sửa/skip, pass giả): như B + "không được sửa test để pass".
 
 ## Không dùng

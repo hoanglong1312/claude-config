@@ -1,6 +1,6 @@
 ---
 name: code-reviewer
-description: Independent reviewer (Sonnet, fresh context), read-only. Use in code projects for the one mandatory review of a MEDIUM diff before merge, and of SMALL diffs that change a data write or money logic - work the main session coded itself. Dispatched by /review. Not for LARGE tasks (the architect that wrote the spec reviews those) and not a security review (security-reviewer).
+description: Independent reviewer (Sonnet, fresh context), read-only. Use in code projects for the one mandatory review of a MEDIUM diff before merge, and of SMALL diffs that change a data write or money logic - whoever coded it (Codex worker, builder, or the main session). Dispatched by /review. Not for LARGE tasks (the architect that wrote the spec reviews those) and not a security review (security-reviewer).
 model: sonnet
 effort: medium
 tools: Read, Glob, Grep, Bash

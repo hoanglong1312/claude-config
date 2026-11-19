@@ -1,8 +1,10 @@
 ---
-description: Dispatch code task cho Codex — companion resume, Agent codex-rescue, foreground/background, review kết quả, prompt template. Dùng khi giao code change cho Codex.
+description: Giao code cho Codex NGOÀI Orca (qua agent codex:codex-rescue) — resume thread, dispatch, nhận kết quả. Trong Orca dùng skill orchestrating-agents (Codex worker), không dùng lệnh này.
 ---
 
-# /codex-exec — Dispatch Codex
+# /codex-exec — Giao Codex ngoài Orca
+
+**Trong Orca → KHÔNG dùng lệnh này:** skill `orchestrating-agents` (mục "Orca worker (Codex)") là nguồn duy nhất. Lệnh này chỉ cho phiên Claude Code ngoài Orca, việc LỚN đã chốt spec, Codex đã cài + login. Đề bài, kiểm đầu vào, review, leo thang khi lỗi → đều theo skill; file này chỉ giữ cơ chế kỹ thuật.
 
 ## Trước mỗi task
 
@@ -17,49 +19,21 @@ description: Dispatch code task cho Codex — companion resume, Agent codex-resc
 
 - `Agent` tool, `subagent_type: codex:codex-rescue`.
 - **Default foreground:** prompt bắt đầu `--wait`. Background (>10 phút): `--background`.
-- Prompt CHỈ gồm: goal + file/spec path + constraints + verification. KHÔNG paste source (Codex tự đọc).
-- Codex có agent riêng (`~/.codex/agents/`): `implementer` (ghi code), `reviewer` (đọc + soát bảo mật, dùng cho review chéo plan), `code_mapper` (dò code rẻ, read-only). Nêu agent trong brief khi cần.
+- Prompt = đề bài theo "Brief contract" + "Worker brief" của skill (yêu cầu đánh số, danh sách file được phép sửa, lệnh kiểm, bằng chứng test fail rồi pass, cấm sửa/skip test, không commit). KHÔNG paste source (Codex tự đọc).
+- Codex có agent riêng (`~/.codex/agents/`): `implementer` (ghi code), `code_mapper` (dò code rẻ, read-only). Nêu agent trong brief khi cần.
 
 ## Khi Codex xong
 
-`Agent` chạy nền → Claude Code tự báo khi xong (không poll bằng `ScheduleWakeup`). Nhận notification:
-1. `git diff HEAD` — nếu Codex edit chưa commit: syntax check → `git add <files> && git commit -m "<task> (codex-autocommit)"`.
-2. `scout` chạy lại build + test độc lập — không tin Codex tự báo — trả lệnh, exit code và output nguyên văn.
-3. `architect` đã viết spec review `git diff HEAD~1 HEAD` theo bảng kiểm trong `code-project.md` (ngoài phạm vi? test bị sửa/skip? ASSUMPTION? đụng auth/api/migration?) — SendMessage agent cũ.
-4. Lỗi → phân loại A/B/C/D (mục Fallback).
+`Agent` chạy nền → Claude Code tự báo khi xong (không poll bằng `ScheduleWakeup`). Nhận notification → làm đúng bước "Intake" rồi review theo bảng cỡ việc trong skill (LỚN: `architect` đã viết spec review, SendMessage agent cũ). Không tin Codex tự báo — chạy lại kiểm tra.
 
-## Prompt template — executing-plans
+## Codex lỗi
 
-```
-Tasks: [extract ### Task headings + steps từ docs/plan-overview.md]
-Decisions: docs/superpowers/decisions.md  ← đọc trước
-Constraints: [từ writing-plans]
-Đã quyết / đã loại: [điều Opus + user đã chốt — KHÔNG để Codex tự đoán]
-Ràng buộc: chỉ sửa [file/thư mục]; KHÔNG sửa/xoá/skip test để pass; không thêm dependency ngoài plan
-Verify: [lệnh test/build cụ thể]
-Goal: execute theo task list, tuần tự (song song chỉ khi worktree riêng + không chung file)
-Start task: **Status:** pending → in_progress trong plan-overview.md
-Done: → done + **Commit:** [hash]
-Blocked: → blocked + **Reason:** QA-FAIL: [lý do]
-Mơ hồ: ghi ASSUMPTION: vào commit message
-```
-
-## Codex capabilities (xem AGENTS.md)
-
-- MCP/code search nếu có → tự kiểm tra symbol, callers/callees và blast radius.
-- Browser tool sẵn có của môi trường, hoặc Playwright.
-
-## Fallback
-
-Phân loại trước — bảng đầy đủ trong `code-project.md` mục "Codex lỗi":
-- **A. Hạ tầng** (không chạy được, hết quota OpenAI, timeout): thử lại 1 lần → `builder` (`isolation: worktree`) làm **cùng brief**. Không tính vào số lần fail.
-- **B. Đầu ra sai** (không diff, lệch spec, `QA-FAIL:`): `SendMessage` lại chính agent đó kèm lỗi nguyên văn.
-- **C. Lặp** (cùng triệu chứng lần 2): `architect` chẩn đoán lại → spec mới → giao lại. Lần 3 → `builder` áp spec của architect trực tiếp, ghi `<!-- claude-override: direct-fix after 3 Codex retries [date] -->`.
-- **D. Âm thầm** (test bị sửa/skip, pass giả): như B + "không được sửa test để pass".
+Theo skill: không chạy được / hết quota → `builder` (`isolation: worktree`) làm cùng đề bài, báo user 1 dòng, không chờ. Đầu ra sai lần đầu → `SendMessage` lại chính agent đó kèm lỗi nguyên văn + `file:dòng`. Cùng triệu chứng lần 2 → mục "Escalation" của skill.
 
 ## Không dùng
 
 - `Skill("codex:rescue")` để execute (chỉ wrapper).
 - Codex MCP (`mcp__codex__*`) — đã gỡ khỏi Claude 2026-11-02.
 - codex-rescue để tạo ảnh — không có `image_gen`; dùng skill `codex-image` (`codex exec`).
+- Codex review diff do chính Codex viết — dùng `code-reviewer`.
 - `/codex:status` trong shell.

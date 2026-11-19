@@ -1,11 +1,13 @@
 ---
 name: orchestrating-agents
-description: Use in code projects (the project's CLAUDE.md loads code-project.md) on every task that changes code, or needs review - sizing the task by scope (small / medium / large) plus security and money-logic overlays, deciding whether the main session codes it or a LARGE task goes to architect + builder, when a subagent is worth its cost (scout for long output, code-reviewer for the one independent review, security-reviewer), the gates before merge including the real-browser screen check, hard bugs, or when the user asks "điều phối agent", "phân công", "giao việc cho agent", "kiểm tra đầu vào đầu ra". Not for content, business or note-taking work outside code projects.
+description: Use in code projects (the project's CLAUDE.md loads code-project.md) on every task that changes code, or needs review - sizing the task by scope (small / medium / large) plus security and money-logic overlays, deciding who codes it (in Orca: the Codex worker; else the main session, or architect + builder for LARGE), the worker brief and intake checks, the visual check against the mockup, when a subagent is worth its cost (scout for long output, code-reviewer for the one independent review, security-reviewer), the gates before merge including the real-browser screen check, hard bugs, or when the user asks "điều phối agent", "phân công", "giao việc cho agent", "kiểm tra đầu vào đầu ra". Not for content, business or note-taking work outside code projects.
 ---
 
 # Orchestrating Agents - Orca worker mode (on top of lean mode)
 
-**Orca worker mode since 2026-11-11 (user decision).** When the session runs inside Orca (`ORCA_CLI_COMMAND` is set, or `orca status --json` answers), **the main session does not write code**: it sizes, writes briefs, dispatches **Codex or Gemini 4 Argon as Orca workers**, reviews, runs the gates and signs off. Why: workers spend OpenAI / Antigravity quota, not the Claude account, which is the scarce one. Exception - **trivial edits** (≤3 changed lines: typo, label text, a one-line fix from a review finding) the main session makes itself, because a brief costs more than the edit. Not in Orca, or no worker available → the lean-mode table below applies unchanged. The lean-mode version of this file is kept at `~/.claude/backups/orchestration-lean-20261111/SKILL.md`.
+**This skill is the single source for orchestration rules** (2026-11-20). `code-project.md`, `/review`, `/codex-exec` and the agent files only point here; on any conflict this file wins.
+
+**Orca worker mode since 2026-11-11 (user decision).** When the session runs inside Orca (`ORCA_CLI_COMMAND` is set, or `orca status --json` answers), **the main session does not write code**: it sizes, writes briefs, dispatches **Codex as the Orca worker**, reviews, runs the gates and signs off. Why: the worker spends OpenAI quota, not the Claude account, which is the scarce one. Argon (Gemini via Antigravity) was removed 2026-11-20 - not usable; the old rules are in `~/.claude/backups/orchestration-20261120/SKILL.md`. Exception - **trivial edits** (≤3 changed lines: typo, label text, a one-line fix from a review finding) the main session makes itself, because a brief costs more than the edit. Not in Orca, or no worker available → the lean-mode table below applies unchanged. The lean-mode version of this file is kept at `~/.claude/backups/orchestration-lean-20261111/SKILL.md`.
 
 **Lean mode (2026-11-11 trial) - the fallback when Orca workers are unavailable.** The previous full-orchestration rules are kept at `~/.claude/backups/orchestration-full-20261111/` (`RESTORE.md` there explains the old model and how to switch back). Why lean: in the measured 2026-11-10 session (26.9M tokens) the main session was 65% of the cost and the handoffs made it longer (829 turns re-reading ~180k of context); scout + scribe were ~3%, so delegating cheap work saved almost nothing. What caught real bugs were the **gates** (independent review, real-screen check, reconciliation), not the relay of agents. Lean mode keeps every gate and removes the relay for SMALL and MEDIUM work.
 
@@ -25,24 +27,26 @@ Unsure between two sizes → take the larger. A task that grows past its size (s
 
 | Size | Who codes | Review |
 |---|---|---|
-| **SMALL** | Orca worker (main only for trivial ≤3-line edits) | main reads the diff and runs the check - main did not write it, so this is an independent look. `code-reviewer` only if it changes a data write or money logic |
-| **MEDIUM** | Orca worker | main reviews the diff (requirements, then quality - gate 2) + real-screen gate. `code-reviewer` only for data writes / money logic |
-| **LARGE** | `architect` writes the spec → Orca worker codes it in its own worktree | the same `architect` reviews the diff |
+| **SMALL** | Codex worker (main only for trivial ≤3-line edits) | main reads the diff and runs the check - main did not write it, so this is an independent look. `code-reviewer` only if it changes a data write or money logic |
+| **MEDIUM** | Codex worker | **`code-reviewer` (Sonnet) once - mandatory.** Why: main wrote the brief, so main reviewing against its own brief shares any misreading of the requirement; a fresh reviewer from another vendor than the coder does not. Main does only the mechanical intake checks (below), not a second judgment review |
+| **LARGE** | `architect` writes the spec → Codex worker codes it in its own worktree | the same `architect` reviews the diff |
 
-The overlays below (security, money) and every gate apply unchanged.
+The overlays below (security, money) and every gate apply unchanged. When builder (Sonnet) codes instead of Codex, the review column is the same - accepted that coder and reviewer are then the same vendor; money logic still has the reconciliation gate.
 
-## Orca workers - choose, dispatch, fall back
+## Orca worker (Codex) - dispatch, intake, fall back
 
-1. **Check quota first** (one call): `orca account list --json` → `result.rateLimits.codex` and `result.rateLimits.antigravity` (`session`/`weekly` `usedPercent`, `status`, `error`). A provider with `status: error`, an auth error, or `usedPercent` ≥ 90 on either window is unavailable.
-2. **Choose:**
-   - **Money / payroll / stock / data-write logic → Codex first** (it knows the repo through `AGENTS.md`); Argon only if Codex is unavailable.
-   - **Everything else → the provider with more quota left** (lower of the two `usedPercent` maxima); tie → Codex.
-   - Argon model id: `gemini-4-argon-high` for LARGE or tricky logic, `gemini-4-argon-medium` otherwise. Codex: its default model unless the user names one.
+1. **Check quota first** (one call): `orca account list --json` → `result.rateLimits.codex` (`session`/`weekly` `usedPercent`, `status`, `error`). `status: error`, an auth error, or `usedPercent` ≥ 90 on either window → unavailable → step 4.
+2. **Model:** Codex default model unless the user names one.
 3. **Dispatch** with the `orchestration` skill (`orca skills get orchestration` once per session): write the brief to a file, then
-   `orca orchestration worker-start --spec-file <brief.md> --agent codex|antigravity [--model <id>] --worktree current|new-child --name <short> --json`, and **end the turn** - Orca wakes main with the report. `--worktree current` for SMALL/MEDIUM when no other session edits the same files; `new-child` for LARGE or a shared tree. Never poll, never steer through the worker's terminal (use `orchestration send`).
-4. **Both unavailable, or a worker fails twice on the same task** → `builder` (Sonnet) codes it, and tell the user in one line ("Codex/Argon hết hạn mức → builder Sonnet làm"). Never wait for quota.
+   `orca orchestration worker-start --spec-file <brief.md> --agent codex --worktree current|new-child --name <short> --json`, and **end the turn** - Orca wakes main with the report. `--worktree current` for SMALL/MEDIUM when no other session edits the same files; `new-child` for LARGE or a shared tree. Never poll, never steer through the worker's terminal (use `orchestration send`).
+4. **Codex unavailable, or it fails twice on the same symptom** (same rule as Escalation) → `builder` (Sonnet) codes it with the same brief, and tell the user in one line ("Codex [lý do] → builder Sonnet làm"). Never wait for quota. Wrong output the first time → `orchestration send` to the same worker with the raw error + file:line, never a fresh dispatch.
 5. **Questions from a worker:** answer from the spec, `decisions.md` or the project rules; anything that is the user's call → ask the user, then `orchestration reply`.
-6. **Worker brief** - the Brief contract below, plus: the worker **has not seen this conversation** - name the rule files it must read (`CLAUDE.md`, `AGENTS.md`, the brain section for business logic), the exact files it may edit, the base commit, the check command and its expected output, "do not commit / push / merge", and the report format (files changed, check output raw tail, open questions). A worker's report is a claim: main re-runs the check and reads the diff before any verdict.
+6. **Worker brief** - the Brief contract below, plus: the worker **has not seen this conversation** - name the rule files it must read (`CLAUDE.md`, `AGENTS.md`, the brain section for business logic), **the requirements as a numbered list**, **the exact files it may edit (allow-list)**, the base commit, the check command and its expected output, "do not commit / push / merge", "never edit, delete or skip a test to make it pass", and the report format: files changed, check output raw tail, **fail-first evidence** (each new/changed test run against the old code → fail, then the new code → pass, raw output; pure CSS/copy changes with no test are exempt and say so), `ASSUMPTION:` lines, open questions. UI work: attach the approved mockup path/`screenId` and the design-system file.
+7. **Intake - main, before any review, all mechanical (a worker's report is a claim):**
+   a. `git diff --stat <base>` vs the allow-list → any file outside it = send back.
+   b. Fail-first evidence present for every new/changed test (or the exemption stated) → missing = send back.
+   c. Main re-runs the check itself (gate 1); `git diff` on test files → any test edited/deleted/skipped without the brief asking = send back.
+   d. Then the review per the size table, then the gates.
 
 **Risk overlays - added on top of the size, never replacing it:**
 - **Security area** (auth, RLS, migration, secrets, public endpoints, parsing outside input, payments integration, installer) → `security-reviewer` on the spec or brief before code and on the diff after, at any size.
@@ -53,16 +57,17 @@ The overlays below (security, money) and every gate apply unchanged.
 | Role | Model | Used for | Never |
 |---|---|---|---|
 | **main session** | Opus (Sonnet is fine for routine SMALL/MEDIUM sessions - the user picks) | talk to the user, size, **code SMALL and MEDIUM**, run the checks, write short docs, MCP-write (Supabase migration/INSERT/UPDATE/DELETE), sign-off | code LARGE tasks; be the only reviewer of its own MEDIUM diff |
-| `code-reviewer` | Sonnet, fresh context | the one independent review of a MEDIUM diff (and SMALL diffs touching data writes / money) | edit code |
+| `code-reviewer` | Sonnet, fresh context | the one independent review of a MEDIUM diff - whoever coded it (Codex, builder, or main in lean mode) - and SMALL diffs touching data writes / money | edit code |
 | `scout` | Haiku | long or wide output only: full test suite / build logs, sweeping many files, driving the real-screen script, the reconciliation script | edit files; decide pass/fail |
 | `architect` | Opus | LARGE: spec/plan, then review of the diff. Hard bug after two failed fixes | edit source code |
-| `builder` | Sonnet | LARGE: implement the architect's spec in a worktree | design decisions |
+| `builder` | Sonnet | LARGE: implement the architect's spec in a worktree. **Orca mode fallback at any size** (Codex unavailable / failed twice). **Visual polish** after two worker rounds still off the mockup (see gate 5) | design decisions |
 | `security-reviewer` | Opus, fresh context | security area, before and after | edit anything |
 | `scribe` | Haiku | long documents only (HDSD, release notes, handoff before compaction) | source code, config |
-| Codex | GPT (OpenAI quota) | **Orca worker mode:** codes SMALL/MEDIUM/LARGE, first choice for money/data logic. Also second opinion (`/codex:review`), images (`codex-image`) | anything when unavailable - never wait for it |
-| Argon | Gemini 4 Argon via Antigravity (`--agent antigravity`) | **Orca worker mode:** codes SMALL/MEDIUM/LARGE, shares the load with Codex by quota | money/data logic while Codex is available; anything when unavailable |
+| Codex | GPT (OpenAI quota) | **Orca worker mode:** codes SMALL/MEDIUM/LARGE. Outside Orca: optional for LARGE with a final spec (`/codex-exec`). Also second opinion (`/codex:review`), images (`codex-image`) | review a diff Codex itself wrote (same vendor - use `code-reviewer`); anything when unavailable - never wait for it |
 
-In Orca worker mode the **main session** row reads: talk to the user, size, write briefs, dispatch workers, review diffs, run checks and gates, trivial ≤3-line edits, MCP-write, sign-off. Never: code anything beyond a trivial edit while a worker is available.
+In Orca worker mode the **main session** row reads: talk to the user, size, write briefs, dispatch the worker, intake checks, run checks and gates, **the visual check (gate 5)**, trivial ≤3-line edits, MCP-write, sign-off. Never: code anything beyond a trivial edit while the worker is available.
+
+**Why UI code still goes to the worker, not Sonnet:** coding to an approved mockup + design tokens is spec work; UI iteration is the most token-heavy work (screenshots, many rounds), so doing it on Claude burns the scarcest quota. Claude keeps the *eye* (design direction, mockup choice with the user, gate 5 visual check); the worker keeps the *hands*. Exception: visual polish still off after two worker rounds → `builder`.
 
 **When a subagent is NOT worth it:** a targeted test run, a grep, reading 1-3 files, a short progress note, a small doc edit → main does it. Each spawn starts cold and re-reads what main already knows.
 
@@ -70,6 +75,8 @@ In Orca worker mode the **main session** row reads: talk to the user, size, writ
 
 ## Flows
 
+- **Orca mode (SMALL/MEDIUM):** clarify → numbered requirements + allow-list → brief → Codex worker → intake (a-c) → MEDIUM: `code-reviewer` → findings back to the same worker → re-check the fix (gate 2) → UI touched? real-screen gate + visual check → sign-off → commit only the changed files. LARGE as below with the worker in place of builder.
+- **Lean mode (no Orca), as follows.**
 - **SMALL:** clarify → `git status` (shared tree?) → main edits → main runs the targeted check → reads its own diff → UI touched? real-screen gate → commit only the changed files.
 - **MEDIUM:** clarify → main reads what the change touches → main codes on the working branch (tests included; new branching/parsing/money logic → test first) → main runs the check → **`code-reviewer`** on the diff → fix findings → **re-check the fix** (gate 2) → UI touched? real-screen gate → sign-off → merge.
 - **LARGE:** clarify → unknown areas (`scout`) → spec (`architect`, main approves) → `builder` in a worktree → `scout` re-runs build/test → `architect` reviews the diff (same agent, SendMessage) → real-screen gate → sign-off → merge.
@@ -84,6 +91,7 @@ In Orca worker mode the **main session** row reads: talk to the user, size, writ
 3. **Reconciliation gate** for money logic (overlay above).
 4. **Security** for a security area: `security-reviewer` before and after. Always.
 5. **Real-screen gate (UI touched) - mandatory BEFORE merge:** the real app in a browser at **1440 px and 375 px**, writes blocked (read-only data or intercepted write requests), walking the changed path including error and empty states. Green tests are not enough (kho round: tests green, still 4 UI bugs). `scout` drives it from a written script (Playwright, or numbered steps + the write-blocking interceptor) and returns per step: pass/fail, the exact text read, blocked write payloads, screenshots; main judges. Main drives the browser itself only for login prompts or a step scout could not do. Cannot be driven → give the user exact steps, say it is unverified, do not merge.
+   **Visual check (part of gate 5, main session):** the scout run also returns screenshots at 1440 and 375 of **only the screens the diff changed**. Main puts each next to the approved mockup (new UI) - or, for a small change on an existing screen with no mockup, next to the before-screenshot and the design-system file - and lists concrete deviations: element, expected vs seen, both widths (e.g. "nút Lưu cách mép 8px, mockup 16px; 375px chữ tiêu đề xuống 2 dòng"). Deviations → back to the same worker as a numbered list. **Still off after two polish rounds → `builder` (Sonnet) fixes it directly** with its own screenshot loop, same mockup and tokens; logic changed in that fix → re-check by the same `code-reviewer`.
 6. **UI bug seen in the browser** → the session with the context fixes it right away. No new agent.
 7. **Sign-off:** main session only, after 1-6. Then merge / `/ship`. Deploy, send, publish or overwrite a source → ask the user first.
 
@@ -147,7 +155,9 @@ A/B, 2026-11-11, one MEDIUM task ("gom dòng Hao hụt", one run per arm, score 
 
 ## Red flags - stop
 
-- A MEDIUM diff about to be merged without the `code-reviewer` pass.
+- A MEDIUM diff about to be merged without the `code-reviewer` pass (Orca mode included).
+- A worker diff reviewed before the intake checks: files outside the allow-list, missing fail-first evidence, tests edited.
+- UI merged on functional screenshots alone, without the visual check against the mockup.
 - Main coding something that turned LARGE (schema, new data flow, several screens) without re-sizing.
 - A security-area change without security-reviewer before and after.
 - Money logic signed off without a real-month reconciliation.
@@ -166,11 +176,15 @@ A/B, 2026-11-11, one MEDIUM task ("gom dòng Hao hụt", one run per arm, score 
 |---|---|
 | "MEDIUM but simple, skip the review" | The review is the only independent look left in lean mode. Never skipped. |
 | "Let scout run this one test" | A targeted run is one tool call. Main runs it. |
-| "Brief builder for this one-screen feature" | MEDIUM → main codes. builder is for LARGE with a spec. |
+| "Brief builder for this one-screen feature" (lean mode) | MEDIUM → main codes. builder is for LARGE with a spec, or the Orca fallback. |
 | "It touches the schema but it's just one column" | Schema change = LARGE (+ security area). Re-size. |
 | "Payroll change, call security-reviewer to be safe" | Money logic → reconciliation by scout. |
 | "Tests are green, look at the screen after merge" | Real-screen gate is before merge. |
-| "Codex isn't logged in, wait for it" | Never wait. Argon, else builder codes. |
+| "Codex isn't logged in, wait for it" | Never wait. builder codes. |
+| "I read the worker's diff, that's the MEDIUM review" (Orca mode) | Main wrote the brief - same misreading. `code-reviewer` reviews; main only does intake. |
+| "Let Codex review its own diff, saves Claude quota" | Same vendor, same blind spots. `code-reviewer`. |
+| "The test passes, no need for fail-first" | A test that never failed proves nothing. Evidence or send back. |
+| "Tests green and buttons work, UI done" | Compare the screenshots with the mockup (visual check). |
 | "It's only 20 lines, faster if I write it myself" (Orca mode) | Beyond ≤3 lines, a worker writes it - Claude quota is the scarce one. |
 | "The worker said tests pass" | A report is a claim. Main re-runs the check and reads the diff. |
 | "architect can fix it while reviewing" | A reviewer who fixes has no reviewer. |
